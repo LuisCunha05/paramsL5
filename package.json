@@ -1,0 +1,29 @@
+{
+  "name": "params-l5",
+  "version": "0.0.1",
+  "description": "package to generate  l5repository query strings",
+  "keywords": [
+    "l5",
+    "params"
+  ],
+  "homepage": "https://github.com/LuisCunha05/paramsL5#readme",
+  "bugs": {
+    "url": "https://github.com/LuisCunha05/paramsL5/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LuisCunha05/paramsL5.git"
+  },
+  "license": "MIT",
+  "author": "luiscunha05",
+  "type": "module",
+  "main": "dist/src/index.js",
+  "scripts": {
+    "test": "echo \"no test yet\"",
+    "build": "tsc --build"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.2",
+    "typescript": "^5.9.2"
+  }
+}
