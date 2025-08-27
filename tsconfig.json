@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
+    "noImplicitAny": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "target": "es2022",
     "allowJs": true,
     "resolveJsonModule": true,
-    "moduleDetection": "force",
+    "moduleDetection": "auto",
     "isolatedModules": true,
-    "verbatimModuleSyntax": true,
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
@@ -18,13 +18,19 @@
     "composite": true,
     "declarationMap": true,
     "sourceMap": true,
+    "noEmit": false,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     "lib": [
       "es2022"
     ]
   },
   "include": [
     "src",
-    "package.json"
+    "package.json",
+    "*.config.ts"
   ],
   "exclude": [
     "node_modules"

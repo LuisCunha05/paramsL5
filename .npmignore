@@ -1,0 +1,13 @@
+/src
+/node_modules
+tsconfig.json
+*.config.js
+
+pnpm-lock.yaml
+biome.json
+
+.gitignore
+
+#ide
+/.idea
+/.vscode

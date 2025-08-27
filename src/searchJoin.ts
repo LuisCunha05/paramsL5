@@ -1,20 +1,20 @@
-import type {IParams} from './types'
+import type {IValueParams} from './types'
 
 
-type TSearchJoin = 'and'| 'or'
+export type TSearchJoin = 'and'| 'or'
 
-export class SearchJoin implements IParams<TSearchJoin> {
+export class SearchJoin implements IValueParams<TSearchJoin> {
   private state: TSearchJoin = "and";
 
   constructor(defaultValue: TSearchJoin = "and") {
     this.state = defaultValue;
   }
 
-  public setState(search: TSearchJoin): void {
+  public set(search: TSearchJoin): void {
     this.state = search;
   }
 
-  public getState(): TSearchJoin {
+  public get(): TSearchJoin {
     return this.state;
   }
 

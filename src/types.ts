@@ -1,11 +1,17 @@
 
 
-export interface IParams<T> {
-  setState(args: unknown): void
-  getState(): T
+export interface IValueParams<T> {
+  set(...args: unknown[]): void
+  get(): T
   toParams(): string
 }
 
-export interface IParamsWithValidation<T> extends IParams<T> {
-  validate(arg: unknown): T
+export interface IColletionParams<T> {
+  add(...args: unknown[]): void
+  get(): T
+  toParams(): string
+}
+
+export abstract class AValidation {
+  protected abstract isInputValid(...arg: unknown[]): boolean
 }
