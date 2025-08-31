@@ -27,7 +27,7 @@ export class Limit extends AValidation implements IValueParams<TLimit> {
 
 	protected isInputValid(arg?: number): arg is number {
 		const predicate = (value: number) => {
-			return Number.isInteger(value) && value > 0
+			return Number.isInteger(value) && value >= 0
 		}
 
 		return isNumber(arg, predicate)
