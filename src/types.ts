@@ -11,3 +11,5 @@ export abstract class CollectionParam<T> extends BaseParam<T> {
 export abstract class ValueParam<T> extends BaseParam<T> {
 	public abstract set(...args: unknown[]): void
 }
+
+export type BaseValue = string | number | boolean
