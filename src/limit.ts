@@ -1,15 +1,20 @@
-import { AValidation, type IValueParams } from '@/types'
-import { isNumber } from '@/utils'
+import { ValueParam } from '@/types'
+import { isNumber, typeName } from '@/utils'
 
 export type TLimit = number
 
-export class Limit extends AValidation implements IValueParams<TLimit> {
+export class Limit extends ValueParam<TLimit> {
 	private state: TLimit = 10
 
 	constructor(arg?: TLimit) {
 		super()
-		if (!this.isInputValid(arg)) return
-		this.state = arg
+		if (typeof arg !== 'undefined' && !this.isInputValid(arg)) {
+			throw new TypeError(
+				`Limit must be a positive integer or zero, got ${typeName(arg)} instead`,
+			)
+		}
+
+		if (arg) this.state = arg
 	}
 
 	public get(): TLimit {
@@ -20,8 +25,12 @@ export class Limit extends AValidation implements IValueParams<TLimit> {
 		return `limit=${this.state}`
 	}
 
-	public set(arg?: number) {
-		if (!this.isInputValid(arg)) return
+	public set(arg: number) {
+		if (!this.isInputValid(arg)) {
+			throw new TypeError(
+				`Limit must be a positive integer or zero, got ${typeName(arg)} instead`,
+			)
+		}
 		this.state = arg
 	}
 

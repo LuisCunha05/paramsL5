@@ -11,3 +11,10 @@ export function isNumber(
 
 	return predicate ? predicate(arg) : true
 }
+
+export function typeName(arg?: unknown): string {
+	if (Array.isArray(arg)) return 'Array'
+	if (arg === null) return 'null'
+	if (Number.isNaN(arg)) return 'NaN'
+	return typeof arg
+}

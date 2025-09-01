@@ -17,14 +17,24 @@ describe("SearchCriteria", () => {
   test("Shouldn't add an existing parameter", () => {
 
     searchCriteria.add("key", "value1");
-    searchCriteria.add("key", "value2");
 
-    expect(searchCriteria.get().get("key")).toBe("value1");
+    expect(() => searchCriteria.add("key", "value2")).toThrow("SearchCriteria keys can't be duplicated" )
+  })
+
+  test("Shouldn't accept wrong type for key", () => {
+    //@ts-expect-error
+    expect(() => searchCriteria.add(undefined, "value1")).toThrow("SearchCriteria keys must have a type of string, got undefined instead" )
+    //@ts-expect-error
+    expect(() => searchCriteria.add(2, "value1")).toThrow("SearchCriteria keys must have a type of string, got number instead" )
+    //@ts-expect-error
+    expect(() => searchCriteria.add({}, "value1")).toThrow("SearchCriteria keys must have a type of string, got object instead" )
+    //@ts-expect-error
+    expect(() => searchCriteria.add([], "value1")).toThrow("SearchCriteria keys must have a type of string, got Array instead" )
+    //@ts-expect-error
+    expect(() => searchCriteria.add(null, "value1")).toThrow("SearchCriteria keys must have a type of string, got null instead" )
   })
 
   test("Shouldn't add an undefined value", () => {
-
-    //@ts-expect-error
     searchCriteria.add("key");
 
     expect(searchCriteria.get().has("key")).toBe(false);
