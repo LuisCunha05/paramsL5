@@ -18,8 +18,6 @@ export class SearchCriteria extends CollectionParam<TSearchCriteria> {
 				`SearchCriteria keys must have a type of string, got ${typeName(key)} instead`,
 			)
 
-		if (this.state.has(key))
-			throw new Error("SearchCriteria keys can't be duplicated")
 		return true
 	}
 

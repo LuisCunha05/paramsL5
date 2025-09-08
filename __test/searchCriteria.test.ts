@@ -14,11 +14,12 @@ describe("SearchCriteria", () => {
     expect(searchCriteria.get().has("key")).toBe(true);
   })
 
-  test("Shouldn't add an existing parameter", () => {
+  test("Should alter an existing parameter", () => {
 
     searchCriteria.add("key", "value1");
+    searchCriteria.add("key", "value2")
 
-    expect(() => searchCriteria.add("key", "value2")).toThrow("SearchCriteria keys can't be duplicated" )
+    expect(searchCriteria.get().get('key')).toBe('value2');
   })
 
   test("Shouldn't accept wrong type for key", () => {
