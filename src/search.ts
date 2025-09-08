@@ -1,17 +1,20 @@
 import { type BaseValue, CollectionParam } from '@/types'
-import { isNonEmptyString, typeName } from '@/utils'
+import {isBaseValue, isNonEmptyString, typeName} from '@/utils'
 
-export type TCondition =
-	| '='
-	| 'like'
-	| 'in'
-	| 'between'
-	| 'ilike'
-	| '>='
-	| '<='
-	| '>'
-	| '<'
-	| '!='
+export const Condition = [
+	'=',
+	'like',
+	'in',
+	'between',
+	'ilike',
+	'>=',
+	'<=',
+	'>',
+	'<',
+	'!=',
+] as const
+
+export type TCondition = typeof Condition[number]
 
 export type TValueCondition = Map<TCondition, BaseValue>
 export type TSearch = Map<string, TValueCondition>
@@ -33,19 +36,19 @@ export class Search extends CollectionParam<TSearch> {
 				`Search key must be of type string, got ${typeName(key)}}) instead.`,
 			)
 		}
-		if (typeof value === 'undefined') return
 		if (typeof condition === 'undefined') condition = '=' as TCondition
+		if (typeof value === 'undefined') {
+			if(this.state.has(key)) this.state.get(key)?.delete(condition)
+			return
+		}
 
-		if (!this.isInputValid(key, value, condition)) return
+		if (!this.isInputValid(value, condition)) return
 
 		if (!this.state.has(key)) {
 			this.state.set(key, new Map<TCondition, BaseValue>())
 
 			this.state.get(key)?.set(condition, value)
-		}
-
-		if (this.state.get(key)?.has(condition)) {
-			throw new Error("Search key can't have duplicate condition")
+			return;
 		}
 
 		this.state.get(key)?.set(condition, value)
@@ -56,14 +59,17 @@ export class Search extends CollectionParam<TSearch> {
 	}
 
 	protected isInputValid(
-		key: string,
 		value: BaseValue,
-		condition?: TCondition,
+		condition: TCondition,
 	): boolean {
-		return false
+		return isBaseValue(value) && Condition.includes(condition)
 	}
 
 	public toParams(): string {
-		return 'search='
+		const search = Array.from(this.state)
+		if(search.length === 0) return ''
+		return search.reduce((result, item) =>{
+			const valueCondition = Array.from(item[1])
+		}, 'search=' )
 	}
 }
