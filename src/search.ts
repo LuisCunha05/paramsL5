@@ -1,20 +1,20 @@
 import { type BaseValue, CollectionParam } from '@/types'
-import {isBaseValue, isNonEmptyString, typeName} from '@/utils'
+import { isBaseValue, isNonEmptyString, typeName } from '@/utils'
 
 export const Condition = [
 	'=',
-	'like',
-	'in',
-	'between',
-	'ilike',
 	'>=',
 	'<=',
 	'>',
 	'<',
 	'!=',
+	'in',
+	'like',
+	'ilike',
+	'between',
 ] as const
 
-export type TCondition = typeof Condition[number]
+export type TCondition = (typeof Condition)[number]
 
 export type TValueCondition = Map<TCondition, BaseValue>
 export type TSearch = Map<string, TValueCondition>
@@ -38,7 +38,7 @@ export class Search extends CollectionParam<TSearch> {
 		}
 		if (typeof condition === 'undefined') condition = '=' as TCondition
 		if (typeof value === 'undefined') {
-			if(this.state.has(key)) this.state.get(key)?.delete(condition)
+			if (this.state.has(key)) this.state.get(key)?.delete(condition)
 			return
 		}
 
@@ -48,7 +48,7 @@ export class Search extends CollectionParam<TSearch> {
 			this.state.set(key, new Map<TCondition, BaseValue>())
 
 			this.state.get(key)?.set(condition, value)
-			return;
+			return
 		}
 
 		this.state.get(key)?.set(condition, value)
@@ -58,18 +58,26 @@ export class Search extends CollectionParam<TSearch> {
 		return this.state
 	}
 
-	protected isInputValid(
-		value: BaseValue,
-		condition: TCondition,
-	): boolean {
+	protected isInputValid(value: BaseValue, condition: TCondition): boolean {
 		return isBaseValue(value) && Condition.includes(condition)
 	}
 
 	public toParams(): string {
 		const search = Array.from(this.state)
-		if(search.length === 0) return ''
-		return search.reduce((result, item) =>{
-			const valueCondition = Array.from(item[1])
-		}, 'search=' )
+		if (search.length === 0) return ''
+		const searchAndFields = search.reduce(
+			(result, [key, valueConditionMap]) => {
+				const valueCondition = Array.from(valueConditionMap)
+
+				valueCondition.forEach(([condition, value]) => {
+					result.search.push(`${key}:${value}`)
+					result.fields.push(`${key}:${condition}`)
+				})
+				return result
+			},
+			{ search: [] as string[], fields: [] as string[] },
+		)
+
+		return `search:${searchAndFields.search.join(';')}&searchFields=${searchAndFields.fields.join(';')}`
 	}
 }
