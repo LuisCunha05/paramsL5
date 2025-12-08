@@ -1,4 +1,4 @@
-import {BaseValue} from "@/types";
+import type { BaseValue } from '@/types'
 
 export function isNonEmptyString(value: unknown): value is string {
 	return typeof value === 'string' && value.trim().length > 0
@@ -15,7 +15,7 @@ export function isNumber(
 }
 
 export function isBaseValue(arg: unknown): arg is BaseValue {
-	return !(typeof arg !== 'boolean' && !isNumber(arg) && !isNonEmptyString(arg));
+	return !(typeof arg !== 'boolean' && !isNumber(arg) && !isNonEmptyString(arg))
 }
 
 export function typeName(arg?: unknown): string {
