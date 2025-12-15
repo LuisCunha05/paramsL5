@@ -1,4 +1,4 @@
-import { Search } from "@/search"; // Adjust path as needed
+import { Condition, Search } from "@/search";
 
 describe("Search Class", () => {
   let search: Search;
@@ -8,79 +8,65 @@ describe("Search Class", () => {
   });
 
   describe("add()", () => {
-    it('should add a valid key-value pair with default condition "="', () => {
+    test('should add a valid key-value pair with default condition "="', () => {
       search.add("name", "John");
 
       const state = search.get();
       expect(state.has("name")).toBe(true);
-      expect(state.get("name")?.get("=")).toBe("John");
+      expect(state.get("name")?.value).toBe("John");
     });
 
-    it("should add a valid key-value pair with a specific condition", () => {
-      search.add("age", 18, ">=");
+    test("should add a valid key-value pair with a specific condition", () => {
+      search.add("age", 18, Condition.GTE);
 
       const state = search.get();
-      expect(state.get("age")?.get(">=")).toBe(18);
+      expect(state.get("age")?.value).toBe(18);
+      expect(state.get("age")?.condition).toBe(Condition.GTE);
     });
 
-    it("should allow multiple conditions for the same key", () => {
-      search.add("price", 10, ">=");
-      search.add("price", 100, "<=");
-
-      const state = search.get();
-      const priceConditions = state.get("price");
-
-      expect(priceConditions?.size).toBe(2);
-      expect(priceConditions?.get(">=")).toBe(10);
-      expect(priceConditions?.get("<=")).toBe(100);
-    });
-
-    it("should update the value if the key and condition already exist", () => {
+    test("should update the value if the key and condition already exist", () => {
       search.add("name", "John", "like");
       search.add("name", "Doe", "like"); // Update
 
       const state = search.get();
-      expect(state.get("name")?.get("like")).toBe("Doe");
+      expect(state.get("name")?.value).toBe("Doe");
     });
 
-    it("should throw TypeError if key is empty or invalid", () => {
+    test("should throw TypeError if key is empty or invalid", () => {
       expect(() => search.add("", "value")).toThrow(TypeError);
-      // @ts-ignore - Testing runtime safety
+      // @ts-expect-error - Testing runtime safety
       expect(() => search.add(null, "value")).toThrow(TypeError);
     });
 
-    it("should remove the entry if value is undefined", () => {
-      // Setup
+    test("should remove the entry if value is undefined", () => {
       search.add("status", "active", "=");
-      expect(search.get().get("status")?.has("=")).toBe(true);
+      expect(!!search.get().get("status")).toBe(true);
 
-      // Act: Pass undefined to remove
-      search.add("status", undefined, "=");
+      search.add("status", null, "=");
 
-      // Assert
-      expect(search.get().get("status")?.has("=")).toBe(false);
+      expect(!!search.get().get("status")).toBe(false);
     });
 
-    it("should not add to state if input is invalid (isInputValid check)", () => {
-      // Assuming object is not a BaseValue based on our mock
-      // @ts-ignore - Intentionally passing invalid type
+    test("should not add to state if input value is invalid (isInputValid check)", () => {
+      // @ts-expect-error - Intentionally passing invalid type
       search.add("meta", { nested: true }, "=");
 
       expect(search.get().has("meta")).toBe(false);
+    });
 
-      // Test invalid condition not in the Condition list
-      // @ts-ignore
+    test("should not add to state if input is invalid (isInputValid check)", () => {
+      // @ts-expect-error
       search.add("name", "John", "INVALID_CONDITION");
       expect(search.get().has("name")).toBe(false);
     });
   });
 
   describe("toParams()", () => {
-    it("should return an empty string if state is empty", () => {
+    test("should return an empty string if state is empty", () => {
       expect(search.toParams()).toBe("");
     });
 
-    it("should format a single search param correctly", () => {
+    test("should format a single search param correctly", () => {
       search.add("name", "John", "=");
 
       // Expected: search:name:John&searchFields=name:=
@@ -88,7 +74,7 @@ describe("Search Class", () => {
       expect(result).toBe("search:name:John&searchFields=name:=");
     });
 
-    it("should format multiple search params correctly (separated by semicolon)", () => {
+    test("should format multiple search params correctly (separated by semicolon)", () => {
       search.add("name", "John", "like");
       search.add("email", "gmail", "ilike");
 
@@ -99,24 +85,6 @@ describe("Search Class", () => {
       const expectedFields = "searchFields=name:like;email:ilike";
 
       expect(result).toBe(`${expectedSearch}&${expectedFields}`);
-    });
-
-    it("should format multiple conditions for a single key correctly", () => {
-      search.add("created_at", "2023-01-01", ">=");
-      search.add("created_at", "2023-12-31", "<=");
-
-      const result = search.toParams();
-
-      // The result string must contain both parts, checking inclusions to avoid Map order fragility in tests
-      expect(result).toContain("created_at:2023-01-01");
-      expect(result).toContain("created_at:2023-12-31");
-      expect(result).toContain("created_at:>=");
-      expect(result).toContain("created_at:<=");
-
-      // Exact structure check
-      const parts = result.split("&");
-      expect(parts[0]).toBe("search:created_at:2023-01-01;created_at:2023-12-31");
-      expect(parts[1]).toBe("searchFields=created_at:>=;created_at:<=");
     });
   });
 });

@@ -1,83 +1,75 @@
-import { type BaseValue, CollectionParam } from '@/types'
-import { isBaseValue, isNonEmptyString, typeName } from '@/utils'
+import { type BaseValue, CollectionParam } from "@/types";
+import { isBaseValue, isNonEmptyString, typeName } from "@/utils";
 
-export const Condition = [
-	'=',
-	'>=',
-	'<=',
-	'>',
-	'<',
-	'!=',
-	'in',
-	'like',
-	'ilike',
-	'between',
-] as const
+export const Condition = Object.freeze({
+  EQ: "=",
+  GTE: ">=",
+  LTE: "<=",
+  GT: ">",
+  LT: "<",
+  DIFF: "!=",
+  IN: "in",
+  LIKE: "like",
+  ILIKE: "ilike",
+  BTW: "between",
+} as const);
 
-export type TCondition = (typeof Condition)[number]
+export type TCondition = (typeof Condition)[keyof typeof Condition];
 
-export type TValueCondition = Map<TCondition, BaseValue>
-export type TSearch = Map<string, TValueCondition>
+export type TValueCondition = { value: BaseValue | null; condition: TCondition };
+export type TSearch = Map<string, TValueCondition>;
 
 export class Search extends CollectionParam<TSearch> {
-	private readonly state: TSearch
+  private readonly state: TSearch;
 
-	constructor() {
-		super()
-		this.state = new Map<string, TValueCondition>()
-	}
-	public add(
-		key: string,
-		value: BaseValue | undefined,
-		condition?: TCondition | undefined,
-	): void {
-		if (!isNonEmptyString(key)) {
-			throw new TypeError(
-				`Search key must be of type string, got ${typeName(key)}}) instead.`,
-			)
-		}
-		if (typeof condition === 'undefined') condition = '=' as TCondition
-		if (typeof value === 'undefined') {
-			if (this.state.has(key)) this.state.get(key)?.delete(condition)
-			return
-		}
+  constructor() {
+    super();
+    this.state = new Map<string, TValueCondition>();
+  }
+  public add(key: string, value: BaseValue | null, condition?: TCondition | undefined): void {
+    if (!isNonEmptyString(key)) {
+      throw new TypeError(`Search key must be of type string, got ${typeName(key)}}) instead.`);
+    }
 
-		if (!this.isInputValid(value, condition)) return
+    if (typeof condition === "undefined") condition = Condition.EQ;
 
-		if (!this.state.has(key)) {
-			this.state.set(key, new Map<TCondition, BaseValue>())
+    if (value === null) {
+      if (this.state.has(key)) this.state.delete(key);
+      return;
+    }
 
-			this.state.get(key)?.set(condition, value)
-			return
-		}
+    if (!this.isInputValid(value, condition)) return;
 
-		this.state.get(key)?.set(condition, value)
-	}
+    this.state.set(key, { value: value, condition });
+  }
 
-	public get(): TSearch {
-		return this.state
-	}
+  public get(): TSearch {
+    return this.state;
+  }
 
-	protected isInputValid(value: BaseValue, condition: TCondition): boolean {
-		return isBaseValue(value) && Condition.includes(condition)
-	}
+  protected isInputValid(value: BaseValue, condition: TCondition): boolean {
+    return isBaseValue(value) && Object.values(Condition).includes(condition);
+  }
 
-	public toParams(): string {
-		const search = Array.from(this.state)
-		if (search.length === 0) return ''
-		const searchAndFields = search.reduce(
-			(result, [key, valueConditionMap]) => {
-				const valueCondition = Array.from(valueConditionMap)
+  public toParams(): string {
+    const search = Array.from(this.state);
+    if (search.length === 0) return "";
+    const searchAndFields = search.reduce(
+      (result, [key, valueCondition]) => {
+        const { value, condition } = valueCondition;
 
-				valueCondition.forEach(([condition, value]) => {
-					result.search.push(`${key}:${value}`)
-					result.fields.push(`${key}:${condition}`)
-				})
-				return result
-			},
-			{ search: [] as string[], fields: [] as string[] },
-		)
+        if (!value) return result;
 
-		return `search:${searchAndFields.search.join(';')}&searchFields=${searchAndFields.fields.join(';')}`
-	}
+        const newValue = typeof value === "string" ? value.trim() : value;
+
+        result.search.push(`${key}:${newValue}`);
+        result.fields.push(`${key}:${condition}`);
+
+        return result;
+      },
+      { search: [] as string[], fields: [] as string[] },
+    );
+
+    return `search:${searchAndFields.search.join(";")}&searchFields=${searchAndFields.fields.join(";")}`;
+  }
 }
