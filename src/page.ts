@@ -1,34 +1,34 @@
 import { ValueParam } from '@/types'
 import { isNumber, typeName } from '@/utils'
 
-export type TLimit = number
+export type TPage = number
 
-export class Limit extends ValueParam<TLimit> {
-	private state: TLimit = 10
+export class Page extends ValueParam<TPage> {
+	private state: TPage = 10
 
-	constructor(arg?: TLimit) {
+	constructor(arg?: TPage) {
 		super()
 		if (typeof arg !== 'undefined' && !this.isInputValid(arg)) {
 			throw new TypeError(
-				`Limit must be a positive integer or zero, got ${typeName(arg)} instead`,
+				`Page must be a positive integer, got ${typeName(arg)} instead`,
 			)
 		}
 
 		if (arg) this.state = arg
 	}
 
-	public get(): TLimit {
+	public get(): TPage {
 		return this.state
 	}
 
 	public toParams(): string {
-		return `limit=${this.state}`
+		return `page=${this.state}`
 	}
 
 	public set(arg: number) {
 		if (!this.isInputValid(arg)) {
 			throw new TypeError(
-				`Limit must be a positive integer or zero, got ${typeName(arg)} instead`,
+				`Page must be a positive integer, got ${typeName(arg)} instead`,
 			)
 		}
 		this.state = arg
@@ -36,7 +36,7 @@ export class Limit extends ValueParam<TLimit> {
 
 	protected isInputValid(arg?: number): arg is number {
 		const predicate = (value: number) => {
-			return Number.isInteger(value) && value >= 0
+			return Number.isInteger(value) && value > 0
 		}
 
 		return isNumber(arg, predicate)

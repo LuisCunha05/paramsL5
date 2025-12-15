@@ -23,16 +23,8 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "lib": [
-      "es2022"
-    ]
+    "lib": ["es2022"]
   },
-  "include": [
-    "src",
-    "package.json",
-    "*.config.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["src", "__test", "package.json", "*.config.ts"],
+  "exclude": ["node_modules"]
 }
