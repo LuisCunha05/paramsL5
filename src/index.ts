@@ -1,7 +1,6 @@
 export type { TInclude } from "@/include";
 export { Include } from "@/include";
 export type { TLimit } from "@/limit";
-export { Limit } from "@/limit";
 export type { TPage } from "@/page";
 export { Page } from "@/page";
 export { ParamsL5 } from "@/paramsL5";
