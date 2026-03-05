@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 import { Condition, search } from '@/search'
 
 describe('search function', () => {
-  const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+  const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
   afterEach(() => {
     vi.clearAllMocks()
   })
@@ -62,6 +62,7 @@ describe('search function', () => {
       const result = search([
         ['status', 'active', Condition.EQ],
         ['emptyArray', [], Condition.IN],
+        // @ts-expect-error - Testing runtime validation
         ['invalidArray', [{}], Condition.IN],
       ])
       expect(result).toBe('search=status%3Aactive&searchFields=status%3A%3D')

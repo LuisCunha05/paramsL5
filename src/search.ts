@@ -17,40 +17,37 @@ export const Condition = Object.freeze({
 export type TCondition = (typeof Condition)[keyof typeof Condition]
 
 export type TSearchValue = BaseValue | null | undefined
+type BitweenTuple<T> = [T, T]
 
-export type TSearchIn = readonly (readonly [
+export type TSearchIn = readonly [
   string,
   (string | number)[],
   Extract<TCondition, 'in'>,
-])[]
+]
 
-type BitweenTuple<T> = [T, T]
-
-export type TSearchIBitween = readonly (readonly [
+export type TSearchIBitween = readonly [
   string,
   BitweenTuple<string> | BitweenTuple<number>,
   Extract<TCondition, 'between'>,
-])[]
+]
 
-export type TSearchEqual = readonly (readonly [string, TSearchValue])[]
+export type TSearchEqual = readonly [string, TSearchValue]
 
-export type TSearchRegular = readonly (readonly [
+export type TSearchRegular = readonly [
   string,
   TSearchValue,
   Exclude<TCondition, 'in' | 'between'> | undefined,
-])[]
+]
 
-export type TSearch =
+export type TSearchItem =
   | TSearchRegular
   | TSearchIn
   | TSearchIBitween
   | TSearchEqual
 
-export function search(arg?: TSearchRegular): string | undefined
-export function search(arg?: TSearchIn): string | undefined
-export function search(arg?: TSearchIBitween): string | undefined
-export function search(arg?: TSearchEqual): string | undefined
-export function search(arg: TSearch = []) {
+export type TSearch = readonly TSearchItem[]
+
+export function search(arg: TSearch = []): string | undefined {
   if (!Array.isArray(arg as TSearch)) {
     console.error(
       `Search keys must have a type of array, got ${typeName(arg)} instead`,
