@@ -1,39 +1,31 @@
-import { CollectionParam } from '@/types'
 import { isNonEmptyString, typeName } from '@/utils'
 
-export type TInclude = Set<string>
+export type TInclude = Array<string>
 
-export class Include extends CollectionParam<TInclude> {
-  private readonly state: TInclude
-
-  constructor() {
-    super()
-    this.state = new Set<string>()
+export function include(arg: TInclude) {
+  if (!Array.isArray(arg)) {
+    console.error(`Argument must be a array, got ${typeName(arg)} instead`)
+    return
   }
 
-  public add(arg?: string): void {
-    if (typeof arg === 'undefined') return
-    if (!isNonEmptyString(arg)) {
-      throw new TypeError(
-        `Argument must be a string, got ${typeName(arg)} instead`,
-      )
-    }
-  }
+  const filteredValues = arg.reduce(
+    (result, item) => {
+      if (!isNonEmptyString(item)) {
+        console.error(
+          `Include value must be a string, got ${typeName(arg)} instead`,
+        )
+        return result
+      }
 
-  public get(): TInclude {
-    return this.state
-  }
+      result.push(item)
+      return result
+    },
+    [] as Array<string>,
+  )
+  const uniqueValues = new Set(filteredValues)
 
-  protected isInputValid(arg: string): boolean {
-    if (!isNonEmptyString(arg)) {
-      throw new TypeError(
-        `Include value must be a string, got ${typeName(arg)} instead`,
-      )
-    }
-    return true
-  }
+  const params = new URLSearchParams()
+  params.set('include', Array.from(uniqueValues).join(','))
 
-  public toParams(): string {
-    return `include=${Array.from(this.state.values()).join(',')}`
-  }
+  return params.toString()
 }

@@ -1,5 +1,5 @@
 export type { TInclude } from '@/include'
-export { Include } from '@/include'
+export { include } from '@/include'
 export type { TLimit } from '@/limit'
 export type { TPage } from '@/page'
 export { page,  } from '@/page'
