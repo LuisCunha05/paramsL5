@@ -1,38 +1,54 @@
-import { isNonEmptyString, typeName } from '@/utils'
-import { CollectionParam } from './types'
+import { isBaseValue, isNonEmptyString, typeName } from '@/utils'
+import type { BaseValue } from './types'
 
-export type TSearchCriteria = Map<string, string>
+export type TCriteriaValue = BaseValue | null | undefined
+export type TSearchCriteria = Array<readonly [string, TCriteriaValue]>
 
-export class SearchCriteria extends CollectionParam<TSearchCriteria> {
-  private readonly state: TSearchCriteria
-
-  constructor() {
-    super()
-    this.state = new Map<string, string>()
+export function searchCriteria(arg: TSearchCriteria = []) {
+  if (!Array.isArray(arg)) {
+    console.error(
+      `SearchCriteria keys must have a type of array, got ${typeName(arg)} instead`,
+    )
+    return
   }
 
-  protected isInputValid(key: string, value: string): boolean {
-    if (!isNonEmptyString(value)) return false
-    if (!isNonEmptyString(key))
-      throw new TypeError(
-        `SearchCriteria keys must have a type of string, got ${typeName(key)} instead`,
+  if (!arg.length) return
+
+  const filteredValues = arg.filter((item, index) => {
+    if (!Array.isArray(item)) {
+      console.error(
+        `SearchCriteria must have a type of array, got ${typeName(item)} instead`,
       )
+      return false
+    }
+
+    if (item.length !== 2) {
+      console.error(
+        `SearchCriteria must have a key-value array, but got length ${item.length} at index ${index} instead`,
+      )
+      return false
+    }
+
+    if (!isNonEmptyString(item[0])) {
+      console.error(
+        `SearchCriteria must have keys as non-empty strings, but got ${typeName(item[0])} at index ${index} instead`,
+      )
+      return false
+    }
+
+    if (!isBaseValue(item[1])) return false
 
     return true
-  }
+  })
 
-  public add(key: string, value?: string): void {
-    if (typeof value === 'undefined' || !this.isInputValid(key, value)) return
-    this.state.set(key, value)
-  }
+  if (!filteredValues.length) return
 
-  public get(): TSearchCriteria {
-    return this.state
-  }
+  const deduplicatedValues = Array.from(new Map(filteredValues))
 
-  public toParams(): string {
-    return Array.from(this.state)
-      .map(([key, value]) => `${key}=${value}`)
-      .join('&')
-  }
+  const params = new URLSearchParams()
+  deduplicatedValues.forEach(([key, value]) => {
+    params.set(key, String(value))
+  })
+
+  return params.toString()
 }
