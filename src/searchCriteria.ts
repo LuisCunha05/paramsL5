@@ -2,10 +2,10 @@ import { isBaseValue, isNonEmptyString, typeName } from '@/utils'
 import type { BaseValue } from './types'
 
 export type TCriteriaValue = BaseValue | null | undefined
-export type TSearchCriteria = Array<readonly [string, TCriteriaValue]>
+export type TSearchCriteria = readonly (readonly [string, TCriteriaValue])[]
 
 export function searchCriteria(arg: TSearchCriteria = []) {
-  if (!Array.isArray(arg)) {
+  if (!Array.isArray(arg as TSearchCriteria)) {
     console.error(
       `SearchCriteria keys must have a type of array, got ${typeName(arg)} instead`,
     )
