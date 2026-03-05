@@ -18,12 +18,38 @@ export type TCondition = (typeof Condition)[keyof typeof Condition]
 
 export type TSearchValue = BaseValue | null | undefined
 
-export type TSearch = readonly (readonly [
+export type TSearchIn = readonly (readonly [
   string,
-  TSearchValue,
-  TCondition | undefined,
+  (string | number)[],
+  Extract<TCondition, 'in'>,
 ])[]
 
+type BitweenTuple<T> = [T, T]
+
+export type TSearchIBitween = readonly (readonly [
+  string,
+  BitweenTuple<string> | BitweenTuple<number>,
+  Extract<TCondition, 'between'>,
+])[]
+
+export type TSearchEqual = readonly (readonly [string, TSearchValue])[]
+
+export type TSearchRegular = readonly (readonly [
+  string,
+  TSearchValue,
+  Exclude<TCondition, 'in' | 'between'> | undefined,
+])[]
+
+export type TSearch =
+  | TSearchRegular
+  | TSearchIn
+  | TSearchIBitween
+  | TSearchEqual
+
+export function search(arg?: TSearchRegular): string | undefined
+export function search(arg?: TSearchIn): string | undefined
+export function search(arg?: TSearchIBitween): string | undefined
+export function search(arg?: TSearchEqual): string | undefined
 export function search(arg: TSearch = []) {
   if (!Array.isArray(arg as TSearch)) {
     console.error(
@@ -36,7 +62,7 @@ export function search(arg: TSearch = []) {
 
   const filteredValues = arg.reduce<[string, [BaseValue, TCondition]][]>(
     (result, item, index) => {
-      if (!Array.isArray(item)) {
+      if (!Array.isArray(item as TSearch[number])) {
         console.error(
           `Search must have a type of array, got ${typeName(item)} instead`,
         )
@@ -63,7 +89,16 @@ export function search(arg: TSearch = []) {
 
       if (value === null || value === undefined) return result
 
-      if (!isBaseValue(value)) return result
+      let finalValue: BaseValue
+
+      if (Array.isArray(value)) {
+        if (!value.length) return result
+        if (!value.every((v) => isBaseValue(v))) return result
+        finalValue = value.join(',')
+      } else {
+        if (!isBaseValue(value)) return result
+        finalValue = value
+      }
 
       if (
         condition !== undefined &&
@@ -72,7 +107,7 @@ export function search(arg: TSearch = []) {
         return result
       }
 
-      result.push([key, [value, condition ?? Condition.EQ]])
+      result.push([key, [finalValue, condition ?? Condition.EQ]])
 
       return result
     },

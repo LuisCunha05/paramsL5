@@ -1,91 +1,118 @@
-import { beforeEach, describe, expect, test } from 'vitest'
-import { Condition, Search } from '@/search'
+import { afterEach, describe, expect, test, vi } from 'vitest'
+import { Condition, search } from '@/search'
 
-describe('Search Class', () => {
-  let search: Search
-
-  beforeEach(() => {
-    search = new Search()
+describe('search function', () => {
+  const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+  afterEach(() => {
+    vi.clearAllMocks()
   })
 
-  describe('add()', () => {
-    test('should add a valid key-value pair with default condition "="', () => {
-      search.add('name', 'John')
-
-      const state = search.get()
-      expect(state.has('name')).toBe(true)
-      expect(state.get('name')?.value).toBe('John')
+  describe('validations and edge cases', () => {
+    test('should return undefined if called with no arguments or empty array', () => {
+      expect(search()).toBeUndefined()
+      expect(search([])).toBeUndefined()
     })
 
-    test('should add a valid key-value pair with a specific condition', () => {
-      search.add('age', 18, Condition.GTE)
-
-      const state = search.get()
-      expect(state.get('age')?.value).toBe(18)
-      expect(state.get('age')?.condition).toBe(Condition.GTE)
+    test('should log error and return undefined if argument is not an array', () => {
+      // @ts-expect-error - Testing runtime validation
+      expect(search('invalid')).toBeUndefined()
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Search keys must have a type of array'),
+      )
     })
 
-    test('should update the value if the key and condition already exist', () => {
-      search.add('name', 'John', 'like')
-      search.add('name', 'Doe', 'like') // Update
-
-      const state = search.get()
-      expect(state.get('name')?.value).toBe('Doe')
+    test('should log error and ignore item if it is not an array', () => {
+      // @ts-expect-error - Testing runtime validation
+      const result = search([['name', 'John'], 'invalid'])
+      expect(result).toBe('search=name%3AJohn&searchFields=name%3A%3D')
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Search must have a type of array'),
+      )
     })
 
-    test('should throw TypeError if key is empty or invalid', () => {
-      expect(() => search.add('', 'value')).toThrow(TypeError)
-      // @ts-expect-error - Testing runtime safety
-      expect(() => search.add(null, 'value')).toThrow(TypeError)
+    test('should ignore entries if key is not a non-empty string', () => {
+      expect(search([['', 'value']])).toBeUndefined()
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Search must have keys as non-empty strings'),
+      )
     })
 
-    test('should remove the entry if value is undefined', () => {
-      search.add('status', 'active', '=')
-      expect(!!search.get().get('status')).toBe(true)
+    test('should ignore entries if value is null or undefined', () => {
+      const input = [
+        ['status', 'active', Condition.EQ],
+        ['ignored', null],
+        ['alsoIgnored', undefined],
+      ] as const
 
-      search.add('status', null, '=')
+      const result = search(input)
 
-      expect(!!search.get().get('status')).toBe(false)
+      expect(result).toBe('search=status%3Aactive&searchFields=status%3A%3D')
     })
 
-    test('should not add to state if input value is invalid (isInputValid check)', () => {
-      // @ts-expect-error - Intentionally passing invalid type
-      search.add('meta', { nested: true }, '=')
-
-      expect(search.get().has('meta')).toBe(false)
+    test('should ignore entries with invalid condition', () => {
+      const result = search([
+        //@ts-expect-error
+        ['name', 'John', 'INVALID_CONDITION'],
+        ['status', 'active'],
+      ])
+      expect(result).toBe('search=status%3Aactive&searchFields=status%3A%3D')
     })
 
-    test('should not add to state if input is invalid (isInputValid check)', () => {
-      // @ts-expect-error
-      search.add('name', 'John', 'INVALID_CONDITION')
-      expect(search.get().has('name')).toBe(false)
+    test('should ignore array value if it is empty or has invalid items', () => {
+      const result = search([
+        ['status', 'active', Condition.EQ],
+        ['emptyArray', [], Condition.IN],
+        ['invalidArray', [{}], Condition.IN],
+      ])
+      expect(result).toBe('search=status%3Aactive&searchFields=status%3A%3D')
     })
   })
 
-  describe('toParams()', () => {
-    test('should return an empty string if state is empty', () => {
-      expect(search.toParams()).toBe('')
+  describe('formatting', () => {
+    test('should format a single search param correctly with default condition "="', () => {
+      const result = search([['name', 'John']])
+      expect(result).toBe('search=name%3AJohn&searchFields=name%3A%3D')
     })
 
-    test('should format a single search param correctly', () => {
-      search.add('name', 'John', '=')
-
-      // Expected: search:name:John&searchFields=name:=
-      const result = search.toParams()
-      expect(result).toBe('search:name:John&searchFields=name:=')
+    test('should format a valid key-value pair with a specific condition', () => {
+      const result = search([['age', 18, Condition.GTE]])
+      expect(result).toBe('search=age%3A18&searchFields=age%3A%3E%3D')
     })
 
-    test('should format multiple search params correctly (separated by semicolon)', () => {
-      search.add('name', 'John', 'like')
-      search.add('email', 'gmail', 'ilike')
+    test('should handle "in" condition with array of values', () => {
+      const result = search([['status', ['active', 'pending'], Condition.IN]])
+      // Comma is usually %2C in URLSearchParams
+      expect(result).toBe(
+        'search=status%3Aactive%2Cpending&searchFields=status%3Ain',
+      )
+    })
 
-      const result = search.toParams()
+    test('should handle "between" condition with tuple of values', () => {
+      const result = search([
+        ['date', ['2023-01-01', '2023-12-31'], Condition.BTW],
+      ])
+      expect(result).toBe(
+        'search=date%3A2023-01-01%2C2023-12-31&searchFields=date%3Abetween',
+      )
+    })
 
-      // Note: Map iteration order is insertion order in JS/TS
-      const expectedSearch = 'search:name:John;email:gmail'
-      const expectedFields = 'searchFields=name:like;email:ilike'
+    test('should update the value if the key already exists (deduplication)', () => {
+      const result = search([
+        ['name', 'John', Condition.LIKE],
+        ['name', 'Doe', Condition.LIKE],
+      ])
+      expect(result).toBe('search=name%3ADoe&searchFields=name%3Alike')
+    })
 
-      expect(result).toBe(`${expectedSearch}&${expectedFields}`)
+    test('should format multiple search params correctly', () => {
+      const result = search([
+        ['name', 'John', Condition.LIKE],
+        ['email', 'gmail', Condition.ILIKE],
+      ])
+      // Semicolon is %3B
+      expect(result).toBe(
+        'search=name%3AJohn%3Bemail%3Agmail&searchFields=name%3Alike%3Bemail%3Ailike',
+      )
     })
   })
 })
