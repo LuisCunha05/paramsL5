@@ -7,7 +7,7 @@ export type TOrderBySortByValue = [string, TSortBy]
 export type TOrderBySortBy = readonly TOrderBySortByValue[]
 
 export function orderBySortBy(arg: TOrderBySortBy = []) {
-  if (!Array.isArray(arg)) {
+  if (!Array.isArray(arg as TOrderBySortBy)) {
     console.error(
       `OrderBySortBy keys must have a type of array, got ${typeName(arg)} instead`,
     )
@@ -52,12 +52,18 @@ export function orderBySortBy(arg: TOrderBySortBy = []) {
 
   const deduplicatedValues = Array.from(new Map(filteredValues))
 
-  const orderBy = deduplicatedValues.map(([key]) => key).join(';')
-  const sortedBy = deduplicatedValues.map(([, value]) => value).join(';')
+  const orderBySortedBy = deduplicatedValues.reduce(
+    (result, [key, value]) => {
+      result.orderBy.push(key)
+      result.sortedBy.push(value)
+      return result
+    },
+    { orderBy: [] as string[], sortedBy: [] as TSortBy[] },
+  )
 
   const params = new URLSearchParams()
-  params.set('orderBy', orderBy)
-  params.set('sortedBy', sortedBy)
+  params.set('orderBy', orderBySortedBy.orderBy.join(';'))
+  params.set('sortedBy', orderBySortedBy.sortedBy.join(';'))
 
   return params.toString()
 }
