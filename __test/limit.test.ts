@@ -1,49 +1,112 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { limit } from '@/limit'
 
-const error = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+// biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
+let input: any
+let result: string | undefined
+let expected: string | undefined
 
-describe('Limit', () => {
-  let result: string | undefined
+beforeEach(() => {
+  input = undefined
+  result = undefined
+  expected = undefined
+})
 
-  beforeEach(() => {
-    result = undefined
+const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+afterEach(() => {
+  vi.clearAllMocks()
+})
+
+describe('limit function', () => {
+  describe('formatting', () => {
+    test('should set limit to a parameter', () => {
+      input = 7
+      expected = 'limit=7'
+
+      result = limit(input)
+
+      expect(result).toBe(expected)
+    })
+
+    test('should have a default value', () => {
+      expected = 'limit=10'
+
+      result = limit()
+
+      expect(result).toBe(expected)
+    })
   })
 
-  afterEach(() => {
-    error.mockReset()
+  describe('validations and edge cases', () => {
+    test('should return undefined if called with a negative number', () => {
+      input = -10
+      result = limit(input)
+
+      expect(result).toBeUndefined()
+    })
+
+    test('should return undefined if called with a non-number', () => {
+      input = null
+      result = limit(input)
+
+      expect(result).toBeUndefined()
+    })
   })
 
-  test('Should set limit to a parameter', () => {
-    result = limit(7)
+  describe('Limit logging', () => {
+    test('should log error if argument is a negative number', () => {
+      input = -10
+      limit(input)
 
-    expect(result).toBe('limit=7')
-  })
+      expect(consoleError).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Limit must be a positive integer or zero, got number instead',
+        ),
+      )
+    })
 
-  test('Should have a default value', () => {
-    expect(limit()).toBe('limit=10')
-  })
+    test('should log error if argument is null', () => {
+      input = null
+      limit(input)
 
-  test('Should warn for non-number arguments', () => {
-    //@ts-expect-error
-    limit(null)
-    //@ts-expect-error
-    limit({})
-    //@ts-expect-error
-    limit([])
+      expect(consoleError).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Limit must be a positive integer or zero, got null instead',
+        ),
+      )
+    })
 
-    expect(error).toHaveBeenCalledTimes(3)
-  })
+    test('should log error if argument is an object', () => {
+      input = {}
+      limit(input)
 
-  test('Should warm for negative numbers', () => {
-    limit(-10)
-    expect(error).toHaveBeenCalled()
-  })
+      expect(consoleError).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Limit must be a positive integer or zero, got object instead',
+        ),
+      )
+    })
 
-  test('Should warn with specific message', () => {
-    limit(-10)
-    expect(error).toHaveBeenCalledWith(
-      'Limit must be a positive integer or zero, got number instead',
-    )
+    test('should log error if argument is an array', () => {
+      input = []
+      limit(input)
+
+      expect(consoleError).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Limit must be a positive integer or zero, got Array instead',
+        ),
+      )
+    })
+
+    test('should log error if argument is NaN', () => {
+      input = NaN
+      limit(input)
+
+      expect(consoleError).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Limit must be a positive integer or zero, got NaN instead',
+        ),
+      )
+    })
   })
 })
