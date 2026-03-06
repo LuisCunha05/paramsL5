@@ -2,16 +2,15 @@ import { isNumber, typeName } from '@/utils'
 
 export type TPage = number
 
-export function page(arg: TPage = 10) {
-  let value = arg
+export function page(arg: TPage = 15) {
   if (typeof arg !== 'undefined' && !isInputValid(arg)) {
-    value = 10
     console.error(
       `Page must be a positive integer, got ${typeName(arg)} instead`,
     )
+    return
   }
   const params = new URLSearchParams()
-  params.set('page', String(value))
+  params.set('page', String(arg))
 
   return params.toString()
 }
