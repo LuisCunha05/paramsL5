@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { SORT_BY, URL_ENCODED_CHARS as URC } from '@/constants'
-import { orderBySortBy } from '@/orderBySortBy'
+import { orderBySortBy } from '@/generators/orderBySortBy'
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any

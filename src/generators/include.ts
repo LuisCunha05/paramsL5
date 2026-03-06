@@ -2,7 +2,7 @@ import { isNonEmptyString, typeName } from '@/utils'
 
 export type TInclude = Array<string>
 
-export function include(arg: TInclude) {
+export function include(arg: TInclude = []) {
   if (!Array.isArray(arg)) {
     console.error(`Argument must be a array, got ${typeName(arg)} instead`)
     return

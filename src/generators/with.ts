@@ -1,11 +1,11 @@
 import { isNonEmptyString, typeName } from '@/utils'
 
-export type TFilter = Array<string>
+export type TWith = Array<string>
 
-export function filter(arg: TFilter) {
+export function withRel(arg: TWith = []) {
   if (!Array.isArray(arg)) {
     console.error(
-      `Argument of filter must be a array, got ${typeName(arg)} instead`,
+      `Argument of withRel must be a array, got ${typeName(arg)} instead`,
     )
     return
   }
@@ -13,7 +13,7 @@ export function filter(arg: TFilter) {
   const filteredValues = arg.filter((item) => {
     if (!isNonEmptyString(item)) {
       console.error(
-        `Include value must be a string, got ${typeName(arg)} instead`,
+        `withRel value must be a string, got ${typeName(arg)} instead`,
       )
       return false
     }
@@ -22,7 +22,7 @@ export function filter(arg: TFilter) {
   const uniqueValues = new Set(filteredValues)
 
   const params = new URLSearchParams()
-  params.set('filter', Array.from(uniqueValues).join(';'))
+  params.set('with', Array.from(uniqueValues).join(';'))
 
   return params.toString()
 }

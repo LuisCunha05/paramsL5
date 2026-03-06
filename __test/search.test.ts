@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { CONDITIONS, URL_ENCODED_CHARS as URC } from '@/constants'
-import { search } from '@/search'
+import { search } from '@/generators/search'
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any

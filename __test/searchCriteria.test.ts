@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { searchCriteria } from '@/searchCriteria'
+import { searchCriteria } from '@/generators/searchCriteria'
 
 describe('SearchCriteria params generation', () => {
   test('Should generate params correct string key-value', () => {
