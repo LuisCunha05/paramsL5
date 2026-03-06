@@ -1,4 +1,6 @@
 export { CONDITIONS, SEARCH_JOIN } from '@/constants'
+export type { TFilter } from '@/filter'
+export { filter } from '@/filter'
 export type { TInclude } from '@/include'
 export { include } from '@/include'
 export type { TLimit } from '@/limit'
