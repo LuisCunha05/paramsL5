@@ -11,7 +11,7 @@ export const Condition = Object.freeze({
   IN: 'in',
   LIKE: 'like',
   ILIKE: 'ilike',
-  BTW: 'between',
+  BTW: 'bitween',
 } as const)
 
 export type TCondition = (typeof Condition)[keyof typeof Condition]
@@ -25,10 +25,10 @@ export type TSearchIn = readonly [
   Extract<TCondition, 'in'>,
 ]
 
-export type TSearchIBitween = readonly [
+export type TSearchBitween = readonly [
   string,
   BitweenTuple<string> | BitweenTuple<number>,
-  Extract<TCondition, 'between'>,
+  Extract<TCondition, 'bitween'>,
 ]
 
 export type TSearchEqual = readonly [string, TSearchValue]
@@ -36,13 +36,13 @@ export type TSearchEqual = readonly [string, TSearchValue]
 export type TSearchRegular = readonly [
   string,
   TSearchValue,
-  Exclude<TCondition, 'in' | 'between'> | undefined,
+  Exclude<TCondition, 'in' | 'bitween'> | undefined,
 ]
 
 export type TSearchItem =
   | TSearchRegular
   | TSearchIn
-  | TSearchIBitween
+  | TSearchBitween
   | TSearchEqual
 
 export type TSearch = readonly TSearchItem[]
@@ -90,10 +90,35 @@ export function search(arg: TSearch = []): string | undefined {
 
       if (Array.isArray(value)) {
         if (!value.length) return result
+        if (!condition) {
+          console.warn(
+            `Ignoring array value in Search because of missing condition, expected 'in' or 'bitween'`,
+          )
+          return result
+        }
+
+        if (condition !== Condition.BTW && condition !== Condition.IN) {
+          console.warn(
+            `Ignoring array value in Search because got an array value for condition that is not 'in' or 'bitween' in index ${index}`,
+          )
+          return result
+        }
+
+        if (condition === Condition.BTW && value.length !== 2) {
+          console.warn(
+            `Ignoring array value in Search because expected array with size 2 for condition 'bitween', but got ${value.length} instead in index ${index}`,
+          )
+          return result
+        }
         if (!value.every((v) => isBaseValue(v))) return result
         finalValue = value.join(',')
       } else {
-        if (!isBaseValue(value)) return result
+        if (!isBaseValue(value)) {
+          console.warn(
+            `Ignoring value in Search because of incorrect type, expected BaseValue but got ${typeName(value)} instead`,
+          )
+          return result
+        }
         finalValue = value
       }
 
@@ -101,6 +126,9 @@ export function search(arg: TSearch = []): string | undefined {
         condition !== undefined &&
         !Object.values(Condition).includes(condition)
       ) {
+        console.warn(
+          `Ignoring value for Condition in search because it didn't match possible values, got ${value}`,
+        )
         return result
       }
 
