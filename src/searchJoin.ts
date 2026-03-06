@@ -1,9 +1,5 @@
+import { SEARCH_JOIN } from '@/constants'
 import { isNonEmptyString, typeName } from '@/utils'
-
-const SEARCH_JOIN = Object.freeze({
-  AND: 'and',
-  OR: 'or',
-})
 
 export type TSearchJoin = (typeof SEARCH_JOIN)[keyof typeof SEARCH_JOIN]
 

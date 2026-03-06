@@ -1,4 +1,4 @@
-export const URL_ENCODED_CHARS = {
+export const URL_ENCODED_CHARS = Object.freeze({
   /** Example: `,` */
   COMMA: '%2C',
   /** Example: `:` */
@@ -49,4 +49,22 @@ export const URL_ENCODED_CHARS = {
   LEFT_BRACE: '%7B',
   /** Example: `}` */
   RIGHT_BRACE: '%7D',
-} as const
+} as const)
+
+export const CONDITIONS = Object.freeze({
+  EQ: '=',
+  GTE: '>=',
+  LTE: '<=',
+  GT: '>',
+  LT: '<',
+  DIFF: '!=',
+  IN: 'in',
+  LIKE: 'like',
+  ILIKE: 'ilike',
+  BTW: 'bitween',
+} as const)
+
+export const SEARCH_JOIN = Object.freeze({
+  AND: 'and',
+  OR: 'or',
+} as const)

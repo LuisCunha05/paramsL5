@@ -1,20 +1,8 @@
+import { CONDITIONS } from '@/constants'
 import type { BaseValue } from '@/types'
 import { isBaseValue, isNonEmptyString, typeName } from '@/utils'
 
-export const Condition = Object.freeze({
-  EQ: '=',
-  GTE: '>=',
-  LTE: '<=',
-  GT: '>',
-  LT: '<',
-  DIFF: '!=',
-  IN: 'in',
-  LIKE: 'like',
-  ILIKE: 'ilike',
-  BTW: 'bitween',
-} as const)
-
-export type TCondition = (typeof Condition)[keyof typeof Condition]
+export type TCondition = (typeof CONDITIONS)[keyof typeof CONDITIONS]
 
 export type TSearchValue = BaseValue | null | undefined
 type BitweenTuple<T> = [T, T]
@@ -97,14 +85,14 @@ export function search(arg: TSearch = []): string | undefined {
           return result
         }
 
-        if (condition !== Condition.BTW && condition !== Condition.IN) {
+        if (condition !== CONDITIONS.BTW && condition !== CONDITIONS.IN) {
           console.warn(
             `Ignoring array value in Search because got an array value for condition that is not 'in' or 'bitween' in index ${index}`,
           )
           return result
         }
 
-        if (condition === Condition.BTW && value.length !== 2) {
+        if (condition === CONDITIONS.BTW && value.length !== 2) {
           console.warn(
             `Ignoring array value in Search because expected array with size 2 for condition 'bitween', but got ${value.length} instead in index ${index}`,
           )
@@ -124,7 +112,7 @@ export function search(arg: TSearch = []): string | undefined {
 
       if (
         condition !== undefined &&
-        !Object.values(Condition).includes(condition)
+        !Object.values(CONDITIONS).includes(condition)
       ) {
         console.warn(
           `Ignoring value for Condition in search because it didn't match possible values, got ${value}`,
@@ -132,7 +120,7 @@ export function search(arg: TSearch = []): string | undefined {
         return result
       }
 
-      result.push([key, [finalValue, condition ?? Condition.EQ]])
+      result.push([key, [finalValue, condition ?? CONDITIONS.EQ]])
 
       return result
     },

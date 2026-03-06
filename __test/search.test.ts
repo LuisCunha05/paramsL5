@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { URL_ENCODED_CHARS as URC } from '@/constants'
-import { Condition, search } from '@/search'
+import { CONDITIONS, URL_ENCODED_CHARS as URC } from '@/constants'
+import { search } from '@/search'
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any
@@ -13,8 +13,8 @@ beforeEach(() => {
   expected = undefined
 })
 
-const consoleError = vi.spyOn(console, 'error').mockImplementation(() => { })
-const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => { })
+const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 afterEach(() => {
   vi.clearAllMocks()
 })
@@ -31,7 +31,7 @@ describe('search function', () => {
     })
 
     test('should format a valid key-value pair with a specific condition', () => {
-      input = [['age', 18, Condition.GTE]]
+      input = [['age', 18, CONDITIONS.GTE]]
       expected = `search=age${URC.COLON}18&searchFields=age${URC.COLON}${URC.GREATER_THAN}${URC.EQUALS}`
 
       result = search(input)
@@ -40,7 +40,7 @@ describe('search function', () => {
     })
 
     test('should handle "in" condition with array of values', () => {
-      input = [['status', ['active', 'pending'], Condition.IN]]
+      input = [['status', ['active', 'pending'], CONDITIONS.IN]]
       expected = `search=status${URC.COLON}active${URC.COMMA}pending&searchFields=status${URC.COLON}in`
 
       result = search(input)
@@ -49,7 +49,7 @@ describe('search function', () => {
     })
 
     test('should handle "in" condition with array of length 1', () => {
-      input = [['status', ['active'], Condition.IN]]
+      input = [['status', ['active'], CONDITIONS.IN]]
       expected = `search=status${URC.COLON}active&searchFields=status${URC.COLON}in`
 
       result = search(input)
@@ -58,7 +58,7 @@ describe('search function', () => {
     })
 
     test('should handle "bitween" condition with tuple of values', () => {
-      input = [['date', ['2023-01-01', '2023-12-31'], Condition.BTW]]
+      input = [['date', ['2023-01-01', '2023-12-31'], CONDITIONS.BTW]]
       expected = `search=date${URC.COLON}2023-01-01${URC.COMMA}2023-12-31&searchFields=date${URC.COLON}bitween`
 
       result = search(input)
@@ -68,8 +68,8 @@ describe('search function', () => {
 
     test('should update the value if the key already exists (deduplication)', () => {
       input = [
-        ['name', 'John', Condition.LIKE],
-        ['name', 'Doe', Condition.LIKE],
+        ['name', 'John', CONDITIONS.LIKE],
+        ['name', 'Doe', CONDITIONS.LIKE],
       ]
       expected = `search=name${URC.COLON}Doe&searchFields=name${URC.COLON}like`
 
@@ -80,8 +80,8 @@ describe('search function', () => {
 
     test('should format multiple search params correctly', () => {
       input = [
-        ['name', 'John', Condition.LIKE],
-        ['email', 'gmail', Condition.ILIKE],
+        ['name', 'John', CONDITIONS.LIKE],
+        ['email', 'gmail', CONDITIONS.ILIKE],
       ]
       expected = `search=name${URC.COLON}John${URC.SEMICOLON}email${URC.COLON}gmail&searchFields=name${URC.COLON}like${URC.SEMICOLON}email${URC.COLON}ilike`
 
@@ -130,7 +130,7 @@ describe('search function', () => {
 
     test('should ignore entries if value is null or undefined', () => {
       input = [
-        ['status', 'active', Condition.EQ],
+        ['status', 'active', CONDITIONS.EQ],
         ['ignored', null],
         ['alsoIgnored', undefined],
       ]
@@ -155,9 +155,9 @@ describe('search function', () => {
 
     test('should ignore array value if it is empty or has invalid items', () => {
       input = [
-        ['status', 'active', Condition.EQ],
-        ['emptyArray', [], Condition.IN],
-        ['invalidArray', [{}], Condition.IN],
+        ['status', 'active', CONDITIONS.EQ],
+        ['emptyArray', [], CONDITIONS.IN],
+        ['invalidArray', [{}], CONDITIONS.IN],
       ]
       expected = `search=status${URC.COLON}active&searchFields=status${URC.COLON}${URC.EQUALS}`
 
@@ -167,7 +167,7 @@ describe('search function', () => {
     })
 
     test("shouldn't handle array value for non 'in' condition", () => {
-      input = [['status', [1, 2, 3], Condition.DIFF]]
+      input = [['status', [1, 2, 3], CONDITIONS.DIFF]]
       expected = `search=status${URC.COLON}active${URC.COMMA}pending&searchFields=status${URC.COLON}in`
 
       result = search(input)
@@ -176,7 +176,7 @@ describe('search function', () => {
     })
 
     test("shouldn't handle array value for non 'bitween' condition", () => {
-      input = [['status', ['active', 'pending'], Condition.GT]]
+      input = [['status', ['active', 'pending'], CONDITIONS.GT]]
       expected = `search=status${URC.COLON}active${URC.COMMA}pending&searchFields=status${URC.COLON}in`
 
       result = search(input)
@@ -185,7 +185,7 @@ describe('search function', () => {
     })
 
     test("shouldn't handle array with length less than 2 for 'bitween' condition", () => {
-      input = [['status', ['active'], Condition.BTW]]
+      input = [['status', ['active'], CONDITIONS.BTW]]
 
       result = search(input)
 
@@ -193,7 +193,7 @@ describe('search function', () => {
     })
 
     test("shouldn't handle array with length more than 2 for 'bitween' condition", () => {
-      input = [['status', [1, 2, 3], Condition.BTW]]
+      input = [['status', [1, 2, 3], CONDITIONS.BTW]]
 
       result = search(input)
 
@@ -243,25 +243,31 @@ describe('search function', () => {
       search(input)
 
       expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('Ignoring array value in Search because of missing condition'),
+        expect.stringContaining(
+          'Ignoring array value in Search because of missing condition',
+        ),
       )
     })
 
     test('should log warn if array value has invalid condition', () => {
-      input = [['status', ['active', 'pending'], Condition.EQ]]
+      input = [['status', ['active', 'pending'], CONDITIONS.EQ]]
       search(input)
 
       expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining("Ignoring array value in Search because got an array value for condition that is not 'in' or 'bitween'"),
+        expect.stringContaining(
+          "Ignoring array value in Search because got an array value for condition that is not 'in' or 'bitween'",
+        ),
       )
     })
 
     test('should log warn if array value for bitween condition does not have size 2', () => {
-      input = [['date', ['2023-01-01'], Condition.BTW]]
+      input = [['date', ['2023-01-01'], CONDITIONS.BTW]]
       search(input)
 
       expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining("Ignoring array value in Search because expected array with size 2 for condition 'bitween'"),
+        expect.stringContaining(
+          "Ignoring array value in Search because expected array with size 2 for condition 'bitween'",
+        ),
       )
     })
 
@@ -270,7 +276,9 @@ describe('search function', () => {
       search(input)
 
       expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('Ignoring value in Search because of incorrect type'),
+        expect.stringContaining(
+          'Ignoring value in Search because of incorrect type',
+        ),
       )
     })
 
@@ -279,7 +287,9 @@ describe('search function', () => {
       search(input)
 
       expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining("Ignoring value for Condition in search because it didn't match possible values"),
+        expect.stringContaining(
+          "Ignoring value for Condition in search because it didn't match possible values",
+        ),
       )
     })
   })
