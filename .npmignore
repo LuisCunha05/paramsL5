@@ -1,13 +1,8 @@
-/src
-/node_modules
-tsconfig.json
-*.config.js
+#ignore all
+*
 
-pnpm-lock.yaml
-biome.json
-
-.gitignore
-
-#ide
-/.idea
-/.vscode
+# files to keep
+!dist/
+!LICENSE
+!package.json
+!README.md
