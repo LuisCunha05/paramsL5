@@ -1,36 +1,23 @@
-import { isNonEmptyString } from '@/utils'
-import { ValueParam } from './types'
+import { SEARCH_JOIN } from '@/constants'
+import { isNonEmptyString, typeName } from '@/utils'
 
-export type TSearchJoin = 'and' | 'or'
+export type TSearchJoin = (typeof SEARCH_JOIN)[keyof typeof SEARCH_JOIN]
 
-export class SearchJoin extends ValueParam<TSearchJoin> {
-	private state: TSearchJoin = 'and'
+export function searchJoin(arg: TSearchJoin = SEARCH_JOIN.OR) {
+  if (!isNonEmptyString(arg)) {
+    console.error(`SearchJoin must be an string, got ${typeName(arg)} instead`)
+    return
+  }
 
-	constructor(defaultValue?: TSearchJoin) {
-		super()
-		if (defaultValue && this.isInputValid(defaultValue))
-			this.state = defaultValue
-	}
+  if (!(arg === SEARCH_JOIN.AND || arg === SEARCH_JOIN.OR)) {
+    console.error(
+      `SearchJoin must be either "${SEARCH_JOIN.AND}" or "${SEARCH_JOIN.OR}"`,
+    )
+    return
+  }
 
-	public set(search: TSearchJoin): void {
-		if (this.isInputValid(search)) this.state = search
-	}
+  const params = new URLSearchParams()
+  params.set('searchJoin', arg)
 
-	public get(): TSearchJoin {
-		return this.state
-	}
-
-	public toParams(): string {
-		return `searchJoin=${this.state}`
-	}
-
-	protected isInputValid(arg: string): boolean {
-		if (!isNonEmptyString(arg)) {
-			throw new TypeError('SearchJoin must be an string')
-		}
-		if (!(arg === 'and' || arg === 'or')) {
-			throw new Error('SearchJoin must be either "and" or "or"')
-		}
-		return true
-	}
+  return params.toString()
 }

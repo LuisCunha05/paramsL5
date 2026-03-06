@@ -1,75 +1,153 @@
-import { type BaseValue, CollectionParam } from "@/types";
-import { isBaseValue, isNonEmptyString, typeName } from "@/utils";
+import { CONDITIONS } from '@/constants'
+import type { BaseValue } from '@/types'
+import { isBaseValue, isNonEmptyString, typeName } from '@/utils'
 
-export const Condition = Object.freeze({
-  EQ: "=",
-  GTE: ">=",
-  LTE: "<=",
-  GT: ">",
-  LT: "<",
-  DIFF: "!=",
-  IN: "in",
-  LIKE: "like",
-  ILIKE: "ilike",
-  BTW: "between",
-} as const);
+export type TCondition = (typeof CONDITIONS)[keyof typeof CONDITIONS]
 
-export type TCondition = (typeof Condition)[keyof typeof Condition];
+export type TSearchValue = BaseValue | null | undefined
+type BitweenTuple<T> = [T, T]
 
-export type TValueCondition = { value: BaseValue | null; condition: TCondition };
-export type TSearch = Map<string, TValueCondition>;
+export type TSearchIn = readonly [
+  string,
+  (string | number)[],
+  Extract<TCondition, 'in'>,
+]
 
-export class Search extends CollectionParam<TSearch> {
-  private readonly state: TSearch;
+export type TSearchBitween = readonly [
+  string,
+  BitweenTuple<string> | BitweenTuple<number>,
+  Extract<TCondition, 'bitween'>,
+]
 
-  constructor() {
-    super();
-    this.state = new Map<string, TValueCondition>();
-  }
-  public add(key: string, value: BaseValue | null, condition?: TCondition | undefined): void {
-    if (!isNonEmptyString(key)) {
-      throw new TypeError(`Search key must be of type string, got ${typeName(key)}}) instead.`);
-    }
+export type TSearchEqual = readonly [string, TSearchValue]
 
-    if (typeof condition === "undefined") condition = Condition.EQ;
+export type TSearchRegular = readonly [
+  string,
+  TSearchValue,
+  Exclude<TCondition, 'in' | 'bitween'> | undefined,
+]
 
-    if (value === null) {
-      if (this.state.has(key)) this.state.delete(key);
-      return;
-    }
+export type TSearchItem =
+  | TSearchRegular
+  | TSearchIn
+  | TSearchBitween
+  | TSearchEqual
 
-    if (!this.isInputValid(value, condition)) return;
+export type TSearch = readonly TSearchItem[]
 
-    this.state.set(key, { value: value, condition });
-  }
-
-  public get(): TSearch {
-    return this.state;
+export function search(arg: TSearch = []): string | undefined {
+  if (!Array.isArray(arg as TSearch)) {
+    console.error(
+      `Search keys must have a type of array, got ${typeName(arg)} instead`,
+    )
+    return
   }
 
-  protected isInputValid(value: BaseValue, condition: TCondition): boolean {
-    return isBaseValue(value) && Object.values(Condition).includes(condition);
-  }
+  if (!arg.length) return
 
-  public toParams(): string {
-    const search = Array.from(this.state);
-    if (search.length === 0) return "";
-    const searchAndFields = search.reduce(
-      (result, [key, valueCondition]) => {
-        const { value, condition } = valueCondition;
+  const filteredValues = arg.reduce<[string, [BaseValue, TCondition]][]>(
+    (result, item, index) => {
+      if (!Array.isArray(item as TSearch[number])) {
+        console.error(
+          `Search must have a type of array, got ${typeName(item)} instead`,
+        )
+        return result
+      }
 
-        if (!value) return result;
+      if (item.length < 2) {
+        console.error(
+          `Search must have a key-value array, but got length ${item.length} at index ${index} instead`,
+        )
+        return result
+      }
 
-        const newValue = typeof value === "string" ? value.trim() : value;
+      const key = item[0]
+      if (!isNonEmptyString(key)) {
+        console.error(
+          `Search must have keys as non-empty strings, but got ${typeName(key)} at index ${index} instead`,
+        )
+        return result
+      }
 
-        result.search.push(`${key}:${newValue}`);
-        result.fields.push(`${key}:${condition}`);
+      const value = item[1]
+      const condition = item[2]
 
-        return result;
-      },
-      { search: [] as string[], fields: [] as string[] },
-    );
+      if (value === null || value === undefined) return result
 
-    return `search:${searchAndFields.search.join(";")}&searchFields=${searchAndFields.fields.join(";")}`;
-  }
+      let finalValue: BaseValue
+
+      if (Array.isArray(value)) {
+        if (!value.length) return result
+        if (!condition) {
+          console.warn(
+            `Ignoring array value in Search because of missing condition, expected 'in' or 'bitween'`,
+          )
+          return result
+        }
+
+        if (condition !== CONDITIONS.BTW && condition !== CONDITIONS.IN) {
+          console.warn(
+            `Ignoring array value in Search because got an array value for condition that is not 'in' or 'bitween' in index ${index}`,
+          )
+          return result
+        }
+
+        if (condition === CONDITIONS.BTW && value.length !== 2) {
+          console.warn(
+            `Ignoring array value in Search because expected array with size 2 for condition 'bitween', but got ${value.length} instead in index ${index}`,
+          )
+          return result
+        }
+        if (!value.every((v) => isBaseValue(v))) return result
+        finalValue = value.join(',')
+      } else {
+        if (!isBaseValue(value)) {
+          console.warn(
+            `Ignoring value in Search because of incorrect type, expected BaseValue but got ${typeName(value)} instead`,
+          )
+          return result
+        }
+        finalValue = value
+      }
+
+      if (
+        condition !== undefined &&
+        !Object.values(CONDITIONS).includes(condition)
+      ) {
+        console.warn(
+          `Ignoring value for Condition in search because it didn't match possible values, got ${value}`,
+        )
+        return result
+      }
+
+      result.push([key, [finalValue, condition ?? CONDITIONS.EQ]])
+
+      return result
+    },
+    [],
+  )
+
+  if (!filteredValues.length) return
+
+  const deduplicatedValues = Array.from(new Map(filteredValues))
+
+  const searchAndFields = deduplicatedValues.reduce(
+    (result, [key, [value, condition]]) => {
+      const newValue = typeof value === 'string' ? value.trim() : value
+
+      result.search.push(`${key}:${newValue}`)
+      result.fields.push(`${key}:${condition}`)
+
+      return result
+    },
+    { search: [] as string[], fields: [] as string[] },
+  )
+
+  if (searchAndFields.search.length === 0) return
+
+  const params = new URLSearchParams()
+  params.set('search', searchAndFields.search.join(';'))
+  params.set('searchFields', searchAndFields.fields.join(';'))
+
+  return params.toString()
 }

@@ -7,13 +7,13 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["src/**/*.tsx", "src/**/*.ts", "!*.gen.ts"]
+    "includes": ["src/**/*.tsx", "src/**/*.ts", "!*.gen.ts", "__test/**/*.ts"]
   },
   "formatter": {
     "enabled": true,
     "formatWithErrors": true,
     "attributePosition": "auto",
-    "indentStyle": "tab",
+    "indentStyle": "space",
     "indentWidth": 2,
     "lineWidth": 80,
     "lineEnding": "lf"

@@ -1,26 +1,22 @@
-import { Limit } from "@/limit";
-import { Search } from "@/search";
-import { SearchCriteria } from "@/searchCriteria";
-import { SearchJoin } from "@/searchJoin";
+import { limit } from '@/limit'
+import { search } from '@/search'
+import { searchCriteria } from '@/searchCriteria'
+import { searchJoin } from '@/searchJoin'
 
 export class ParamsL5 {
-  private params: string = "";
-  private criteria: SearchCriteria;
-  private join: SearchJoin;
-  private limit: Limit;
-  private search: Search;
-
-  constructor() {
-    this.criteria = new SearchCriteria();
-    this.join = new SearchJoin();
-    this.limit = new Limit();
-    this.search = new Search();
-  }
+  private params: string = ''
+  private _search = search
+  private _criteria = searchCriteria
+  private _join = searchJoin
+  private _limit = limit
 
   public toParams(): string {
-    this.params = [this.join.toParams(), this.criteria.toParams(), this.limit.toParams(), this.search.toParams()].join(
-      "&",
-    );
-    return this.params;
+    this.params = [
+      this._join(),
+      this._criteria(),
+      this._limit(),
+      this._search(),
+    ].join('&')
+    return this.params
   }
 }
