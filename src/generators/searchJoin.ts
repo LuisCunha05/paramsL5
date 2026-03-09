@@ -3,7 +3,9 @@ import { isNonEmptyString, typeName } from '@/utils'
 
 export type TSearchJoin = (typeof SEARCH_JOIN)[keyof typeof SEARCH_JOIN]
 
-export function searchJoin(arg: TSearchJoin = SEARCH_JOIN.OR) {
+export function searchJoin(arg?: TSearchJoin) {
+  if (!arg) return
+
   if (!isNonEmptyString(arg)) {
     console.error(`SearchJoin must be an string, got ${typeName(arg)} instead`)
     return
