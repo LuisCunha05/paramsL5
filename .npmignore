@@ -2,7 +2,7 @@
 *
 
 # files to keep
-!dist/
+!dist/**/*
 !LICENSE
 !package.json
 !README.md
