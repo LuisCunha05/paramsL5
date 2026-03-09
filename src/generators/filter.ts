@@ -19,10 +19,15 @@ export function filter(arg: TFilter = []) {
     }
     return true
   })
-  const uniqueValues = new Set(filteredValues)
+
+  if (!filteredValues.length) return
+
+  const uniqueValues = Array.from(new Set(filteredValues))
+
+  if (!uniqueValues.length) return
 
   const params = new URLSearchParams()
-  params.set('filter', Array.from(uniqueValues).join(';'))
+  params.set('filter', uniqueValues.join(';'))
 
   return params.toString()
 }

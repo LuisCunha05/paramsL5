@@ -22,10 +22,12 @@ export function include(arg: TInclude = []) {
     },
     [] as Array<string>,
   )
-  const uniqueValues = new Set(filteredValues)
+  const uniqueValues = Array.from(new Set(filteredValues))
+
+  if (!uniqueValues.length) return
 
   const params = new URLSearchParams()
-  params.set('include', Array.from(uniqueValues).join(','))
+  params.set('include', uniqueValues.join(','))
 
   return params.toString()
 }

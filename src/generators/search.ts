@@ -5,7 +5,7 @@ import { isBaseValue, isNonEmptyString, typeName } from '@/utils'
 export type TCondition = (typeof CONDITIONS)[keyof typeof CONDITIONS]
 
 export type TSearchValue = BaseValue | null | undefined
-type BitweenTuple<T> = [T, T]
+type BetweenTuple<T> = [T, T]
 
 export type TSearchIn = readonly [
   string,
@@ -13,10 +13,10 @@ export type TSearchIn = readonly [
   Extract<TCondition, 'in'>,
 ]
 
-export type TSearchBitween = readonly [
+export type TSearchBetween = readonly [
   string,
-  BitweenTuple<string> | BitweenTuple<number>,
-  Extract<TCondition, 'bitween'>,
+  BetweenTuple<string> | BetweenTuple<number>,
+  Extract<TCondition, 'between'>,
 ]
 
 export type TSearchEqual = readonly [string, TSearchValue]
@@ -24,18 +24,23 @@ export type TSearchEqual = readonly [string, TSearchValue]
 export type TSearchRegular = readonly [
   string,
   TSearchValue,
-  Exclude<TCondition, 'in' | 'bitween'> | undefined,
+  Exclude<TCondition, 'in' | 'between'> | undefined,
 ]
 
 export type TSearchItem =
   | TSearchRegular
   | TSearchIn
-  | TSearchBitween
+  | TSearchBetween
   | TSearchEqual
 
 export type TSearch = readonly TSearchItem[]
 
-export function search(arg: TSearch = []): string | undefined {
+export type TSearchResult = {
+  search: string | null
+  searchFields: string | null
+}
+
+export function search(arg: TSearch = []): TSearchResult | undefined {
   if (!Array.isArray(arg as TSearch)) {
     console.error(
       `Search keys must have a type of array, got ${typeName(arg)} instead`,
@@ -80,21 +85,21 @@ export function search(arg: TSearch = []): string | undefined {
         if (!value.length) return result
         if (!condition) {
           console.warn(
-            `Ignoring array value in Search because of missing condition, expected 'in' or 'bitween'`,
+            `Ignoring array value in Search because of missing condition, expected 'in' or 'between'`,
           )
           return result
         }
 
         if (condition !== CONDITIONS.BTW && condition !== CONDITIONS.IN) {
           console.warn(
-            `Ignoring array value in Search because got an array value for condition that is not 'in' or 'bitween' in index ${index}`,
+            `Ignoring array value in Search because got an array value for condition that is not 'in' or 'between' in index ${index}`,
           )
           return result
         }
 
         if (condition === CONDITIONS.BTW && value.length !== 2) {
           console.warn(
-            `Ignoring array value in Search because expected array with size 2 for condition 'bitween', but got ${value.length} instead in index ${index}`,
+            `Ignoring array value in Search because expected array with size 2 for condition 'between', but got ${value.length} instead in index ${index}`,
           )
           return result
         }
@@ -149,5 +154,10 @@ export function search(arg: TSearch = []): string | undefined {
   params.set('search', searchAndFields.search.join(';'))
   params.set('searchFields', searchAndFields.fields.join(';'))
 
-  return params.toString()
+  const stringParams = params.toString()
+
+  return {
+    search: stringParams.split('&')[0] ?? null,
+    searchFields: stringParams.split('&')[1] ?? null,
+  }
 }

@@ -19,10 +19,15 @@ export function withRel(arg: TWith = []) {
     }
     return true
   })
-  const uniqueValues = new Set(filteredValues)
+
+  if (!filteredValues.length) return
+
+  const uniqueValues = Array.from(new Set(filteredValues))
+
+  if (!uniqueValues.length) return
 
   const params = new URLSearchParams()
-  params.set('with', Array.from(uniqueValues).join(';'))
+  params.set('with', uniqueValues.join(';'))
 
   return params.toString()
 }

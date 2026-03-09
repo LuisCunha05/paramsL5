@@ -20,19 +20,40 @@ export type TParams = {
   search?: TSearch
   searchCriteria?: TSearchCriteria
   searchJoin?: TSearchJoin
-  withRel?: TWith
+  with?: TWith
+}
+
+export type TResultParams = {
+  filter: string | undefined
+  include: string | undefined
+  limit: string | undefined
+  orderBySortBy: string | undefined
+  page: string | undefined
+  search: string | null
+  searchFields: string | null
+  searchCriteria: string | undefined
+  searchJoin: string | undefined
+  with: string | undefined
+  params: string | undefined
 }
 
 export function paramsL5(arg: TParams = {} as TParams) {
-  return [
-    filter(arg.filter),
-    include(arg.include),
-    limit(arg.limit),
-    orderBySortBy(arg.orderBySortBy),
-    page(arg.page),
-    search(arg.search),
-    searchCriteria(arg.searchCriteria),
-    searchJoin(arg.searchJoin),
-    withRel(arg.withRel),
-  ].join('&')
+  const searchObj = search(arg.search)
+
+  const result: TResultParams = {
+    filter: filter(arg.filter),
+    include: include(arg.include),
+    limit: limit(arg.limit),
+    orderBySortBy: orderBySortBy(arg.orderBySortBy),
+    page: page(arg.page),
+    search: searchObj?.search ?? null,
+    searchFields: searchObj?.searchFields ?? null,
+    searchCriteria: searchCriteria(arg.searchCriteria),
+    searchJoin: searchJoin(arg.searchJoin),
+    with: withRel(arg.with),
+    params: undefined,
+  }
+
+  result.params = Object.values(result).filter(Boolean).join('&')
+  return result
 }

@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { CONDITIONS, URL_ENCODED_CHARS as URC } from '@/constants'
-import { search } from '@/generators/search'
+import { search, type TSearchResult } from '@/generators/search'
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any
-let result: string | undefined
+let result: TSearchResult | undefined
 let expected: string | undefined
 
 beforeEach(() => {
@@ -27,7 +27,7 @@ describe('search function', () => {
 
       result = search(input)
 
-      expect(result).toBe(expected)
+      expect(`${result?.search}&${result?.searchFields}`).toBe(expected)
     })
 
     test('should format a valid key-value pair with a specific condition', () => {
@@ -36,7 +36,7 @@ describe('search function', () => {
 
       result = search(input)
 
-      expect(result).toBe(expected)
+      expect(`${result?.search}&${result?.searchFields}`).toBe(expected)
     })
 
     test('should handle "in" condition with array of values', () => {
@@ -45,7 +45,7 @@ describe('search function', () => {
 
       result = search(input)
 
-      expect(result).toBe(expected)
+      expect(`${result?.search}&${result?.searchFields}`).toBe(expected)
     })
 
     test('should handle "in" condition with array of length 1', () => {
@@ -54,16 +54,16 @@ describe('search function', () => {
 
       result = search(input)
 
-      expect(result).toBe(expected)
+      expect(`${result?.search}&${result?.searchFields}`).toBe(expected)
     })
 
-    test('should handle "bitween" condition with tuple of values', () => {
+    test('should handle "between" condition with tuple of values', () => {
       input = [['date', ['2023-01-01', '2023-12-31'], CONDITIONS.BTW]]
-      expected = `search=date${URC.COLON}2023-01-01${URC.COMMA}2023-12-31&searchFields=date${URC.COLON}bitween`
+      expected = `search=date${URC.COLON}2023-01-01${URC.COMMA}2023-12-31&searchFields=date${URC.COLON}${CONDITIONS.BTW}`
 
       result = search(input)
 
-      expect(result).toBe(expected)
+      expect(`${result?.search}&${result?.searchFields}`).toBe(expected)
     })
 
     test('should update the value if the key already exists (deduplication)', () => {
@@ -75,7 +75,7 @@ describe('search function', () => {
 
       result = search(input)
 
-      expect(result).toBe(expected)
+      expect(`${result?.search}&${result?.searchFields}`).toBe(expected)
     })
 
     test('should format multiple search params correctly', () => {
@@ -87,7 +87,7 @@ describe('search function', () => {
 
       result = search(input)
 
-      expect(result).toBe(expected)
+      expect(`${result?.search}&${result?.searchFields}`).toBe(expected)
     })
   })
 
@@ -118,7 +118,7 @@ describe('search function', () => {
 
       result = search(input)
 
-      expect(result).toBe(expected)
+      expect(`${result?.search}&${result?.searchFields}`).toBe(expected)
     })
 
     test('should return undefined if key is not a non-empty string', () => {
@@ -138,7 +138,7 @@ describe('search function', () => {
 
       result = search(input)
 
-      expect(result).toBe(expected)
+      expect(`${result?.search}&${result?.searchFields}`).toBe(expected)
     })
 
     test('should ignore entries with invalid condition', () => {
@@ -150,7 +150,7 @@ describe('search function', () => {
 
       result = search(input)
 
-      expect(result).toBe(expected)
+      expect(`${result?.search}&${result?.searchFields}`).toBe(expected)
     })
 
     test('should ignore array value if it is empty or has invalid items', () => {
@@ -163,7 +163,7 @@ describe('search function', () => {
 
       result = search(input)
 
-      expect(result).toBe(expected)
+      expect(`${result?.search}&${result?.searchFields}`).toBe(expected)
     })
 
     test("shouldn't handle array value for non 'in' condition", () => {
@@ -175,7 +175,7 @@ describe('search function', () => {
       expect(result).toBeUndefined()
     })
 
-    test("shouldn't handle array value for non 'bitween' condition", () => {
+    test("shouldn't handle array value for non 'between' condition", () => {
       input = [['status', ['active', 'pending'], CONDITIONS.GT]]
       expected = `search=status${URC.COLON}active${URC.COMMA}pending&searchFields=status${URC.COLON}in`
 
@@ -184,7 +184,7 @@ describe('search function', () => {
       expect(result).toBeUndefined()
     })
 
-    test("shouldn't handle array with length less than 2 for 'bitween' condition", () => {
+    test("shouldn't handle array with length less than 2 for 'between' condition", () => {
       input = [['status', ['active'], CONDITIONS.BTW]]
 
       result = search(input)
@@ -192,7 +192,7 @@ describe('search function', () => {
       expect(result).toBeUndefined()
     })
 
-    test("shouldn't handle array with length more than 2 for 'bitween' condition", () => {
+    test("shouldn't handle array with length more than 2 for 'between' condition", () => {
       input = [['status', [1, 2, 3], CONDITIONS.BTW]]
 
       result = search(input)
@@ -255,18 +255,18 @@ describe('search function', () => {
 
       expect(consoleWarn).toHaveBeenCalledWith(
         expect.stringContaining(
-          "Ignoring array value in Search because got an array value for condition that is not 'in' or 'bitween'",
+          "Ignoring array value in Search because got an array value for condition that is not 'in' or 'between'",
         ),
       )
     })
 
-    test('should log warn if array value for bitween condition does not have size 2', () => {
+    test('should log warn if array value for between condition does not have size 2', () => {
       input = [['date', ['2023-01-01'], CONDITIONS.BTW]]
       search(input)
 
       expect(consoleWarn).toHaveBeenCalledWith(
         expect.stringContaining(
-          "Ignoring array value in Search because expected array with size 2 for condition 'bitween'",
+          "Ignoring array value in Search because expected array with size 2 for condition 'between'",
         ),
       )
     })
