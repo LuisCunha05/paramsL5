@@ -2,7 +2,7 @@ import { isNonEmptyString, typeName } from '@/utils'
 
 export type TInclude = Array<string>
 
-export function include(arg: TInclude) {
+export function include(arg: TInclude = []) {
   if (!Array.isArray(arg)) {
     console.error(`Argument must be a array, got ${typeName(arg)} instead`)
     return
@@ -22,10 +22,12 @@ export function include(arg: TInclude) {
     },
     [] as Array<string>,
   )
-  const uniqueValues = new Set(filteredValues)
+  const uniqueValues = Array.from(new Set(filteredValues))
+
+  if (!uniqueValues.length) return
 
   const params = new URLSearchParams()
-  params.set('include', Array.from(uniqueValues).join(','))
+  params.set('include', uniqueValues.join(','))
 
   return params.toString()
 }

@@ -61,7 +61,7 @@ export const CONDITIONS = Object.freeze({
   IN: 'in',
   LIKE: 'like',
   ILIKE: 'ilike',
-  BTW: 'bitween',
+  BTW: 'between',
 } as const)
 
 export const SEARCH_JOIN = Object.freeze({

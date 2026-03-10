@@ -1,5 +1,5 @@
+import type { BaseValue } from '@/types'
 import { isBaseValue, isNonEmptyString, typeName } from '@/utils'
-import type { BaseValue } from './types'
 
 export type TCriteriaValue = BaseValue | null | undefined
 export type TSearchCriteria = readonly (readonly [string, TCriteriaValue])[]
