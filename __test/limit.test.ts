@@ -29,11 +29,9 @@ describe('limit function', () => {
     })
 
     test('should have a default value', () => {
-      expected = 'limit=10'
-
       result = limit()
 
-      expect(result).toBe(expected)
+      expect(result).toBeUndefined()
     })
   })
 

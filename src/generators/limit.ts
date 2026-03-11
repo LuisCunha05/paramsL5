@@ -2,7 +2,7 @@ import { isNumber, typeName } from '@/utils'
 
 export type TLimit = number
 
-export function limit(arg: TLimit = 10) {
+export function limit(arg?: TLimit) {
   if (!isInputValid(arg)) {
     console.error(
       `Limit must be a positive integer or zero, got ${typeName(arg)} instead`,
