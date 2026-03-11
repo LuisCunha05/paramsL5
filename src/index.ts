@@ -1,5 +1,7 @@
 import { paramsL5 } from '@/paramsL5'
 
+export type { ClientOptions } from '@/client'
+export { createClient } from '@/client'
 export {
   CONDITIONS,
   SEARCH_JOIN,
