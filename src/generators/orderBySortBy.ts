@@ -3,10 +3,20 @@ import { isNonEmptyString, typeName } from '@/utils'
 
 export type TSortBy = (typeof SORT_BY)[keyof typeof SORT_BY]
 
-export type TOrderBySortByValue = [string, TSortBy]
-export type TOrderBySortBy = readonly TOrderBySortByValue[]
+export type TOrderBySortByValue = readonly [string, TSortBy?]
+export type TOrderBySortByDefault = readonly [string]
+export type TOrderBySortByArguments =
+  | TOrderBySortByValue
+  | TOrderBySortByDefault
 
-export function orderBySortBy(arg: TOrderBySortBy = []) {
+type TOrderBySortByOptions = { defaultSortBy?: TSortBy }
+
+export type TOrderBySortBy = readonly TOrderBySortByArguments[]
+
+export function orderBySortBy(
+  arg: TOrderBySortBy = [],
+  options: TOrderBySortByOptions = {},
+): string | undefined {
   if (!Array.isArray(arg as TOrderBySortBy)) {
     console.error(
       `OrderBySortBy keys must have a type of array, got ${typeName(arg)} instead`,
@@ -16,41 +26,48 @@ export function orderBySortBy(arg: TOrderBySortBy = []) {
 
   if (!arg.length) return
 
-  const filteredValues = arg.filter((item, index) => {
-    if (!Array.isArray(item)) {
+  const filteredValues = arg.reduce((result, item, index) => {
+    if (!Array.isArray(item as TOrderBySortByArguments)) {
       console.error(
         `OrderBySortBy must have a type of array, got ${typeName(item)} instead`,
       )
-      return false
+      return result
     }
 
-    if (item.length !== 2) {
+    if (item.length < 1 || item.length > 2) {
       console.error(
         `OrderBySortBy must have a key-value array, but got length ${item.length} at index ${index} instead`,
       )
-      return false
+      return result
     }
 
-    if (!isNonEmptyString(item[0])) {
+    const [key, sortBy] = item
+
+    if (!isNonEmptyString(key)) {
       console.error(
-        `OrderBySortBy must have keys as non-empty strings, but got ${typeName(item[0])} at index ${index} instead`,
+        `OrderBySortBy must have keys as non-empty strings, but got ${typeName(key)} at index ${index} instead`,
       )
-      return false
+      return result
     }
 
-    if (!Object.values(SORT_BY).includes(item[1])) {
+    if (
+      typeof sortBy !== 'undefined' &&
+      !Object.values(SORT_BY).includes(sortBy)
+    ) {
       console.error(
-        `OrderBySortBy must have a valid SORT_BY value, but got ${item[1]} at index ${index} instead`,
+        `OrderBySortBy must have a valid SORT_BY value, but got ${sortBy} at index ${index} instead`,
       )
-      return false
+      return result
     }
 
-    return true
-  })
+    result.set(key, sortBy ?? options?.defaultSortBy ?? SORT_BY.ASC)
 
-  if (!filteredValues.length) return
+    return result
+  }, new Map<string, TSortBy>())
 
-  const deduplicatedValues = Array.from(new Map(filteredValues))
+  if (!filteredValues.size) return
+
+  const deduplicatedValues = Array.from(filteredValues)
 
   const orderBySortedBy = deduplicatedValues.reduce(
     (result, [key, value]) => {
