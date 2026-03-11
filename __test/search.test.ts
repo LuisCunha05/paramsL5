@@ -30,6 +30,15 @@ describe('search function', () => {
       expect(`${result?.search}&${result?.searchFields}`).toBe(expected)
     })
 
+    test('should change default condition when options is provided', () => {
+      input = [['name', 'John']]
+      expected = `search=name${URC.COLON}John&searchFields=name${URC.COLON}${URC.GREATER_THAN}`
+
+      result = search(input, { defaultCondition: CONDITIONS.GT })
+
+      expect(`${result?.search}&${result?.searchFields}`).toBe(expected)
+    })
+
     test('should format a valid key-value pair with a specific condition', () => {
       input = [['age', 18, CONDITIONS.GTE]]
       expected = `search=age${URC.COLON}18&searchFields=age${URC.COLON}${URC.GREATER_THAN}${URC.EQUALS}`
