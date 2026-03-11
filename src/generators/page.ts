@@ -2,8 +2,8 @@ import { isNumber, typeName } from '@/utils'
 
 export type TPage = number
 
-export function page(arg: TPage = 15) {
-  if (typeof arg !== 'undefined' && !isInputValid(arg)) {
+export function page(arg?: TPage) {
+  if (!arg || !isInputValid(arg)) {
     console.error(
       `Page must be a positive integer, got ${typeName(arg)} instead`,
     )
