@@ -35,12 +35,17 @@ export type TSearchItem =
 
 export type TSearch = readonly TSearchItem[]
 
+type TSearchOptions = { defaultCondition?: TCondition }
+
 export type TSearchResult = {
   search: string | null
   searchFields: string | null
 }
 
-export function search(arg: TSearch = []): TSearchResult | undefined {
+export function search(
+  arg: TSearch = [],
+  options: TSearchOptions = {},
+): TSearchResult | undefined {
   if (!Array.isArray(arg as TSearch)) {
     console.error(
       `Search keys must have a type of array, got ${typeName(arg)} instead`,
@@ -125,7 +130,10 @@ export function search(arg: TSearch = []): TSearchResult | undefined {
         return result
       }
 
-      result.push([key, [finalValue, condition ?? CONDITIONS.EQ]])
+      result.push([
+        key,
+        [finalValue, condition ?? options.defaultCondition ?? CONDITIONS.EQ],
+      ])
 
       return result
     },
