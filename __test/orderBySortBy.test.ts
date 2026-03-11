@@ -54,6 +54,44 @@ describe('orderBySortBy function', () => {
 
       expect(result).toBe(expected)
     })
+
+    test('should allow multiple single value arrays', () => {
+      input = [['key1'], ['key2']]
+      expected = `orderBy=key1${URC.SEMICOLON}key2&sortedBy=asc${URC.SEMICOLON}asc`
+
+      result = orderBySortBy(input)
+
+      expect(result).toBe(expected)
+    })
+  })
+
+  describe('default options', () => {
+    test('should allow key-only value with default ASC sortBy', () => {
+      input = [['key']]
+      expected = 'orderBy=key&sortedBy=asc'
+
+      result = orderBySortBy(input)
+
+      expect(result).toBe(expected)
+    })
+
+    test('should change the default sortBy', () => {
+      input = [['key']]
+      expected = 'orderBy=key&sortedBy=desc'
+
+      result = orderBySortBy(input, { defaultSortBy: SORT_BY.DESC })
+
+      expect(result).toBe(expected)
+    })
+
+    test('should allow multiple single value arrays with the default sortBy', () => {
+      input = [['key1'], ['key2']]
+      expected = `orderBy=key1${URC.SEMICOLON}key2&sortedBy=desc${URC.SEMICOLON}desc`
+
+      result = orderBySortBy(input, { defaultSortBy: SORT_BY.DESC })
+
+      expect(result).toBe(expected)
+    })
   })
 
   describe('validations and edge cases', () => {
@@ -83,13 +121,24 @@ describe('orderBySortBy function', () => {
       )
     })
 
-    test('should log error if an item does not have exactly 2 elements', () => {
-      input = [['name']]
+    test('should log error if an item does not have exactly 0 elements', () => {
+      input = [[]]
       orderBySortBy(input)
 
       expect(consoleError).toHaveBeenCalledWith(
         expect.stringContaining(
-          'OrderBySortBy must have a key-value array, but got length 1 at index 0 instead',
+          'OrderBySortBy must have a key-value array, but got length 0 at index 0 instead',
+        ),
+      )
+    })
+
+    test('should log error if an item does not have exactly 3 elements', () => {
+      input = [['alog', 'acs', 'bla']]
+      orderBySortBy(input)
+
+      expect(consoleError).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'OrderBySortBy must have a key-value array, but got length 3 at index 0 instead',
         ),
       )
     })
