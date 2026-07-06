@@ -1,17 +1,26 @@
-import { isNonEmptyString, typeName } from '@/utils'
+import type { ILogger, TResult } from '@/types'
+import { encodeSearchParam, isNonEmptyString, typeName } from '@/utils'
 
 export type TInclude = Array<string>
 
-export function include(arg: TInclude = []) {
+export type TIncludeOptions = {
+  logger?: ILogger
+}
+
+export function include(
+  arg: TInclude = [],
+  options: TIncludeOptions = {},
+): TResult | undefined {
+  const log = options.logger
   if (!Array.isArray(arg)) {
-    console.error(`Argument must be a array, got ${typeName(arg)} instead`)
+    log?.error(`Argument must be a array, got ${typeName(arg)} instead`)
     return
   }
 
   const filteredValues = arg.reduce(
     (result, item) => {
       if (!isNonEmptyString(item)) {
-        console.error(
+        log?.warn(
           `Include value must be a string, got ${typeName(arg)} instead`,
         )
         return result
@@ -26,8 +35,10 @@ export function include(arg: TInclude = []) {
 
   if (!uniqueValues.length) return
 
-  const params = new URLSearchParams()
-  params.set('include', uniqueValues.join(','))
+  const result = uniqueValues.join(',')
 
-  return params.toString()
+  return {
+    raw: result,
+    encoded: encodeSearchParam(uniqueValues.join(',')),
+  }
 }

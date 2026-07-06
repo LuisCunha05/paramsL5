@@ -1,18 +1,24 @@
+import type { ILogger } from '@/types'
 import { isNumber, typeName } from '@/utils'
 
 export type TPage = number
 
-export function page(arg?: TPage) {
+export type TPageOptions = {
+  logger?: ILogger
+}
+
+export function page(
+  arg?: TPage,
+  options: TPageOptions = {},
+): string | undefined {
+  const log = options?.logger
+
   if (!arg || !isInputValid(arg)) {
-    console.error(
-      `Page must be a positive integer, got ${typeName(arg)} instead`,
-    )
+    log?.error(`Page must be a positive integer, got ${typeName(arg)} instead`)
     return
   }
-  const params = new URLSearchParams()
-  params.set('page', String(arg))
 
-  return params.toString()
+  return String(arg)
 }
 
 function predicate(value: number) {

@@ -1,10 +1,19 @@
-import { isNonEmptyString, typeName } from '@/utils'
+import type { ILogger, TResult } from '@/types'
+import { encodeSearchParam, isNonEmptyString, typeName } from '@/utils'
 
 export type TFilter = Array<string>
 
-export function filter(arg: TFilter = []) {
+export type TFilterOptions = {
+  logger?: ILogger
+}
+
+export function filter(
+  arg: TFilter = [],
+  options: TFilterOptions = {},
+): TResult | undefined {
+  const log = options.logger
   if (!Array.isArray(arg)) {
-    console.error(
+    log?.error(
       `Argument of filter must be a array, got ${typeName(arg)} instead`,
     )
     return
@@ -12,9 +21,7 @@ export function filter(arg: TFilter = []) {
 
   const filteredValues = arg.filter((item) => {
     if (!isNonEmptyString(item)) {
-      console.error(
-        `Include value must be a string, got ${typeName(arg)} instead`,
-      )
+      log?.warn(`Include value must be a string, got ${typeName(arg)} instead`)
       return false
     }
     return true
@@ -26,8 +33,8 @@ export function filter(arg: TFilter = []) {
 
   if (!uniqueValues.length) return
 
-  const params = new URLSearchParams()
-  params.set('filter', uniqueValues.join(';'))
-
-  return params.toString()
+  return {
+    raw: uniqueValues.join(';'),
+    encoded: encodeSearchParam(uniqueValues.join(';')),
+  }
 }
