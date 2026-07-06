@@ -4,8 +4,10 @@ import { filter } from '@/generators/filter'
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any
-let result: string | undefined
-let expected: string | undefined
+// biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
+let result: any
+// biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
+let expected: any
 
 beforeEach(() => {
   input = undefined
@@ -14,6 +16,7 @@ beforeEach(() => {
 })
 
 const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
 afterEach(() => {
   vi.clearAllMocks()
@@ -23,20 +26,26 @@ describe('filter function', () => {
   describe('formatting', () => {
     test('should format a valid array of strings', () => {
       input = ['a', 'b', 'c']
-      expected = `filter=a${URC.SEMICOLON}b${URC.SEMICOLON}c`
+      expected = {
+        raw: 'a;b;c',
+        encoded: `a${URC.SEMICOLON}b${URC.SEMICOLON}c`,
+      }
 
       result = filter(input)
 
-      expect(result).toBe(expected)
+      expect(result).toEqual(expected)
     })
 
     test('should return unique values if there are duplicates', () => {
       input = ['a', 'b', 'a', 'c', 'b']
-      expected = `filter=a${URC.SEMICOLON}b${URC.SEMICOLON}c`
+      expected = {
+        raw: 'a;b;c',
+        encoded: `a${URC.SEMICOLON}b${URC.SEMICOLON}c`,
+      }
 
       result = filter(input)
 
-      expect(result).toBe(expected)
+      expect(result).toEqual(expected)
     })
   })
 
@@ -51,20 +60,26 @@ describe('filter function', () => {
 
     test('should filter out non-string items', () => {
       input = ['a', 123, 'b']
-      expected = `filter=a${URC.SEMICOLON}b`
+      expected = {
+        raw: 'a;b',
+        encoded: `a${URC.SEMICOLON}b`,
+      }
 
       result = filter(input)
 
-      expect(result).toBe(expected)
+      expect(result).toEqual(expected)
     })
 
     test('should filter out empty strings', () => {
       input = ['a', '', 'b', '   ']
-      expected = `filter=a${URC.SEMICOLON}b`
+      expected = {
+        raw: 'a;b',
+        encoded: `a${URC.SEMICOLON}b`,
+      }
 
       result = filter(input)
 
-      expect(result).toBe(expected)
+      expect(result).toEqual(expected)
     })
   })
 
@@ -72,7 +87,7 @@ describe('filter function', () => {
     test('should log error if argument is not an array', () => {
       input = 'not an array'
 
-      filter(input)
+      filter(input, { logger: console })
 
       expect(consoleError).toHaveBeenCalledWith(
         expect.stringContaining(
@@ -81,12 +96,12 @@ describe('filter function', () => {
       )
     })
 
-    test('should log error if an item is not a string', () => {
+    test('should log warn if an item is not a string', () => {
       input = ['a', 123]
 
-      filter(input)
+      filter(input, { logger: console })
 
-      expect(consoleError).toHaveBeenCalledWith(
+      expect(consoleWarn).toHaveBeenCalledWith(
         expect.stringContaining(
           'Include value must be a string, got Array instead',
         ),
