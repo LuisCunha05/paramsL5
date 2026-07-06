@@ -1,124 +1,208 @@
-import { describe, expect, test } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { searchCriteria } from '@/generators/searchCriteria'
+
+// biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
+let input: any
+// biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
+let result: any
+// biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
+let expected: any
+
+const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+beforeEach(() => {
+  input = undefined
+  result = undefined
+  expected = undefined
+})
+
+afterEach(() => {
+  vi.clearAllMocks()
+})
 
 describe('SearchCriteria params generation', () => {
   test('Should generate params correct string key-value', () => {
-    const input = [['key', 'value'] as const]
+    input = [['key', 'value']]
+    expected = {
+      raw: 'key=value',
+      encoded: 'key=value',
+    }
 
-    const result = searchCriteria(input)
+    result = searchCriteria(input)
 
-    expect(result).toBe('key=value')
+    expect(result).toEqual(expected)
   })
 
   test('Should generate params correct boolean(true) key-value', () => {
-    const input = [['key', true]] as const
+    input = [['key', true]]
+    expected = {
+      raw: 'key=true',
+      encoded: 'key=true',
+    }
 
-    const result = searchCriteria(input)
+    result = searchCriteria(input)
 
-    expect(result).toBe('key=true')
+    expect(result).toEqual(expected)
   })
 
   test('Should generate params correct boolean(false) key-value', () => {
-    const input = [['key', false]] as const
+    input = [['key', false]]
+    expected = {
+      raw: 'key=false',
+      encoded: 'key=false',
+    }
 
-    const result = searchCriteria(input)
+    result = searchCriteria(input)
 
-    expect(result).toBe('key=false')
+    expect(result).toEqual(expected)
   })
 
   test('Should generate params correct number key-value', () => {
-    const input = [['key', 7]] as const
+    input = [['key', 7]]
+    expected = {
+      raw: 'key=7',
+      encoded: 'key=7',
+    }
 
-    const result = searchCriteria(input)
+    result = searchCriteria(input)
 
-    expect(result).toBe('key=7')
+    expect(result).toEqual(expected)
   })
 
   test('Should generate string params with multiple key-values', () => {
-    const input = [
+    input = [
       ['key1', 'value'],
       ['key2', 777],
       ['key3', false],
-    ] as const
+    ]
+    expected = {
+      raw: 'key1=value&key2=777&key3=false',
+      encoded: 'key1=value&key2=777&key3=false',
+    }
 
-    const result = searchCriteria(input)
+    result = searchCriteria(input)
 
-    expect(result).toBe('key1=value&key2=777&key3=false')
+    expect(result).toEqual(expected)
   })
 
   test('Should capture the last element with same key', () => {
-    const input = [
+    input = [
       ['key', 'value1'],
       ['key', 'value2'],
-    ] as const
+    ]
+    expected = {
+      raw: 'key=value2',
+      encoded: 'key=value2',
+    }
 
-    const result = searchCriteria(input)
+    result = searchCriteria(input)
 
-    expect(result).toBe('key=value2')
+    expect(result).toEqual(expected)
   })
 })
 
 describe('SearchCriteria validation', () => {
   test('Should return undefined with empty input', () => {
-    expect(searchCriteria()).toBe(undefined)
+    result = searchCriteria()
+
+    expect(result).toBeUndefined()
   })
 
   test("Shouldn't accept undefined for key", () => {
-    const input = [[undefined, 'value1']]
+    input = [[undefined, 'value1']]
 
-    //@ts-expect-error
-    const result = searchCriteria(input)
+    result = searchCriteria(input)
 
-    expect(result).toBe(undefined)
-    // 'SearchCriteria keys must have a type of string, got undefined instead',
+    expect(result).toBeUndefined()
   })
 
   test("Shouldn't accept number for key", () => {
-    const input = [[2, 'value1']]
+    input = [[2, 'value1']]
 
-    //@ts-expect-error
-    const result = searchCriteria(input)
+    result = searchCriteria(input)
 
-    expect(result).toBe(undefined)
-    // 'SearchCriteria keys must have a type of string, got number instead',
+    expect(result).toBeUndefined()
   })
 
   test("Shouldn't accept object for key", () => {
-    const input = [[{}, 'value1']]
+    input = [[{}, 'value1']]
 
-    //@ts-expect-error
-    const result = searchCriteria(input)
+    result = searchCriteria(input)
 
-    expect(result).toBe(undefined)
-    // 'SearchCriteria keys must have a type of string, got object instead',
+    expect(result).toBeUndefined()
   })
 
   test("Shouldn't accept array for key", () => {
-    const input = [[[], 'value1']]
+    input = [[[], 'value1']]
 
-    //@ts-expect-error
-    const result = searchCriteria(input)
+    result = searchCriteria(input)
 
-    expect(result).toBe(undefined)
-    // 'SearchCriteria keys must have a type of string, got Array instead',
+    expect(result).toBeUndefined()
   })
 
   test("Shouldn't accept null for key", () => {
-    const input = [[null, 'value1']]
+    input = [[null, 'value1']]
 
-    //@ts-expect-error
-    const result = searchCriteria(input)
+    result = searchCriteria(input)
 
-    expect(result).toBe(undefined)
-    // 'SearchCriteria keys must have a type of string, got null instead',
+    expect(result).toBeUndefined()
   })
 
   test("Shouldn't accept undefined for value", () => {
-    const input = [['key']]
+    input = [['key']]
 
-    //@ts-expect-error
-    const result = searchCriteria(input)
+    result = searchCriteria(input)
 
-    expect(result).toBe(undefined)
+    expect(result).toBeUndefined()
+  })
+})
+
+describe('SearchCriteria logging', () => {
+  test('should log error if arg is not an array', () => {
+    input = {}
+
+    searchCriteria(input, { logger: console })
+
+    expect(consoleError).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'SearchCriteria keys must have a type of array, got object instead',
+      ),
+    )
+  })
+
+  test('should log error if item is not an array', () => {
+    input = ['invalid']
+
+    searchCriteria(input, { logger: console })
+
+    expect(consoleError).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'SearchCriteria must have a type of array, got string instead',
+      ),
+    )
+  })
+
+  test('should log error if item does not have exactly 2 elements', () => {
+    input = [['key']]
+
+    searchCriteria(input, { logger: console })
+
+    expect(consoleError).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'SearchCriteria must have a key-value array, but got length 1 at index 0 instead',
+      ),
+    )
+  })
+
+  test('should log error if key is not a non-empty string', () => {
+    input = [[123, 'value']]
+
+    searchCriteria(input, { logger: console })
+
+    expect(consoleError).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'SearchCriteria must have keys as non-empty strings, but got number at index 0 instead',
+      ),
+    )
   })
 })
