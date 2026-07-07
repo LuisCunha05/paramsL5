@@ -17,7 +17,7 @@ export function searchCriteria(
   arg: TSearchCriteria = [],
   options: TSearchCriteriaOptions = {},
 ): TResult | undefined {
-  const log = options.logger
+  const log = options.logger ?? console
   if (!Array.isArray(arg as TSearchCriteria)) {
     log?.error(
       `SearchCriteria keys must have a type of array, got ${typeName(arg)} instead`,
@@ -36,25 +36,33 @@ export function searchCriteria(
     }
 
     if (item.length !== 2) {
-      log?.error(
+      log?.warn(
         `SearchCriteria must have a key-value array, but got length ${item.length} at index ${index} instead`,
       )
       return false
     }
 
     if (!isNonEmptyString(item[0])) {
-      log?.error(
+      log?.warn(
         `SearchCriteria must have keys as non-empty strings, but got ${typeName(item[0])} at index ${index} instead`,
       )
       return false
     }
 
-    if (!isBaseValue(item[1])) return false
+    if (!isBaseValue(item[1])) {
+      log?.info(
+        `SearchCriteria: ignoring invalid value, got ${typeName(item[1])} at index ${index} instead`,
+      )
+      return false
+    }
 
     return true
   })
 
-  if (!filteredValues.length) return
+  if (!filteredValues.length) {
+    log?.info('SearchCriteria: no values remaning to parse')
+    return
+  }
 
   const deduplicatedValues = Array.from(
     new Map(filteredValues as [string, BaseValue][]),
