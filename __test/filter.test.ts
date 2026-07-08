@@ -87,7 +87,7 @@ describe('filter function', () => {
     test('should log error if argument is not an array', () => {
       input = 'not an array'
 
-      filter(input, { logger: console })
+      filter(input)
 
       expect(consoleError).toHaveBeenCalledWith(
         expect.stringContaining(
@@ -99,7 +99,7 @@ describe('filter function', () => {
     test('should log warn if an item is not a string', () => {
       input = ['a', 123]
 
-      filter(input, { logger: console })
+      filter(input)
 
       expect(consoleWarn).toHaveBeenCalledWith(
         expect.stringContaining(

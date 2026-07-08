@@ -56,7 +56,7 @@ describe('limit function', () => {
   describe('Limit logging', () => {
     test('should log error if argument is a negative number', () => {
       input = -10
-      limit(input, { logger: console })
+      limit(input)
 
       expect(consoleError).toHaveBeenCalledWith(
         expect.stringContaining(
@@ -67,7 +67,7 @@ describe('limit function', () => {
 
     test('should log error if argument is null', () => {
       input = null
-      limit(input, { logger: console })
+      limit(input)
 
       expect(consoleError).toHaveBeenCalledWith(
         expect.stringContaining(
@@ -78,7 +78,7 @@ describe('limit function', () => {
 
     test('should log error if argument is an object', () => {
       input = {}
-      limit(input, { logger: console })
+      limit(input)
 
       expect(consoleError).toHaveBeenCalledWith(
         expect.stringContaining(
@@ -89,7 +89,7 @@ describe('limit function', () => {
 
     test('should log error if argument is an array', () => {
       input = []
-      limit(input, { logger: console })
+      limit(input)
 
       expect(consoleError).toHaveBeenCalledWith(
         expect.stringContaining(
@@ -100,7 +100,7 @@ describe('limit function', () => {
 
     test('should log error if argument is NaN', () => {
       input = NaN
-      limit(input, { logger: console })
+      limit(input)
 
       expect(consoleError).toHaveBeenCalledWith(
         expect.stringContaining(

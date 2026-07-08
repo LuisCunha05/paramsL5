@@ -308,7 +308,7 @@ describe('search function', () => {
     test('should log error if key is not a non-empty string', () => {
       input = [['', 'value']]
 
-      search(input, { logger: console })
+      search(input)
 
       expect(consoleError).toHaveBeenCalledWith(
         expect.stringContaining('Search must have keys as non-empty strings'),
@@ -318,7 +318,7 @@ describe('search function', () => {
     test('should log error if item is not an array', () => {
       input = [['name', 'John'], 'invalid']
 
-      search(input, { logger: console })
+      search(input)
 
       expect(consoleError).toHaveBeenCalledWith(
         expect.stringContaining('Search must have a type of array'),
@@ -328,7 +328,7 @@ describe('search function', () => {
     test('should log error if argument is not an array', () => {
       input = 'invalid'
 
-      search(input, { logger: console })
+      search(input)
 
       expect(consoleError).toHaveBeenCalledWith(
         expect.stringContaining('Search keys must have a type of array'),
@@ -338,7 +338,7 @@ describe('search function', () => {
     test('should log error if item length is less than 2', () => {
       input = [['name']]
 
-      search(input, { logger: console })
+      search(input)
 
       expect(consoleError).toHaveBeenCalledWith(
         expect.stringContaining('Search must have a key-value array'),
@@ -348,7 +348,7 @@ describe('search function', () => {
     test('should log warn if array value is missing condition', () => {
       input = [['status', ['active', 'pending']]]
 
-      search(input, { logger: console })
+      search(input)
 
       expect(consoleWarn).toHaveBeenCalledWith(
         expect.stringContaining(
@@ -360,7 +360,7 @@ describe('search function', () => {
     test('should log warn if array value has invalid condition', () => {
       input = [['status', ['active', 'pending'], CONDITIONS.EQ]]
 
-      search(input, { logger: console })
+      search(input)
 
       expect(consoleWarn).toHaveBeenCalledWith(
         expect.stringContaining(
@@ -372,7 +372,7 @@ describe('search function', () => {
     test('should log warn if array value for between condition does not have size 2', () => {
       input = [['date', ['2023-01-01'], CONDITIONS.BTW]]
 
-      search(input, { logger: console })
+      search(input)
 
       expect(consoleWarn).toHaveBeenCalledWith(
         expect.stringContaining(
@@ -384,7 +384,7 @@ describe('search function', () => {
     test('should log warn if value is not a BaseValue', () => {
       input = [['name', { obj: true }]]
 
-      search(input, { logger: console })
+      search(input)
 
       expect(consoleWarn).toHaveBeenCalledWith(
         expect.stringContaining(
@@ -396,7 +396,7 @@ describe('search function', () => {
     test('should log warn if condition is invalid', () => {
       input = [['name', 'John', 'INVALID_CONDITION']]
 
-      search(input, { logger: console })
+      search(input)
 
       expect(consoleWarn).toHaveBeenCalledWith(
         expect.stringContaining(

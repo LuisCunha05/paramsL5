@@ -176,7 +176,7 @@ describe('orderBySortBy function', () => {
     test('should log error if arg is not an array', () => {
       input = {}
 
-      orderBySortBy(input, { logger: console })
+      orderBySortBy(input)
 
       expect(consoleError).toHaveBeenCalledWith(
         expect.stringContaining(
@@ -188,7 +188,7 @@ describe('orderBySortBy function', () => {
     test('should log error if an item is not an array', () => {
       input = ['invalid']
 
-      orderBySortBy(input, { logger: console })
+      orderBySortBy(input)
 
       expect(consoleError).toHaveBeenCalledWith(
         expect.stringContaining(
@@ -200,7 +200,7 @@ describe('orderBySortBy function', () => {
     test('should log error if an item is empty', () => {
       input = [[]]
 
-      orderBySortBy(input, { logger: console })
+      orderBySortBy(input)
 
       expect(consoleError).toHaveBeenCalledWith(
         expect.stringContaining(
@@ -212,7 +212,7 @@ describe('orderBySortBy function', () => {
     test('should log error if an item has too many elements', () => {
       input = [['alog', 'acs', 'bla']]
 
-      orderBySortBy(input, { logger: console })
+      orderBySortBy(input)
 
       expect(consoleError).toHaveBeenCalledWith(
         expect.stringContaining(
@@ -224,7 +224,7 @@ describe('orderBySortBy function', () => {
     test('should log error if key is not a non-empty string', () => {
       input = [[123, SORT_BY.ASC]]
 
-      orderBySortBy(input, { logger: console })
+      orderBySortBy(input)
 
       expect(consoleError).toHaveBeenCalledWith(
         expect.stringContaining(
@@ -236,7 +236,7 @@ describe('orderBySortBy function', () => {
     test('should log error if sort value is not a valid SORT_BY value', () => {
       input = [['name', 'invalid_sort']]
 
-      orderBySortBy(input, { logger: console })
+      orderBySortBy(input)
 
       expect(consoleError).toHaveBeenCalledWith(
         expect.stringContaining(
