@@ -24,3 +24,26 @@ export function typeName(arg?: unknown): string {
   if (Number.isNaN(arg)) return 'NaN'
   return typeof arg
 }
+
+/**
+ * Docs [#link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent#description)
+ */
+export function encodeSearchParam(str: string) {
+  return encodeURIComponent(str)
+    .replace(
+      /[!'()*]/g,
+      (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`,
+    )
+    .replace(/%20/g, '+')
+}
+
+export function decodeSearchParam(str: string) {
+  try {
+    return decodeURIComponent(str.replace(/\+/g, '%20'))
+  } catch (e: unknown) {
+    console.error(
+      `    [ParamsL5]: Malformed URL. ${e instanceof URIError ? e.message : e}`,
+    )
+    return str.replace(/\+/g, ' ')
+  }
+}

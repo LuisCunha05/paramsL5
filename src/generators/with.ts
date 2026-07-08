@@ -1,10 +1,18 @@
-import { isNonEmptyString, typeName } from '@/utils'
+import type { ILogger, TResult } from '@/types'
+import { encodeSearchParam, isNonEmptyString, typeName } from '@/utils'
 
 export type TWith = Array<string>
+export type TWithOptions = {
+  logger?: ILogger
+}
 
-export function withRel(arg: TWith = []) {
+export function withRel(
+  arg: TWith = [],
+  options: TWithOptions = {},
+): TResult | undefined {
+  const log = options.logger ?? console
   if (!Array.isArray(arg)) {
-    console.error(
+    log?.error(
       `Argument of withRel must be a array, got ${typeName(arg)} instead`,
     )
     return
@@ -12,9 +20,7 @@ export function withRel(arg: TWith = []) {
 
   const filteredValues = arg.filter((item) => {
     if (!isNonEmptyString(item)) {
-      console.error(
-        `withRel value must be a string, got ${typeName(arg)} instead`,
-      )
+      log?.error(`withRel value must be a string, got ${typeName(arg)} instead`)
       return false
     }
     return true
@@ -29,5 +35,10 @@ export function withRel(arg: TWith = []) {
   const params = new URLSearchParams()
   params.set('with', uniqueValues.join(';'))
 
-  return params.toString()
+  const result = uniqueValues.join(';')
+
+  return {
+    raw: result,
+    encoded: encodeSearchParam(result),
+  }
 }

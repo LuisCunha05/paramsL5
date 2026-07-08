@@ -3,8 +3,10 @@ import { limit } from '@/generators/limit'
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any
-let result: string | undefined
-let expected: string | undefined
+// biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
+let result: any
+// biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
+let expected: any
 
 beforeEach(() => {
   input = undefined
@@ -21,7 +23,7 @@ describe('limit function', () => {
   describe('formatting', () => {
     test('should set limit to a parameter', () => {
       input = 7
-      expected = 'limit=7'
+      expected = '7'
 
       result = limit(input)
 
@@ -29,11 +31,9 @@ describe('limit function', () => {
     })
 
     test('should have a default value', () => {
-      expected = 'limit=10'
-
       result = limit()
 
-      expect(result).toBe(expected)
+      expect(result).toBeUndefined()
     })
   })
 

@@ -1,6 +1,11 @@
 import { CONDITIONS } from '@/constants'
-import type { BaseValue } from '@/types'
-import { isBaseValue, isNonEmptyString, typeName } from '@/utils'
+import type { BaseValue, ILogger, TResult } from '@/types'
+import {
+  encodeSearchParam,
+  isBaseValue,
+  isNonEmptyString,
+  typeName,
+} from '@/utils'
 
 export type TCondition = (typeof CONDITIONS)[keyof typeof CONDITIONS]
 
@@ -35,32 +40,40 @@ export type TSearchItem =
 
 export type TSearch = readonly TSearchItem[]
 
+type TSearchOptions = { defaultCondition?: TCondition; logger?: ILogger }
+
 export type TSearchResult = {
-  search: string | null
-  searchFields: string | null
+  search: TResult | undefined
+  searchFields: TResult | undefined
 }
 
-export function search(arg: TSearch = []): TSearchResult | undefined {
+const EMPTY_RESULT = { search: undefined, searchFields: undefined } as const
+
+export function search(
+  arg: TSearch = [],
+  options: TSearchOptions = {},
+): TSearchResult {
+  const log = options.logger ?? console
   if (!Array.isArray(arg as TSearch)) {
-    console.error(
+    log?.error(
       `Search keys must have a type of array, got ${typeName(arg)} instead`,
     )
-    return
+    return EMPTY_RESULT
   }
 
-  if (!arg.length) return
+  if (!arg.length) return EMPTY_RESULT
 
   const filteredValues = arg.reduce<[string, [BaseValue, TCondition]][]>(
     (result, item, index) => {
       if (!Array.isArray(item as TSearch[number])) {
-        console.error(
+        log?.error(
           `Search must have a type of array, got ${typeName(item)} instead`,
         )
         return result
       }
 
       if (item.length < 2) {
-        console.error(
+        log?.error(
           `Search must have a key-value array, but got length ${item.length} at index ${index} instead`,
         )
         return result
@@ -68,7 +81,7 @@ export function search(arg: TSearch = []): TSearchResult | undefined {
 
       const key = item[0]
       if (!isNonEmptyString(key)) {
-        console.error(
+        log?.error(
           `Search must have keys as non-empty strings, but got ${typeName(key)} at index ${index} instead`,
         )
         return result
@@ -84,21 +97,21 @@ export function search(arg: TSearch = []): TSearchResult | undefined {
       if (Array.isArray(value)) {
         if (!value.length) return result
         if (!condition) {
-          console.warn(
+          log?.warn(
             `Ignoring array value in Search because of missing condition, expected 'in' or 'between'`,
           )
           return result
         }
 
         if (condition !== CONDITIONS.BTW && condition !== CONDITIONS.IN) {
-          console.warn(
+          log?.warn(
             `Ignoring array value in Search because got an array value for condition that is not 'in' or 'between' in index ${index}`,
           )
           return result
         }
 
         if (condition === CONDITIONS.BTW && value.length !== 2) {
-          console.warn(
+          log?.warn(
             `Ignoring array value in Search because expected array with size 2 for condition 'between', but got ${value.length} instead in index ${index}`,
           )
           return result
@@ -107,7 +120,7 @@ export function search(arg: TSearch = []): TSearchResult | undefined {
         finalValue = value.join(',')
       } else {
         if (!isBaseValue(value)) {
-          console.warn(
+          log?.warn(
             `Ignoring value in Search because of incorrect type, expected BaseValue but got ${typeName(value)} instead`,
           )
           return result
@@ -119,20 +132,23 @@ export function search(arg: TSearch = []): TSearchResult | undefined {
         condition !== undefined &&
         !Object.values(CONDITIONS).includes(condition)
       ) {
-        console.warn(
+        log?.warn(
           `Ignoring value for Condition in search because it didn't match possible values, got ${value}`,
         )
         return result
       }
 
-      result.push([key, [finalValue, condition ?? CONDITIONS.EQ]])
+      result.push([
+        key,
+        [finalValue, condition ?? options.defaultCondition ?? CONDITIONS.EQ],
+      ])
 
       return result
     },
     [],
   )
 
-  if (!filteredValues.length) return
+  if (!filteredValues.length) return EMPTY_RESULT
 
   const deduplicatedValues = Array.from(new Map(filteredValues))
 
@@ -148,16 +164,15 @@ export function search(arg: TSearch = []): TSearchResult | undefined {
     { search: [] as string[], fields: [] as string[] },
   )
 
-  if (searchAndFields.search.length === 0) return
+  if (searchAndFields.search.length === 0) return EMPTY_RESULT
 
-  const params = new URLSearchParams()
-  params.set('search', searchAndFields.search.join(';'))
-  params.set('searchFields', searchAndFields.fields.join(';'))
-
-  const stringParams = params.toString()
-
+  const searchResult = searchAndFields.search.join(';')
+  const fieldsResult = searchAndFields.fields.join(';')
   return {
-    search: stringParams.split('&')[0] ?? null,
-    searchFields: stringParams.split('&')[1] ?? null,
+    search: { raw: searchResult, encoded: encodeSearchParam(searchResult) },
+    searchFields: {
+      raw: fieldsResult,
+      encoded: encodeSearchParam(fieldsResult),
+    },
   }
 }

@@ -1,19 +1,25 @@
+import type { ILogger } from '@/types'
 import { isNumber, typeName } from '@/utils'
 
 export type TLimit = number
 
-export function limit(arg: TLimit = 10) {
+export type TLimitOptions = {
+  logger?: ILogger
+}
+
+export function limit(
+  arg?: TLimit,
+  options: TLimitOptions = {},
+): string | undefined {
+  const log = options.logger ?? console
   if (!isInputValid(arg)) {
-    console.error(
+    log?.error(
       `Limit must be a positive integer or zero, got ${typeName(arg)} instead`,
     )
     return
   }
 
-  const params = new URLSearchParams()
-  params.set('limit', String(arg))
-
-  return params.toString()
+  return String(arg)
 }
 
 function predicate(value: number) {

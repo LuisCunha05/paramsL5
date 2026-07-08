@@ -1,54 +1,88 @@
-import type { BaseValue } from '@/types'
-import { isBaseValue, isNonEmptyString, typeName } from '@/utils'
+import type { BaseValue, ILogger, TResult } from '@/types'
+import {
+  encodeSearchParam,
+  isBaseValue,
+  isNonEmptyString,
+  typeName,
+} from '@/utils'
 
 export type TCriteriaValue = BaseValue | null | undefined
 export type TSearchCriteria = readonly (readonly [string, TCriteriaValue])[]
 
-export function searchCriteria(arg: TSearchCriteria = []) {
+export type TSearchCriteriaOptions = {
+  logger?: ILogger
+}
+
+export function searchCriteria(
+  arg: TSearchCriteria = [],
+  options: TSearchCriteriaOptions = {},
+): TResult | undefined {
+  const log = options.logger ?? console
   if (!Array.isArray(arg as TSearchCriteria)) {
-    console.error(
-      `SearchCriteria keys must have a type of array, got ${typeName(arg)} instead`,
+    log?.error(
+      `SearchCriteria: keys must have a type of array, got ${typeName(arg)} instead`,
     )
     return
   }
 
-  if (!arg.length) return
+  if (!arg.length) {
+    log?.info(`SearchCriteria: no values given`)
+    return
+  }
 
   const filteredValues = arg.filter((item, index) => {
     if (!Array.isArray(item)) {
-      console.error(
-        `SearchCriteria must have a type of array, got ${typeName(item)} instead`,
+      log?.error(
+        `SearchCriteria: must have a type of array, got ${typeName(item)} instead`,
       )
       return false
     }
 
     if (item.length !== 2) {
-      console.error(
+      log?.warn(
         `SearchCriteria must have a key-value array, but got length ${item.length} at index ${index} instead`,
       )
       return false
     }
 
     if (!isNonEmptyString(item[0])) {
-      console.error(
+      log?.warn(
         `SearchCriteria must have keys as non-empty strings, but got ${typeName(item[0])} at index ${index} instead`,
       )
       return false
     }
 
-    if (!isBaseValue(item[1])) return false
+    if (!isBaseValue(item[1])) {
+      log?.info(
+        `SearchCriteria: ignoring invalid value, got ${typeName(item[1])} at index ${index} instead`,
+      )
+      return false
+    }
 
     return true
   })
 
-  if (!filteredValues.length) return
+  if (!filteredValues.length) {
+    log?.info('SearchCriteria: no values remaning to parse')
+    return
+  }
 
-  const deduplicatedValues = Array.from(new Map(filteredValues))
+  const deduplicatedValues = Array.from(
+    new Map(filteredValues as [string, BaseValue][]),
+  )
 
-  const params = new URLSearchParams()
+  const result: TResult = {
+    raw: '',
+    encoded: '',
+  }
+
   deduplicatedValues.forEach(([key, value]) => {
-    params.set(key, String(value))
+    result.raw += `&${key}=${value}`
+    result.encoded += `&${encodeSearchParam(key)}=${encodeSearchParam(String(value))}`
   })
 
-  return params.toString()
+  result.raw = result.raw.substring(1)
+  result.encoded = result.encoded.substring(1)
+
+  return result
 }
