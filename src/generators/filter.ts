@@ -11,7 +11,7 @@ export function filter(
   arg: TFilter = [],
   options: TFilterOptions = {},
 ): TResult | undefined {
-  const log = options.logger
+  const log = options.logger ?? console
   if (!Array.isArray(arg)) {
     log?.error(
       `Argument of filter must be a array, got ${typeName(arg)} instead`,

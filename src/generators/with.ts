@@ -10,7 +10,7 @@ export function withRel(
   arg: TWith = [],
   options: TWithOptions = {},
 ): TResult | undefined {
-  const log = options.logger
+  const log = options.logger ?? console
   if (!Array.isArray(arg)) {
     log?.error(
       `Argument of withRel must be a array, got ${typeName(arg)} instead`,

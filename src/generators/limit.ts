@@ -11,7 +11,7 @@ export function limit(
   arg?: TLimit,
   options: TLimitOptions = {},
 ): string | undefined {
-  const log = options.logger
+  const log = options.logger ?? console
   if (!isInputValid(arg)) {
     log?.error(
       `Limit must be a positive integer or zero, got ${typeName(arg)} instead`,

@@ -11,7 +11,7 @@ export function include(
   arg: TInclude = [],
   options: TIncludeOptions = {},
 ): TResult | undefined {
-  const log = options.logger
+  const log = options.logger ?? console
   if (!Array.isArray(arg)) {
     log?.error(`Argument must be a array, got ${typeName(arg)} instead`)
     return

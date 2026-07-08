@@ -53,7 +53,7 @@ export function search(
   arg: TSearch = [],
   options: TSearchOptions = {},
 ): TSearchResult {
-  const log = options.logger
+  const log = options.logger ?? console
   if (!Array.isArray(arg as TSearch)) {
     log?.error(
       `Search keys must have a type of array, got ${typeName(arg)} instead`,

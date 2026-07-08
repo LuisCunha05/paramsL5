@@ -11,7 +11,7 @@ export function page(
   arg?: TPage,
   options: TPageOptions = {},
 ): string | undefined {
-  const log = options?.logger
+  const log = options.logger ?? console
 
   if (!arg || !isInputValid(arg)) {
     log?.error(`Page must be a positive integer, got ${typeName(arg)} instead`)

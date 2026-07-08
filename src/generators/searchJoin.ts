@@ -11,7 +11,7 @@ export function searchJoin(
   arg?: TSearchJoin,
   options: TSearchJoinOptions = {},
 ): string | undefined {
-  const log = options.logger
+  const log = options.logger ?? console
   if (!arg) return
 
   if (!isNonEmptyString(arg)) {

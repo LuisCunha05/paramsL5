@@ -28,7 +28,7 @@ export function orderBySortBy(
   arg: TOrderBySortBy = [],
   options: TOrderBySortByOptions = {},
 ): TOrderBySortByResult {
-  const log = options.logger
+  const log = options.logger ?? console
   if (!Array.isArray(arg as TOrderBySortBy)) {
     log?.error(
       `OrderBySortBy keys must have a type of array, got ${typeName(arg)} instead`,
