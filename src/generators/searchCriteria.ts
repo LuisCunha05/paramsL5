@@ -20,17 +20,20 @@ export function searchCriteria(
   const log = options.logger ?? console
   if (!Array.isArray(arg as TSearchCriteria)) {
     log?.error(
-      `SearchCriteria keys must have a type of array, got ${typeName(arg)} instead`,
+      `SearchCriteria: keys must have a type of array, got ${typeName(arg)} instead`,
     )
     return
   }
 
-  if (!arg.length) return
+  if (!arg.length) {
+    log?.info(`SearchCriteria: no values given`)
+    return
+  }
 
   const filteredValues = arg.filter((item, index) => {
     if (!Array.isArray(item)) {
       log?.error(
-        `SearchCriteria must have a type of array, got ${typeName(item)} instead`,
+        `SearchCriteria: must have a type of array, got ${typeName(item)} instead`,
       )
       return false
     }
