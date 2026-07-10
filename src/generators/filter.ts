@@ -26,7 +26,9 @@ export function filter(
 
   const filteredValues = arg.filter((item) => {
     if (!isNonEmptyString(item)) {
-      log?.info(`Filter: include value must be a string, got ${typeName(item)} instead`)
+      log?.info(
+        `Filter: include value must be a string, got ${typeName(item)} instead`,
+      )
       return false
     }
     return true

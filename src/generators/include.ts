@@ -13,7 +13,9 @@ export function include(
 ): TResult | undefined {
   const log = options.logger ?? console
   if (!Array.isArray(arg)) {
-    log?.error(`Include: argument must be an array, got ${typeName(arg)} instead`)
+    log?.error(
+      `Include: argument must be an array, got ${typeName(arg)} instead`,
+    )
     return
   }
 
