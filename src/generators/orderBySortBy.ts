@@ -36,18 +36,21 @@ export function orderBySortBy(
     return EMPTY_RESULT
   }
 
-  if (!arg.length) return EMPTY_RESULT
+  if (!arg.length) {
+    log?.info('OrderBySortBy: no values given')
+    return EMPTY_RESULT
+  }
 
   const filteredValues = arg.reduce((result, item, index) => {
     if (!Array.isArray(item as TOrderBySortByArguments)) {
-      log?.error(
+      log?.warn(
         `OrderBySortBy: must have a type of array, got ${typeName(item)} instead`,
       )
       return result
     }
 
     if (item.length < 1 || item.length > 2) {
-      log?.error(
+      log?.warn(
         `OrderBySortBy: must have a key-value array, but got length ${item.length} at index ${index} instead`,
       )
       return result
@@ -56,7 +59,7 @@ export function orderBySortBy(
     const [key, sortBy] = item
 
     if (!isNonEmptyString(key)) {
-      log?.error(
+      log?.warn(
         `OrderBySortBy: must have keys as non-empty strings, but got ${typeName(key)} at index ${index} instead`,
       )
       return result
@@ -66,7 +69,7 @@ export function orderBySortBy(
       typeof sortBy !== 'undefined' &&
       !Object.values(SORT_BY).includes(sortBy)
     ) {
-      log?.error(
+      log?.warn(
         `OrderBySortBy: must have a valid SORT_BY value, but got ${sortBy} at index ${index} instead`,
       )
       return result
@@ -77,7 +80,10 @@ export function orderBySortBy(
     return result
   }, new Map<string, TSortBy>())
 
-  if (!filteredValues.size) return EMPTY_RESULT
+  if (!filteredValues.size) {
+    log?.info('OrderBySortBy: no values remaining to parse')
+    return EMPTY_RESULT
+  }
 
   const deduplicatedValues = Array.from(filteredValues)
 

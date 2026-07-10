@@ -12,25 +12,29 @@ export function withRel(
 ): TResult | undefined {
   const log = options.logger ?? console
   if (!Array.isArray(arg)) {
-    log?.error(
-      `Argument of withRel must be a array, got ${typeName(arg)} instead`,
-    )
+    log?.error(`With: argument must be an array, got ${typeName(arg)} instead`)
+    return
+  }
+
+  if (!arg.length) {
+    log?.info('With: no values given')
     return
   }
 
   const filteredValues = arg.filter((item) => {
     if (!isNonEmptyString(item)) {
-      log?.error(`withRel value must be a string, got ${typeName(arg)} instead`)
+      log?.info(`With: value must be a string, got ${typeName(item)} instead`)
       return false
     }
     return true
   })
 
-  if (!filteredValues.length) return
+  if (!filteredValues.length) {
+    log?.info('With: no values remaining to parse')
+    return
+  }
 
   const uniqueValues = Array.from(new Set(filteredValues))
-
-  if (!uniqueValues.length) return
 
   const params = new URLSearchParams()
   params.set('with', uniqueValues.join(';'))

@@ -174,12 +174,12 @@ describe('SearchCriteria logging', () => {
     )
   })
 
-  test('should log error if item is not an array', () => {
+  test('should log warn if item is not an array', () => {
     input = ['invalid']
 
     searchCriteria(input, { logger })
 
-    expect(error).toHaveBeenCalledWith(
+    expect(warn).toHaveBeenCalledWith(
       'SearchCriteria: must have a type of array, got string instead',
     )
   })
@@ -243,9 +243,7 @@ describe('SearchCriteria logging', () => {
 
   test('external logger should log invalid type for sub-argument', () => {
     searchCriteria([{} as any], { logger })
-    expect(error).toHaveBeenCalledWith(
-      'SearchCriteria: must have a type of array, got object instead',
-    )
+    expect(warn).toHaveBeenCalledWith('SearchCriteria: must have a type of array, got object instead')
   })
 
   test('external logger should log invalid amount of arguments', () => {

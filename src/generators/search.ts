@@ -61,19 +61,22 @@ export function search(
     return EMPTY_RESULT
   }
 
-  if (!arg.length) return EMPTY_RESULT
+  if (!arg.length) {
+    log?.info('Search: no values given')
+    return EMPTY_RESULT
+  }
 
   const filteredValues = arg.reduce<[string, [BaseValue, TCondition]][]>(
     (result, item, index) => {
       if (!Array.isArray(item as TSearch[number])) {
-        log?.error(
+        log?.warn(
           `Search: must have a type of array, got ${typeName(item)} instead`,
         )
         return result
       }
 
       if (item.length < 2) {
-        log?.error(
+        log?.warn(
           `Search: must have a key-value array, but got length ${item.length} at index ${index} instead`,
         )
         return result
@@ -81,7 +84,7 @@ export function search(
 
       const key = item[0]
       if (!isNonEmptyString(key)) {
-        log?.error(
+        log?.warn(
           `Search: must have keys as non-empty strings, but got ${typeName(key)} at index ${index} instead`,
         )
         return result
@@ -120,7 +123,7 @@ export function search(
         finalValue = value.join(',')
       } else {
         if (!isBaseValue(value)) {
-          log?.warn(
+          log?.info(
             `Search: ignoring value because of incorrect type, expected BaseValue but got ${typeName(value)} instead`,
           )
           return result
@@ -148,7 +151,10 @@ export function search(
     [],
   )
 
-  if (!filteredValues.length) return EMPTY_RESULT
+  if (!filteredValues.length) {
+    log?.info('Search: no values remaining to parse')
+    return EMPTY_RESULT
+  }
 
   const deduplicatedValues = Array.from(new Map(filteredValues))
 

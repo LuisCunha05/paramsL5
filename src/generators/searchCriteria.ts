@@ -32,7 +32,7 @@ export function searchCriteria(
 
   const filteredValues = arg.filter((item, index) => {
     if (!Array.isArray(item)) {
-      log?.error(
+      log?.warn(
         `SearchCriteria: must have a type of array, got ${typeName(item)} instead`,
       )
       return false

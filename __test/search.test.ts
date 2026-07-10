@@ -168,7 +168,7 @@ describe('search function', () => {
     test('should return empty result if called with no arguments', () => {
       expected = { search: undefined, searchFields: undefined }
 
-      result = search()
+      result = search(undefined, { logger: noOpLogger })
 
       expect(result).toEqual(expected)
     })
@@ -177,7 +177,7 @@ describe('search function', () => {
       input = []
       expected = { search: undefined, searchFields: undefined }
 
-      result = search(input)
+      result = search(input, { logger: noOpLogger })
 
       expect(result).toEqual(expected)
     })
@@ -309,22 +309,22 @@ describe('search function', () => {
   })
 
   describe('Search logging', () => {
-    test('should log error if key is not a non-empty string', () => {
+    test('should log warn if key is not a non-empty string', () => {
       input = [['', 'value']]
 
       search(input, { logger })
 
-      expect(error).toHaveBeenCalledExactlyOnceWith(
+      expect(warn).toHaveBeenCalledExactlyOnceWith(
         'Search: must have keys as non-empty strings, but got string at index 0 instead',
       )
     })
 
-    test('should log error if item is not an array', () => {
+    test('should log warn if item is not an array', () => {
       input = [['name', 'John'], 'invalid']
 
       search(input, { logger })
 
-      expect(error).toHaveBeenCalledExactlyOnceWith(
+      expect(warn).toHaveBeenCalledExactlyOnceWith(
         'Search: must have a type of array, got string instead',
       )
     })
@@ -339,12 +339,12 @@ describe('search function', () => {
       )
     })
 
-    test('should log error if item length is less than 2', () => {
+    test('should log warn if item length is less than 2', () => {
       input = [['name']]
 
       search(input, { logger })
 
-      expect(error).toHaveBeenCalledExactlyOnceWith(
+      expect(warn).toHaveBeenCalledExactlyOnceWith(
         'Search: must have a key-value array, but got length 1 at index 0 instead',
       )
     })
@@ -379,13 +379,19 @@ describe('search function', () => {
       )
     })
 
-    test('should log warn if value is not a BaseValue', () => {
+    test('should log info if value is not a BaseValue', () => {
       input = [['name', { obj: true }]]
 
       search(input, { logger })
 
-      expect(warn).toHaveBeenCalledExactlyOnceWith(
+      expect(info).toHaveBeenCalledTimes(2)
+      expect(info).toHaveBeenNthCalledWith(
+        1,
         'Search: ignoring value because of incorrect type, expected BaseValue but got object instead',
+      )
+      expect(info).toHaveBeenNthCalledWith(
+        2,
+        'Search: no values remaining to parse',
       )
     })
 
@@ -396,6 +402,30 @@ describe('search function', () => {
 
       expect(warn).toHaveBeenCalledExactlyOnceWith(
         "Search: ignoring value for condition because it didn't match possible values, got John",
+      )
+    })
+
+    test('should log info if arg is empty array', () => {
+      input = []
+
+      search(input, { logger })
+
+      expect(info).toHaveBeenCalledExactlyOnceWith('Search: no values given')
+    })
+
+    test('should log info if no values remain after filtering', () => {
+      input = [['name', { obj: true }]]
+
+      search(input, { logger })
+
+      expect(info).toHaveBeenCalledTimes(2)
+      expect(info).toHaveBeenNthCalledWith(
+        1,
+        'Search: ignoring value because of incorrect type, expected BaseValue but got object instead',
+      )
+      expect(info).toHaveBeenNthCalledWith(
+        2,
+        'Search: no values remaining to parse',
       )
     })
   })

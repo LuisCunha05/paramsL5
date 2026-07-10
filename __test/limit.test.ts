@@ -105,5 +105,11 @@ describe('limit function', () => {
         'Limit: must be a positive integer or zero, got NaN instead',
       )
     })
+
+    test('should log info if argument is undefined', () => {
+      limit(undefined, { logger })
+
+      expect(info).toHaveBeenCalledExactlyOnceWith('Limit: no value given')
+    })
   })
 })

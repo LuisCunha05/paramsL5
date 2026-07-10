@@ -147,7 +147,7 @@ describe('orderBySortBy function', () => {
         sortedBy: undefined,
       }
 
-      result = orderBySortBy()
+      result = orderBySortBy(undefined, { logger: noOpLogger })
 
       expect(result).toEqual(expected)
     })
@@ -188,54 +188,70 @@ describe('orderBySortBy function', () => {
       )
     })
 
-    test('should log error if an item is not an array', () => {
+    test('should log warn if an item is not an array', () => {
       input = ['invalid']
 
       orderBySortBy(input, { logger })
 
-      expect(error).toHaveBeenCalledExactlyOnceWith(
+      expect(warn).toHaveBeenCalledExactlyOnceWith(
         'OrderBySortBy: must have a type of array, got string instead',
       )
     })
 
-    test('should log error if an item is empty', () => {
+    test('should log warn if an item is empty', () => {
       input = [[]]
 
       orderBySortBy(input, { logger })
 
-      expect(error).toHaveBeenCalledExactlyOnceWith(
+      expect(warn).toHaveBeenCalledExactlyOnceWith(
         'OrderBySortBy: must have a key-value array, but got length 0 at index 0 instead',
       )
     })
 
-    test('should log error if an item has too many elements', () => {
+    test('should log warn if an item has too many elements', () => {
       input = [['alog', 'acs', 'bla']]
 
       orderBySortBy(input, { logger })
 
-      expect(error).toHaveBeenCalledExactlyOnceWith(
+      expect(warn).toHaveBeenCalledExactlyOnceWith(
         'OrderBySortBy: must have a key-value array, but got length 3 at index 0 instead',
       )
     })
 
-    test('should log error if key is not a non-empty string', () => {
+    test('should log warn if key is not a non-empty string', () => {
       input = [[123, SORT_BY.ASC]]
 
       orderBySortBy(input, { logger })
 
-      expect(error).toHaveBeenCalledExactlyOnceWith(
+      expect(warn).toHaveBeenCalledExactlyOnceWith(
         'OrderBySortBy: must have keys as non-empty strings, but got number at index 0 instead',
       )
     })
 
-    test('should log error if sort value is not a valid SORT_BY value', () => {
+    test('should log warn if sort value is not a valid SORT_BY value', () => {
       input = [['name', 'invalid_sort']]
 
       orderBySortBy(input, { logger })
 
-      expect(error).toHaveBeenCalledExactlyOnceWith(
+      expect(warn).toHaveBeenCalledExactlyOnceWith(
         'OrderBySortBy: must have a valid SORT_BY value, but got invalid_sort at index 0 instead',
       )
+    })
+
+    test('should log info if arg is empty array', () => {
+      input = []
+
+      orderBySortBy(input, { logger })
+
+      expect(info).toHaveBeenCalledExactlyOnceWith('OrderBySortBy: no values given')
+    })
+
+    test('should log info if no values remain after filtering', () => {
+      input = [['name', 'invalid_sort']]
+
+      orderBySortBy(input, { logger })
+
+      expect(info).toHaveBeenCalledExactlyOnceWith('OrderBySortBy: no values remaining to parse')
     })
   })
 })
