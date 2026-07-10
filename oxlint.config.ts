@@ -17,8 +17,8 @@ export default defineConfig({
     "eslint/no-unused-vars": "error",
     "typescript/strict-boolean-expressions": "off",
     "unicorn/explicit-length-check": "off",
-    "eslint/curly": 'allow',
-    "typescript/restrict-template-expressions":"warn"
+    "eslint/curly": "allow",
+    "typescript/restrict-template-expressions": "warn",
   },
   ignorePatterns: ["dist/**/*", "__test/**/*"],
 });

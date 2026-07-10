@@ -30,18 +30,18 @@ pnpm add params-l5
 ## Usage
 
 ```typescript
-import { paramsL5, CONDITIONS, SORT_BY, SEARCH_JOIN } from 'params-l5';
+import { paramsL5, CONDITIONS, SORT_BY, SEARCH_JOIN } from "params-l5";
 
 const queryParams = paramsL5({
   search: [
-    ['name', 'John', CONDITIONS.LIKE],
-    ['age', 18, CONDITIONS.GTE],
-    ['status', ['active', 'pending'], CONDITIONS.IN]
+    ["name", "John", CONDITIONS.LIKE],
+    ["age", 18, CONDITIONS.GTE],
+    ["status", ["active", "pending"], CONDITIONS.IN],
   ],
   searchJoin: SEARCH_JOIN.AND,
-  filter: ['id', 'name', 'age', 'status'],
-  include: ['profile', 'posts'],
-  orderBySortBy: ['created_at', SORT_BY.DESC],
+  filter: ["id", "name", "age", "status"],
+  include: ["profile", "posts"],
+  orderBySortBy: ["created_at", SORT_BY.DESC],
   limit: 15,
   page: 2,
 });
@@ -56,6 +56,7 @@ console.log(queryParams.params);
 ## Constants & Helpers
 
 The package exports robust constants to prevent typos and ensure valid query formats:
+
 - **`CONDITIONS`**: `EQ`, `GTE`, `LTE`, `GT`, `LT`, `DIFF`, `IN`, `LIKE`, `ILIKE`, `BTW`
 - **`SEARCH_JOIN`**: `AND`, `OR`
 - **`SORT_BY`**: `ASC`, `DESC`
