@@ -1,6 +1,6 @@
-import { SEARCH_JOIN } from "@/constants";
-import type { ILogger } from "@/types";
-import { isNonEmptyString, typeName } from "@/utils";
+import { SEARCH_JOIN } from '@/constants';
+import type { ILogger } from '@/types';
+import { isNonEmptyString, typeName } from '@/utils';
 
 export type TSearchJoin = (typeof SEARCH_JOIN)[keyof typeof SEARCH_JOIN];
 export type TSearchJoinOptions = {
@@ -13,7 +13,7 @@ export function searchJoin(
 ): string | undefined {
   const log = options.logger ?? console;
   if (arg === undefined) {
-    log?.info("SearchJoin: no value given");
+    log?.info('SearchJoin: no value given');
     return;
   }
 

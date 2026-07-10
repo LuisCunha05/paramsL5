@@ -1,9 +1,9 @@
-import { LOG_LEVEL } from "./constants";
-import type { ILogger } from "./types";
+import { LOG_LEVEL } from './constants';
+import type { ILogger } from './types';
 
 type LogLevel = (typeof LOG_LEVEL)[keyof typeof LOG_LEVEL];
 
-export const LOGGER_PREFIX = "[ParamsL5]";
+export const LOGGER_PREFIX = '[ParamsL5]';
 
 type LoggerArgs = {
   logger?: ILogger;

@@ -1,11 +1,11 @@
-import { CONDITIONS } from "@/constants";
-import type { BaseValue, ILogger, TResult } from "@/types";
+import { CONDITIONS } from '@/constants';
+import type { BaseValue, ILogger, TResult } from '@/types';
 import {
   encodeSearchParam,
   isBaseValue,
   isNonEmptyString,
   typeName,
-} from "@/utils";
+} from '@/utils';
 
 export type TCondition = (typeof CONDITIONS)[keyof typeof CONDITIONS];
 
@@ -15,13 +15,13 @@ type BetweenTuple<T> = [T, T];
 export type TSearchIn = readonly [
   string,
   (string | number)[],
-  Extract<TCondition, "in">,
+  Extract<TCondition, 'in'>,
 ];
 
 export type TSearchBetween = readonly [
   string,
   BetweenTuple<string> | BetweenTuple<number>,
-  Extract<TCondition, "between">,
+  Extract<TCondition, 'between'>,
 ];
 
 export type TSearchEqual = readonly [string, TSearchValue];
@@ -29,7 +29,7 @@ export type TSearchEqual = readonly [string, TSearchValue];
 export type TSearchRegular = readonly [
   string,
   TSearchValue,
-  Exclude<TCondition, "in" | "between"> | undefined,
+  Exclude<TCondition, 'in' | 'between'> | undefined,
 ];
 
 export type TSearchItem =
@@ -62,7 +62,7 @@ export function search(
   }
 
   if (!arg.length) {
-    log?.info("Search: no values given");
+    log?.info('Search: no values given');
     return EMPTY_RESULT;
   }
 
@@ -121,7 +121,7 @@ export function search(
         }
         if (!value.every((val) => isBaseValue(val))) return result;
 
-        finalValue = value.join(",");
+        finalValue = value.join(',');
       } else {
         if (!isBaseValue(value)) {
           log?.info(
@@ -153,7 +153,7 @@ export function search(
   );
 
   if (!filteredValues.length) {
-    log?.info("Search: no values remaining to parse");
+    log?.info('Search: no values remaining to parse');
     return EMPTY_RESULT;
   }
 
@@ -161,7 +161,7 @@ export function search(
 
   const searchAndFields = deduplicatedValues.reduce(
     (result, [key, [value, condition]]) => {
-      const newValue = typeof value === "string" ? value.trim() : value;
+      const newValue = typeof value === 'string' ? value.trim() : value;
 
       result.search.push(`${key}:${newValue}`);
       result.fields.push(`${key}:${condition}`);
@@ -173,8 +173,8 @@ export function search(
 
   if (searchAndFields.search.length === 0) return EMPTY_RESULT;
 
-  const searchResult = searchAndFields.search.join(";");
-  const fieldsResult = searchAndFields.fields.join(";");
+  const searchResult = searchAndFields.search.join(';');
+  const fieldsResult = searchAndFields.fields.join(';');
   return {
     search: { raw: searchResult, encoded: encodeSearchParam(searchResult) },
     searchFields: {

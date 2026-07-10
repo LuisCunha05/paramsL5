@@ -7,7 +7,7 @@ This document outlines the standard structure, naming conventions, and patterns 
 Use `vitest` for the testing framework.
 
 ```typescript
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 ```
 
 ## 2. Global Test Variables
@@ -32,7 +32,7 @@ beforeEach(() => {
 Use `vi.spyOn` to mock global functions (e.g., `console.error`) or imported dependencies. Ensure that all mocks are cleared in an `afterEach` hook to avoid side effects bleeding into other tests.
 
 ```typescript
-const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
 
 afterEach(() => {
   vi.clearAllMocks();
@@ -52,11 +52,11 @@ Each individual `test` should ideally contain exactly **one** `expect` assertion
 3. **Assert**: Run your `expect` on the `result`.
 
 ```typescript
-describe("someFunction function", () => {
-  describe("formatting", () => {
-    test("should set someFunction to a parameter", () => {
+describe('someFunction function', () => {
+  describe('formatting', () => {
+    test('should set someFunction to a parameter', () => {
       input = 7;
-      expected = "someValue";
+      expected = 'someValue';
 
       result = someFunction(input);
 
@@ -71,9 +71,9 @@ describe("someFunction function", () => {
 Test for boundary conditions and invalid inputs explicitly.
 
 ```typescript
-describe("someFunction function", () => {
-  describe("validations and edge cases", () => {
-    test("should return undefined if called Infinity number", () => {
+describe('someFunction function', () => {
+  describe('validations and edge cases', () => {
+    test('should return undefined if called Infinity number', () => {
       input = Infinity;
       result = someFunction(input);
 
@@ -88,16 +88,16 @@ describe("someFunction function", () => {
 When testing side effects (like logs), you often do not need to assign the function call to `result`. Just call the function with the `input` and assert that the mocked function was called correctly.
 
 ```typescript
-describe("someFunction function", () => {
-  describe("someFunction logging", () => {
-    test("should log error if argument is a negative number", () => {
+describe('someFunction function', () => {
+  describe('someFunction logging', () => {
+    test('should log error if argument is a negative number', () => {
       input = -1; // Provide the input
 
       someFunction(input); // Act on the input
 
       // Assert on the mocked function
       expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining("some log message"),
+        expect.stringContaining('some log message'),
       );
     });
   });
@@ -109,12 +109,12 @@ describe("someFunction function", () => {
 Whenever asserting on formatted strings that include URL encoded characters, specific conditions, or other shared values, use the constants defined in `src/constants.ts` (e.g., `CONDITIONS`, `URL_ENCODED_CHARS` as `URC`) rather than hardcoding the raw strings. This ensures consistency and prevents test failures if the underlying values change.
 
 ```typescript
-import { CONDITIONS, URL_ENCODED_CHARS as URC } from "@/constants";
+import { CONDITIONS, URL_ENCODED_CHARS as URC } from '@/constants';
 
 // Example of using constants in assertions
-describe("formatting", () => {
-  test("should format a valid key-value pair with a specific condition", () => {
-    input = [["age", 18, CONDITIONS.GTE]];
+describe('formatting', () => {
+  test('should format a valid key-value pair with a specific condition', () => {
+    input = [['age', 18, CONDITIONS.GTE]];
 
     // Use URC constants for URL formatting characters
     expected = `search=age${URC.COLON}18&searchFields=age${URC.COLON}${URC.GREATER_THAN}${URC.EQUALS}`;

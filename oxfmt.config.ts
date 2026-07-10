@@ -1,13 +1,14 @@
-import { defineConfig } from "oxfmt";
+import { defineConfig } from 'oxfmt';
 
 export default defineConfig({
   printWidth: 80,
-  arrowParens: "always",
+  arrowParens: 'always',
   bracketSpacing: true,
-  endOfLine: "crlf",
+  endOfLine: 'lf',
   sortImports: true,
   useTabs: false,
   tabWidth: 2,
   sortPackageJson: true,
-  ignorePatterns: ["dist/**/*"],
+  singleQuote: true,
+  ignorePatterns: ['dist/**/*'],
 });

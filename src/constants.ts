@@ -1,77 +1,77 @@
 export const URL_ENCODED_CHARS = Object.freeze({
   /** Example: `,` */
-  COMMA: "%2C",
+  COMMA: '%2C',
   /** Example: `:` */
-  COLON: "%3A",
+  COLON: '%3A',
   /** Example: `=` */
-  EQUALS: "%3D",
+  EQUALS: '%3D',
   /** Example: `;` */
-  SEMICOLON: "%3B",
+  SEMICOLON: '%3B',
   /** Example: `>` */
-  GREATER_THAN: "%3E",
+  GREATER_THAN: '%3E',
   /** Example: `<` */
-  LESS_THAN: "%3C",
+  LESS_THAN: '%3C',
   /** Example: ` ` (Space) */
-  SPACE: "%20",
+  SPACE: '%20',
   /** Example: `&` */
-  AMPERSAND: "%26",
+  AMPERSAND: '%26',
   /** Example: `#` */
-  HASHTAG: "%23",
+  HASHTAG: '%23',
   /** Example: `?` */
-  QUESTION_MARK: "%3F",
+  QUESTION_MARK: '%3F',
   /** Example: `/` */
-  SLASH: "%2F",
+  SLASH: '%2F',
   /** Example: `@` */
-  AT: "%40",
+  AT: '%40',
   /** Example: `+` */
-  PLUS: "%2B",
+  PLUS: '%2B',
   /** Example: `$` */
-  DOLLAR: "%24",
+  DOLLAR: '%24',
   /** Example: `%` */
-  PERCENT: "%25",
+  PERCENT: '%25',
   /** Example: `^` */
-  CARET: "%5E",
+  CARET: '%5E',
   /** Example: `|` */
-  PIPE: "%7C",
+  PIPE: '%7C',
   /** Example: `~` */
-  TILDE: "%7E",
+  TILDE: '%7E',
   /** Example: '`' */
-  BACKTICK: "%60",
+  BACKTICK: '%60',
   /** Example: `"` */
-  QUOTE: "%22",
+  QUOTE: '%22',
   /** Example: `'` */
-  APOSTROPHE: "%27",
+  APOSTROPHE: '%27',
   /** Example: `[` */
-  LEFT_BRACKET: "%5B",
+  LEFT_BRACKET: '%5B',
   /** Example: `]` */
-  RIGHT_BRACKET: "%5D",
+  RIGHT_BRACKET: '%5D',
   /** Example: `{` */
-  LEFT_BRACE: "%7B",
+  LEFT_BRACE: '%7B',
   /** Example: `}` */
-  RIGHT_BRACE: "%7D",
+  RIGHT_BRACE: '%7D',
 } as const);
 
 export const CONDITIONS = Object.freeze({
-  EQ: "=",
-  GTE: ">=",
-  LTE: "<=",
-  GT: ">",
-  LT: "<",
-  DIFF: "!=",
-  IN: "in",
-  LIKE: "like",
-  ILIKE: "ilike",
-  BTW: "between",
+  EQ: '=',
+  GTE: '>=',
+  LTE: '<=',
+  GT: '>',
+  LT: '<',
+  DIFF: '!=',
+  IN: 'in',
+  LIKE: 'like',
+  ILIKE: 'ilike',
+  BTW: 'between',
 } as const);
 
 export const SEARCH_JOIN = Object.freeze({
-  AND: "and",
-  OR: "or",
+  AND: 'and',
+  OR: 'or',
 } as const);
 
 export const SORT_BY = Object.freeze({
-  ASC: "asc",
-  DESC: "desc",
+  ASC: 'asc',
+  DESC: 'desc',
 } as const);
 
 export const LOG_LEVEL = Object.freeze({

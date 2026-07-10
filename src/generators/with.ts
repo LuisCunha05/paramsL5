@@ -1,5 +1,5 @@
-import type { ILogger, TResult } from "@/types";
-import { encodeSearchParam, isNonEmptyString, typeName } from "@/utils";
+import type { ILogger, TResult } from '@/types';
+import { encodeSearchParam, isNonEmptyString, typeName } from '@/utils';
 
 export type TWith = Array<string>;
 export type TWithOptions = {
@@ -17,7 +17,7 @@ export function withRel(
   }
 
   if (!arg.length) {
-    log?.info("With: no values given");
+    log?.info('With: no values given');
     return;
   }
 
@@ -30,16 +30,16 @@ export function withRel(
   });
 
   if (!filteredValues.length) {
-    log?.info("With: no values remaining to parse");
+    log?.info('With: no values remaining to parse');
     return;
   }
 
   const uniqueValues = Array.from(new Set(filteredValues));
 
   const params = new URLSearchParams();
-  params.set("with", uniqueValues.join(";"));
+  params.set('with', uniqueValues.join(';'));
 
-  const result = uniqueValues.join(";");
+  const result = uniqueValues.join(';');
 
   return {
     raw: result,

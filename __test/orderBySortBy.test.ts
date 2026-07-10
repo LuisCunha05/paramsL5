@@ -1,8 +1,8 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { LOG_LEVEL, SORT_BY, URL_ENCODED_CHARS as URC } from "@/constants";
-import { orderBySortBy } from "@/generators/orderBySortBy";
-import { Logger } from "@/logger";
+import { LOG_LEVEL, SORT_BY, URL_ENCODED_CHARS as URC } from '@/constants';
+import { orderBySortBy } from '@/generators/orderBySortBy';
+import { Logger } from '@/logger';
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any;
@@ -27,13 +27,13 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe("orderBySortBy function", () => {
-  describe("formatting", () => {
-    test("should generate correct URL params for a single order/sort pair", () => {
-      input = [["name", SORT_BY.ASC]];
+describe('orderBySortBy function', () => {
+  describe('formatting', () => {
+    test('should generate correct URL params for a single order/sort pair', () => {
+      input = [['name', SORT_BY.ASC]];
       expected = {
-        orderBy: { raw: "name", encoded: "name" },
-        sortedBy: { raw: "asc", encoded: "asc" },
+        orderBy: { raw: 'name', encoded: 'name' },
+        sortedBy: { raw: 'asc', encoded: 'asc' },
       };
 
       result = orderBySortBy(input);
@@ -41,19 +41,19 @@ describe("orderBySortBy function", () => {
       expect(result).toEqual(expected);
     });
 
-    test("should generate correct string params with multiple order/sort pairs", () => {
+    test('should generate correct string params with multiple order/sort pairs', () => {
       input = [
-        ["name", SORT_BY.ASC],
-        ["age", SORT_BY.DESC],
-        ["created_at", SORT_BY.ASC],
+        ['name', SORT_BY.ASC],
+        ['age', SORT_BY.DESC],
+        ['created_at', SORT_BY.ASC],
       ];
       expected = {
         orderBy: {
-          raw: "name;age;created_at",
+          raw: 'name;age;created_at',
           encoded: `name${URC.SEMICOLON}age${URC.SEMICOLON}created_at`,
         },
         sortedBy: {
-          raw: "asc;desc;asc",
+          raw: 'asc;desc;asc',
           encoded: `asc${URC.SEMICOLON}desc${URC.SEMICOLON}asc`,
         },
       };
@@ -63,14 +63,14 @@ describe("orderBySortBy function", () => {
       expect(result).toEqual(expected);
     });
 
-    test("should deduplicate keys and capture the last element with same key", () => {
+    test('should deduplicate keys and capture the last element with same key', () => {
       input = [
-        ["name", SORT_BY.ASC],
-        ["name", SORT_BY.DESC],
+        ['name', SORT_BY.ASC],
+        ['name', SORT_BY.DESC],
       ];
       expected = {
-        orderBy: { raw: "name", encoded: "name" },
-        sortedBy: { raw: "desc", encoded: "desc" },
+        orderBy: { raw: 'name', encoded: 'name' },
+        sortedBy: { raw: 'desc', encoded: 'desc' },
       };
 
       result = orderBySortBy(input);
@@ -78,15 +78,15 @@ describe("orderBySortBy function", () => {
       expect(result).toEqual(expected);
     });
 
-    test("should allow multiple single value arrays", () => {
-      input = [["key1"], ["key2"]];
+    test('should allow multiple single value arrays', () => {
+      input = [['key1'], ['key2']];
       expected = {
         orderBy: {
-          raw: "key1;key2",
+          raw: 'key1;key2',
           encoded: `key1${URC.SEMICOLON}key2`,
         },
         sortedBy: {
-          raw: "asc;asc",
+          raw: 'asc;asc',
           encoded: `asc${URC.SEMICOLON}asc`,
         },
       };
@@ -97,12 +97,12 @@ describe("orderBySortBy function", () => {
     });
   });
 
-  describe("default options", () => {
-    test("should allow key-only value with default ASC sortBy", () => {
-      input = [["key"]];
+  describe('default options', () => {
+    test('should allow key-only value with default ASC sortBy', () => {
+      input = [['key']];
       expected = {
-        orderBy: { raw: "key", encoded: "key" },
-        sortedBy: { raw: "asc", encoded: "asc" },
+        orderBy: { raw: 'key', encoded: 'key' },
+        sortedBy: { raw: 'asc', encoded: 'asc' },
       };
 
       result = orderBySortBy(input);
@@ -110,11 +110,11 @@ describe("orderBySortBy function", () => {
       expect(result).toEqual(expected);
     });
 
-    test("should change the default sortBy", () => {
-      input = [["key"]];
+    test('should change the default sortBy', () => {
+      input = [['key']];
       expected = {
-        orderBy: { raw: "key", encoded: "key" },
-        sortedBy: { raw: "desc", encoded: "desc" },
+        orderBy: { raw: 'key', encoded: 'key' },
+        sortedBy: { raw: 'desc', encoded: 'desc' },
       };
 
       result = orderBySortBy(input, { defaultSortBy: SORT_BY.DESC });
@@ -122,15 +122,15 @@ describe("orderBySortBy function", () => {
       expect(result).toEqual(expected);
     });
 
-    test("should allow multiple single value arrays with the default sortBy", () => {
-      input = [["key1"], ["key2"]];
+    test('should allow multiple single value arrays with the default sortBy', () => {
+      input = [['key1'], ['key2']];
       expected = {
         orderBy: {
-          raw: "key1;key2",
+          raw: 'key1;key2',
           encoded: `key1${URC.SEMICOLON}key2`,
         },
         sortedBy: {
-          raw: "desc;desc",
+          raw: 'desc;desc',
           encoded: `desc${URC.SEMICOLON}desc`,
         },
       };
@@ -141,8 +141,8 @@ describe("orderBySortBy function", () => {
     });
   });
 
-  describe("validations and edge cases", () => {
-    test("should return empty result with empty input", () => {
+  describe('validations and edge cases', () => {
+    test('should return empty result with empty input', () => {
       expected = {
         orderBy: undefined,
         sortedBy: undefined,
@@ -153,7 +153,7 @@ describe("orderBySortBy function", () => {
       expect(result).toEqual(expected);
     });
 
-    test("should return empty result if called with a non-array", () => {
+    test('should return empty result if called with a non-array', () => {
       input = {};
       expected = {
         orderBy: undefined,
@@ -165,8 +165,8 @@ describe("orderBySortBy function", () => {
       expect(result).toEqual(expected);
     });
 
-    test("should return empty result if all items are invalid", () => {
-      input = ["invalid"];
+    test('should return empty result if all items are invalid', () => {
+      input = ['invalid'];
       expected = {
         orderBy: undefined,
         sortedBy: undefined,
@@ -178,84 +178,84 @@ describe("orderBySortBy function", () => {
     });
   });
 
-  describe("OrderBySortBy logging", () => {
-    test("should log error if arg is not an array", () => {
+  describe('OrderBySortBy logging', () => {
+    test('should log error if arg is not an array', () => {
       input = {};
 
       orderBySortBy(input, { logger });
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        "OrderBySortBy: keys must have a type of array, got object instead",
+        'OrderBySortBy: keys must have a type of array, got object instead',
       );
     });
 
-    test("should log warn if an item is not an array", () => {
-      input = ["invalid"];
+    test('should log warn if an item is not an array', () => {
+      input = ['invalid'];
 
       orderBySortBy(input, { logger });
 
       expect(warn).toHaveBeenCalledExactlyOnceWith(
-        "OrderBySortBy: must have a type of array, got string instead",
+        'OrderBySortBy: must have a type of array, got string instead',
       );
     });
 
-    test("should log warn if an item is empty", () => {
+    test('should log warn if an item is empty', () => {
       input = [[]];
 
       orderBySortBy(input, { logger });
 
       expect(warn).toHaveBeenCalledExactlyOnceWith(
-        "OrderBySortBy: must have a key-value array, but got length 0 at index 0 instead",
+        'OrderBySortBy: must have a key-value array, but got length 0 at index 0 instead',
       );
     });
 
-    test("should log warn if an item has too many elements", () => {
-      input = [["alog", "acs", "bla"]];
+    test('should log warn if an item has too many elements', () => {
+      input = [['alog', 'acs', 'bla']];
 
       orderBySortBy(input, { logger });
 
       expect(warn).toHaveBeenCalledExactlyOnceWith(
-        "OrderBySortBy: must have a key-value array, but got length 3 at index 0 instead",
+        'OrderBySortBy: must have a key-value array, but got length 3 at index 0 instead',
       );
     });
 
-    test("should log warn if key is not a non-empty string", () => {
+    test('should log warn if key is not a non-empty string', () => {
       input = [[123, SORT_BY.ASC]];
 
       orderBySortBy(input, { logger });
 
       expect(warn).toHaveBeenCalledExactlyOnceWith(
-        "OrderBySortBy: must have keys as non-empty strings, but got number at index 0 instead",
+        'OrderBySortBy: must have keys as non-empty strings, but got number at index 0 instead',
       );
     });
 
-    test("should log warn if sort value is not a valid SORT_BY value", () => {
-      input = [["name", "invalid_sort"]];
+    test('should log warn if sort value is not a valid SORT_BY value', () => {
+      input = [['name', 'invalid_sort']];
 
       orderBySortBy(input, { logger });
 
       expect(warn).toHaveBeenCalledExactlyOnceWith(
-        "OrderBySortBy: must have a valid SORT_BY value, but got invalid_sort at index 0 instead",
+        'OrderBySortBy: must have a valid SORT_BY value, but got invalid_sort at index 0 instead',
       );
     });
 
-    test("should log info if arg is empty array", () => {
+    test('should log info if arg is empty array', () => {
       input = [];
 
       orderBySortBy(input, { logger });
 
       expect(info).toHaveBeenCalledExactlyOnceWith(
-        "OrderBySortBy: no values given",
+        'OrderBySortBy: no values given',
       );
     });
 
-    test("should log info if no values remain after filtering", () => {
-      input = [["name", "invalid_sort"]];
+    test('should log info if no values remain after filtering', () => {
+      input = [['name', 'invalid_sort']];
 
       orderBySortBy(input, { logger });
 
       expect(info).toHaveBeenCalledExactlyOnceWith(
-        "OrderBySortBy: no values remaining to parse",
+        'OrderBySortBy: no values remaining to parse',
       );
     });
   });

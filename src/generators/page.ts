@@ -1,5 +1,5 @@
-import type { ILogger } from "@/types";
-import { isNumber, typeName } from "@/utils";
+import type { ILogger } from '@/types';
+import { isNumber, typeName } from '@/utils';
 
 export type TPage = number;
 
@@ -14,7 +14,7 @@ export function page(
   const log = options.logger ?? console;
 
   if (arg === undefined) {
-    log?.info("Page: no value given");
+    log?.info('Page: no value given');
     return;
   }
 

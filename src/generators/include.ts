@@ -1,5 +1,5 @@
-import type { ILogger, TResult } from "@/types";
-import { encodeSearchParam, isNonEmptyString, typeName } from "@/utils";
+import type { ILogger, TResult } from '@/types';
+import { encodeSearchParam, isNonEmptyString, typeName } from '@/utils';
 
 export type TInclude = Array<string>;
 
@@ -20,7 +20,7 @@ export function include(
   }
 
   if (!arg.length) {
-    log?.info("Include: no values given");
+    log?.info('Include: no values given');
     return;
   }
 
@@ -37,16 +37,16 @@ export function include(
   }, [] as Array<string>);
 
   if (!filteredValues.length) {
-    log?.info("Include: no values remaining to parse");
+    log?.info('Include: no values remaining to parse');
     return;
   }
 
   const uniqueValues = Array.from(new Set(filteredValues));
 
-  const result = uniqueValues.join(",");
+  const result = uniqueValues.join(',');
 
   return {
     raw: result,
-    encoded: encodeSearchParam(uniqueValues.join(",")),
+    encoded: encodeSearchParam(uniqueValues.join(',')),
   };
 }

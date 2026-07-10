@@ -1,8 +1,8 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { CONDITIONS, LOG_LEVEL, URL_ENCODED_CHARS as URC } from "@/constants";
-import { search } from "@/generators/search";
-import { Logger } from "@/logger";
+import { CONDITIONS, LOG_LEVEL, URL_ENCODED_CHARS as URC } from '@/constants';
+import { search } from '@/generators/search';
+import { Logger } from '@/logger';
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any;
@@ -27,14 +27,14 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe("search function", () => {
-  describe("formatting", () => {
+describe('search function', () => {
+  describe('formatting', () => {
     test('should format a single search param correctly with default condition "="', () => {
-      input = [["name", "John"]];
+      input = [['name', 'John']];
       expected = {
-        search: { raw: "name:John", encoded: `name${URC.COLON}John` },
+        search: { raw: 'name:John', encoded: `name${URC.COLON}John` },
         searchFields: {
-          raw: "name:=",
+          raw: 'name:=',
           encoded: `name${URC.COLON}${URC.EQUALS}`,
         },
       };
@@ -44,12 +44,12 @@ describe("search function", () => {
       expect(result).toEqual(expected);
     });
 
-    test("should change default condition when options is provided", () => {
-      input = [["name", "John"]];
+    test('should change default condition when options is provided', () => {
+      input = [['name', 'John']];
       expected = {
-        search: { raw: "name:John", encoded: `name${URC.COLON}John` },
+        search: { raw: 'name:John', encoded: `name${URC.COLON}John` },
         searchFields: {
-          raw: "name:>",
+          raw: 'name:>',
           encoded: `name${URC.COLON}${URC.GREATER_THAN}`,
         },
       };
@@ -59,12 +59,12 @@ describe("search function", () => {
       expect(result).toEqual(expected);
     });
 
-    test("should format a valid key-value pair with a specific condition", () => {
-      input = [["age", 18, CONDITIONS.GTE]];
+    test('should format a valid key-value pair with a specific condition', () => {
+      input = [['age', 18, CONDITIONS.GTE]];
       expected = {
-        search: { raw: "age:18", encoded: `age${URC.COLON}18` },
+        search: { raw: 'age:18', encoded: `age${URC.COLON}18` },
         searchFields: {
-          raw: "age:>=",
+          raw: 'age:>=',
           encoded: `age${URC.COLON}${URC.GREATER_THAN}${URC.EQUALS}`,
         },
       };
@@ -75,14 +75,14 @@ describe("search function", () => {
     });
 
     test('should handle "in" condition with array of values', () => {
-      input = [["status", ["active", "pending"], CONDITIONS.IN]];
+      input = [['status', ['active', 'pending'], CONDITIONS.IN]];
       expected = {
         search: {
-          raw: "status:active,pending",
+          raw: 'status:active,pending',
           encoded: `status${URC.COLON}active${URC.COMMA}pending`,
         },
         searchFields: {
-          raw: "status:in",
+          raw: 'status:in',
           encoded: `status${URC.COLON}in`,
         },
       };
@@ -93,11 +93,11 @@ describe("search function", () => {
     });
 
     test('should handle "in" condition with array of length 1', () => {
-      input = [["status", ["active"], CONDITIONS.IN]];
+      input = [['status', ['active'], CONDITIONS.IN]];
       expected = {
-        search: { raw: "status:active", encoded: `status${URC.COLON}active` },
+        search: { raw: 'status:active', encoded: `status${URC.COLON}active` },
         searchFields: {
-          raw: "status:in",
+          raw: 'status:in',
           encoded: `status${URC.COLON}in`,
         },
       };
@@ -108,10 +108,10 @@ describe("search function", () => {
     });
 
     test('should handle "between" condition with tuple of values', () => {
-      input = [["date", ["2023-01-01", "2023-12-31"], CONDITIONS.BTW]];
+      input = [['date', ['2023-01-01', '2023-12-31'], CONDITIONS.BTW]];
       expected = {
         search: {
-          raw: "date:2023-01-01,2023-12-31",
+          raw: 'date:2023-01-01,2023-12-31',
           encoded: `date${URC.COLON}2023-01-01${URC.COMMA}2023-12-31`,
         },
         searchFields: {
@@ -125,15 +125,15 @@ describe("search function", () => {
       expect(result).toEqual(expected);
     });
 
-    test("should update the value if the key already exists (deduplication)", () => {
+    test('should update the value if the key already exists (deduplication)', () => {
       input = [
-        ["name", "John", CONDITIONS.LIKE],
-        ["name", "Doe", CONDITIONS.LIKE],
+        ['name', 'John', CONDITIONS.LIKE],
+        ['name', 'Doe', CONDITIONS.LIKE],
       ];
       expected = {
-        search: { raw: "name:Doe", encoded: `name${URC.COLON}Doe` },
+        search: { raw: 'name:Doe', encoded: `name${URC.COLON}Doe` },
         searchFields: {
-          raw: "name:like",
+          raw: 'name:like',
           encoded: `name${URC.COLON}like`,
         },
       };
@@ -143,18 +143,18 @@ describe("search function", () => {
       expect(result).toEqual(expected);
     });
 
-    test("should format multiple search params correctly", () => {
+    test('should format multiple search params correctly', () => {
       input = [
-        ["name", "John", CONDITIONS.LIKE],
-        ["email", "gmail", CONDITIONS.ILIKE],
+        ['name', 'John', CONDITIONS.LIKE],
+        ['email', 'gmail', CONDITIONS.ILIKE],
       ];
       expected = {
         search: {
-          raw: "name:John;email:gmail",
+          raw: 'name:John;email:gmail',
           encoded: `name${URC.COLON}John${URC.SEMICOLON}email${URC.COLON}gmail`,
         },
         searchFields: {
-          raw: "name:like;email:ilike",
+          raw: 'name:like;email:ilike',
           encoded: `name${URC.COLON}like${URC.SEMICOLON}email${URC.COLON}ilike`,
         },
       };
@@ -165,8 +165,8 @@ describe("search function", () => {
     });
   });
 
-  describe("validations and edge cases", () => {
-    test("should return empty result if called with no arguments", () => {
+  describe('validations and edge cases', () => {
+    test('should return empty result if called with no arguments', () => {
       expected = { search: undefined, searchFields: undefined };
 
       result = search(undefined, { logger: noOpLogger });
@@ -174,7 +174,7 @@ describe("search function", () => {
       expect(result).toEqual(expected);
     });
 
-    test("should return empty result if called with an empty array", () => {
+    test('should return empty result if called with an empty array', () => {
       input = [];
       expected = { search: undefined, searchFields: undefined };
 
@@ -183,8 +183,8 @@ describe("search function", () => {
       expect(result).toEqual(expected);
     });
 
-    test("should return empty result if argument is not an array", () => {
-      input = "invalid";
+    test('should return empty result if argument is not an array', () => {
+      input = 'invalid';
       expected = { search: undefined, searchFields: undefined };
 
       result = search(input, { logger: noOpLogger });
@@ -192,12 +192,12 @@ describe("search function", () => {
       expect(result).toEqual(expected);
     });
 
-    test("should ignore item if it is not an array", () => {
-      input = [["name", "John"], "invalid"];
+    test('should ignore item if it is not an array', () => {
+      input = [['name', 'John'], 'invalid'];
       expected = {
-        search: { raw: "name:John", encoded: `name${URC.COLON}John` },
+        search: { raw: 'name:John', encoded: `name${URC.COLON}John` },
         searchFields: {
-          raw: "name:=",
+          raw: 'name:=',
           encoded: `name${URC.COLON}${URC.EQUALS}`,
         },
       };
@@ -207,8 +207,8 @@ describe("search function", () => {
       expect(result).toEqual(expected);
     });
 
-    test("should return empty result if key is not a non-empty string", () => {
-      input = [["", "value"]];
+    test('should return empty result if key is not a non-empty string', () => {
+      input = [['', 'value']];
       expected = { search: undefined, searchFields: undefined };
 
       result = search(input, { logger: noOpLogger });
@@ -216,16 +216,16 @@ describe("search function", () => {
       expect(result).toEqual(expected);
     });
 
-    test("should ignore entries if value is null or undefined", () => {
+    test('should ignore entries if value is null or undefined', () => {
       input = [
-        ["status", "active", CONDITIONS.EQ],
-        ["ignored", null],
-        ["alsoIgnored", undefined],
+        ['status', 'active', CONDITIONS.EQ],
+        ['ignored', null],
+        ['alsoIgnored', undefined],
       ];
       expected = {
-        search: { raw: "status:active", encoded: `status${URC.COLON}active` },
+        search: { raw: 'status:active', encoded: `status${URC.COLON}active` },
         searchFields: {
-          raw: "status:=",
+          raw: 'status:=',
           encoded: `status${URC.COLON}${URC.EQUALS}`,
         },
       };
@@ -235,15 +235,15 @@ describe("search function", () => {
       expect(result).toEqual(expected);
     });
 
-    test("should ignore entries with invalid condition", () => {
+    test('should ignore entries with invalid condition', () => {
       input = [
-        ["name", "John", "INVALID_CONDITION"],
-        ["status", "active"],
+        ['name', 'John', 'INVALID_CONDITION'],
+        ['status', 'active'],
       ];
       expected = {
-        search: { raw: "status:active", encoded: `status${URC.COLON}active` },
+        search: { raw: 'status:active', encoded: `status${URC.COLON}active` },
         searchFields: {
-          raw: "status:=",
+          raw: 'status:=',
           encoded: `status${URC.COLON}${URC.EQUALS}`,
         },
       };
@@ -253,16 +253,16 @@ describe("search function", () => {
       expect(result).toEqual(expected);
     });
 
-    test("should ignore array value if it is empty or has invalid items", () => {
+    test('should ignore array value if it is empty or has invalid items', () => {
       input = [
-        ["status", "active", CONDITIONS.EQ],
-        ["emptyArray", [], CONDITIONS.IN],
-        ["invalidArray", [{}], CONDITIONS.IN],
+        ['status', 'active', CONDITIONS.EQ],
+        ['emptyArray', [], CONDITIONS.IN],
+        ['invalidArray', [{}], CONDITIONS.IN],
       ];
       expected = {
-        search: { raw: "status:active", encoded: `status${URC.COLON}active` },
+        search: { raw: 'status:active', encoded: `status${URC.COLON}active` },
         searchFields: {
-          raw: "status:=",
+          raw: 'status:=',
           encoded: `status${URC.COLON}${URC.EQUALS}`,
         },
       };
@@ -273,7 +273,7 @@ describe("search function", () => {
     });
 
     test("shouldn't handle array value for non 'in' condition", () => {
-      input = [["status", [1, 2, 3], CONDITIONS.DIFF]];
+      input = [['status', [1, 2, 3], CONDITIONS.DIFF]];
       expected = { search: undefined, searchFields: undefined };
 
       result = search(input, { logger: noOpLogger });
@@ -282,7 +282,7 @@ describe("search function", () => {
     });
 
     test("shouldn't handle array value for non 'between' condition", () => {
-      input = [["status", ["active", "pending"], CONDITIONS.GT]];
+      input = [['status', ['active', 'pending'], CONDITIONS.GT]];
       expected = { search: undefined, searchFields: undefined };
 
       result = search(input, { logger: noOpLogger });
@@ -291,7 +291,7 @@ describe("search function", () => {
     });
 
     test("shouldn't handle array with length less than 2 for 'between' condition", () => {
-      input = [["status", ["active"], CONDITIONS.BTW]];
+      input = [['status', ['active'], CONDITIONS.BTW]];
       expected = { search: undefined, searchFields: undefined };
 
       result = search(input, { logger: noOpLogger });
@@ -300,7 +300,7 @@ describe("search function", () => {
     });
 
     test("shouldn't handle array with length more than 2 for 'between' condition", () => {
-      input = [["status", [1, 2, 3], CONDITIONS.BTW]];
+      input = [['status', [1, 2, 3], CONDITIONS.BTW]];
       expected = { search: undefined, searchFields: undefined };
 
       result = search(input, { logger: noOpLogger });
@@ -309,49 +309,49 @@ describe("search function", () => {
     });
   });
 
-  describe("Search logging", () => {
-    test("should log warn if key is not a non-empty string", () => {
-      input = [["", "value"]];
+  describe('Search logging', () => {
+    test('should log warn if key is not a non-empty string', () => {
+      input = [['', 'value']];
 
       search(input, { logger });
 
       expect(warn).toHaveBeenCalledExactlyOnceWith(
-        "Search: must have keys as non-empty strings, but got string at index 0 instead",
+        'Search: must have keys as non-empty strings, but got string at index 0 instead',
       );
     });
 
-    test("should log warn if item is not an array", () => {
-      input = [["name", "John"], "invalid"];
+    test('should log warn if item is not an array', () => {
+      input = [['name', 'John'], 'invalid'];
 
       search(input, { logger });
 
       expect(warn).toHaveBeenCalledExactlyOnceWith(
-        "Search: must have a type of array, got string instead",
+        'Search: must have a type of array, got string instead',
       );
     });
 
-    test("should log error if argument is not an array", () => {
-      input = "invalid";
+    test('should log error if argument is not an array', () => {
+      input = 'invalid';
 
       search(input, { logger });
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        "Search: keys must have a type of array, got string instead",
+        'Search: keys must have a type of array, got string instead',
       );
     });
 
-    test("should log warn if item length is less than 2", () => {
-      input = [["name"]];
+    test('should log warn if item length is less than 2', () => {
+      input = [['name']];
 
       search(input, { logger });
 
       expect(warn).toHaveBeenCalledExactlyOnceWith(
-        "Search: must have a key-value array, but got length 1 at index 0 instead",
+        'Search: must have a key-value array, but got length 1 at index 0 instead',
       );
     });
 
-    test("should log warn if array value is missing condition", () => {
-      input = [["status", ["active", "pending"]]];
+    test('should log warn if array value is missing condition', () => {
+      input = [['status', ['active', 'pending']]];
 
       search(input, { logger });
 
@@ -360,8 +360,8 @@ describe("search function", () => {
       );
     });
 
-    test("should log warn if array value has invalid condition", () => {
-      input = [["status", ["active", "pending"], CONDITIONS.EQ]];
+    test('should log warn if array value has invalid condition', () => {
+      input = [['status', ['active', 'pending'], CONDITIONS.EQ]];
 
       search(input, { logger });
 
@@ -370,8 +370,8 @@ describe("search function", () => {
       );
     });
 
-    test("should log warn if array value for between condition does not have size 2", () => {
-      input = [["date", ["2023-01-01"], CONDITIONS.BTW]];
+    test('should log warn if array value for between condition does not have size 2', () => {
+      input = [['date', ['2023-01-01'], CONDITIONS.BTW]];
 
       search(input, { logger });
 
@@ -380,24 +380,24 @@ describe("search function", () => {
       );
     });
 
-    test("should log info if value is not a BaseValue", () => {
-      input = [["name", { obj: true }]];
+    test('should log info if value is not a BaseValue', () => {
+      input = [['name', { obj: true }]];
 
       search(input, { logger });
 
       expect(info).toHaveBeenCalledTimes(2);
       expect(info).toHaveBeenNthCalledWith(
         1,
-        "Search: ignoring value because of incorrect type, expected BaseValue but got object instead",
+        'Search: ignoring value because of incorrect type, expected BaseValue but got object instead',
       );
       expect(info).toHaveBeenNthCalledWith(
         2,
-        "Search: no values remaining to parse",
+        'Search: no values remaining to parse',
       );
     });
 
-    test("should log warn if condition is invalid", () => {
-      input = [["name", "John", "INVALID_CONDITION"]];
+    test('should log warn if condition is invalid', () => {
+      input = [['name', 'John', 'INVALID_CONDITION']];
 
       search(input, { logger });
 
@@ -406,27 +406,27 @@ describe("search function", () => {
       );
     });
 
-    test("should log info if arg is empty array", () => {
+    test('should log info if arg is empty array', () => {
       input = [];
 
       search(input, { logger });
 
-      expect(info).toHaveBeenCalledExactlyOnceWith("Search: no values given");
+      expect(info).toHaveBeenCalledExactlyOnceWith('Search: no values given');
     });
 
-    test("should log info if no values remain after filtering", () => {
-      input = [["name", { obj: true }]];
+    test('should log info if no values remain after filtering', () => {
+      input = [['name', { obj: true }]];
 
       search(input, { logger });
 
       expect(info).toHaveBeenCalledTimes(2);
       expect(info).toHaveBeenNthCalledWith(
         1,
-        "Search: ignoring value because of incorrect type, expected BaseValue but got object instead",
+        'Search: ignoring value because of incorrect type, expected BaseValue but got object instead',
       );
       expect(info).toHaveBeenNthCalledWith(
         2,
-        "Search: no values remaining to parse",
+        'Search: no values remaining to parse',
       );
     });
   });

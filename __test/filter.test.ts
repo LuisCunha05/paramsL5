@@ -1,8 +1,8 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { LOG_LEVEL, URL_ENCODED_CHARS as URC } from "@/constants";
-import { filter } from "@/generators/filter";
-import { Logger } from "@/logger";
+import { LOG_LEVEL, URL_ENCODED_CHARS as URC } from '@/constants';
+import { filter } from '@/generators/filter';
+import { Logger } from '@/logger';
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any;
@@ -27,12 +27,12 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe("filter function", () => {
-  describe("formatting", () => {
-    test("should format a valid array of strings", () => {
-      input = ["a", "b", "c"];
+describe('filter function', () => {
+  describe('formatting', () => {
+    test('should format a valid array of strings', () => {
+      input = ['a', 'b', 'c'];
       expected = {
-        raw: "a;b;c",
+        raw: 'a;b;c',
         encoded: `a${URC.SEMICOLON}b${URC.SEMICOLON}c`,
       };
 
@@ -41,10 +41,10 @@ describe("filter function", () => {
       expect(result).toEqual(expected);
     });
 
-    test("should return unique values if there are duplicates", () => {
-      input = ["a", "b", "a", "c", "b"];
+    test('should return unique values if there are duplicates', () => {
+      input = ['a', 'b', 'a', 'c', 'b'];
       expected = {
-        raw: "a;b;c",
+        raw: 'a;b;c',
         encoded: `a${URC.SEMICOLON}b${URC.SEMICOLON}c`,
       };
 
@@ -54,19 +54,19 @@ describe("filter function", () => {
     });
   });
 
-  describe("validations and edge cases", () => {
-    test("should return undefined if called with a non-array", () => {
-      input = "not an array";
+  describe('validations and edge cases', () => {
+    test('should return undefined if called with a non-array', () => {
+      input = 'not an array';
 
       result = filter(input, { logger: noOpLogger });
 
       expect(result).toBeUndefined();
     });
 
-    test("should filter out non-string items", () => {
-      input = ["a", 123, "b"];
+    test('should filter out non-string items', () => {
+      input = ['a', 123, 'b'];
       expected = {
-        raw: "a;b",
+        raw: 'a;b',
         encoded: `a${URC.SEMICOLON}b`,
       };
 
@@ -75,10 +75,10 @@ describe("filter function", () => {
       expect(result).toEqual(expected);
     });
 
-    test("should filter out empty strings", () => {
-      input = ["a", "", "b", "   "];
+    test('should filter out empty strings', () => {
+      input = ['a', '', 'b', '   '];
       expected = {
-        raw: "a;b",
+        raw: 'a;b',
         encoded: `a${URC.SEMICOLON}b`,
       };
 
@@ -88,36 +88,36 @@ describe("filter function", () => {
     });
   });
 
-  describe("filter logging", () => {
-    test("should log error if argument is not an array", () => {
-      input = "not an array";
+  describe('filter logging', () => {
+    test('should log error if argument is not an array', () => {
+      input = 'not an array';
 
       filter(input, { logger });
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        "Filter: argument must be an array, got string instead",
+        'Filter: argument must be an array, got string instead',
       );
     });
 
-    test("should log info if an item is not a string", () => {
-      input = ["a", 123];
+    test('should log info if an item is not a string', () => {
+      input = ['a', 123];
 
       filter(input, { logger });
 
       expect(info).toHaveBeenCalledExactlyOnceWith(
-        "Filter: include value must be a string, got number instead",
+        'Filter: include value must be a string, got number instead',
       );
     });
 
-    test("should log info with empty array", () => {
+    test('should log info with empty array', () => {
       input = [];
 
       filter(input, { logger });
 
-      expect(info).toHaveBeenCalledExactlyOnceWith("Filter: no values given");
+      expect(info).toHaveBeenCalledExactlyOnceWith('Filter: no values given');
     });
 
-    test("should log info with no values remaining to parse", () => {
+    test('should log info with no values remaining to parse', () => {
       input = [123];
 
       filter(input, { logger });
@@ -125,11 +125,11 @@ describe("filter function", () => {
       expect(info).toHaveBeenCalledTimes(2);
       expect(info).toHaveBeenNthCalledWith(
         1,
-        "Filter: include value must be a string, got number instead",
+        'Filter: include value must be a string, got number instead',
       );
       expect(info).toHaveBeenNthCalledWith(
         2,
-        "Filter: no values remaining to parse",
+        'Filter: no values remaining to parse',
       );
     });
   });

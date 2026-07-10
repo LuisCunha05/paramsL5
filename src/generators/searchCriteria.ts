@@ -1,10 +1,10 @@
-import type { BaseValue, ILogger, TResult } from "@/types";
+import type { BaseValue, ILogger, TResult } from '@/types';
 import {
   encodeSearchParam,
   isBaseValue,
   isNonEmptyString,
   typeName,
-} from "@/utils";
+} from '@/utils';
 
 export type TCriteriaValue = BaseValue | null | undefined;
 export type TSearchCriteria = readonly (readonly [string, TCriteriaValue])[];
@@ -63,7 +63,7 @@ export function searchCriteria(
   });
 
   if (!filteredValues.length) {
-    log?.info("SearchCriteria: no values remaning to parse");
+    log?.info('SearchCriteria: no values remaning to parse');
     return;
   }
 
@@ -72,8 +72,8 @@ export function searchCriteria(
   );
 
   const result: TResult = {
-    raw: "",
-    encoded: "",
+    raw: '',
+    encoded: '',
   };
 
   deduplicatedValues.forEach(([key, value]) => {

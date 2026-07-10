@@ -1,8 +1,8 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { LOG_LEVEL, SEARCH_JOIN } from "@/constants";
-import { searchJoin } from "@/generators/searchJoin";
-import { Logger } from "@/logger";
+import { LOG_LEVEL, SEARCH_JOIN } from '@/constants';
+import { searchJoin } from '@/generators/searchJoin';
+import { Logger } from '@/logger';
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any;
@@ -25,9 +25,9 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe("searchJoin function", () => {
-  describe("formatting", () => {
-    test("should format searchJoin correctly", () => {
+describe('searchJoin function', () => {
+  describe('formatting', () => {
+    test('should format searchJoin correctly', () => {
       input = SEARCH_JOIN.AND;
       expected = SEARCH_JOIN.AND;
 
@@ -37,8 +37,8 @@ describe("searchJoin function", () => {
     });
   });
 
-  describe("validations and edge cases", () => {
-    test("should return undefined if called with a non-string", () => {
+  describe('validations and edge cases', () => {
+    test('should return undefined if called with a non-string', () => {
       input = 123;
 
       result = searchJoin(input, { logger: noOpLogger });
@@ -46,34 +46,34 @@ describe("searchJoin function", () => {
       expect(result).toBeUndefined();
     });
 
-    test("should return undefined if called with an invalid join string", () => {
-      input = "invalid";
+    test('should return undefined if called with an invalid join string', () => {
+      input = 'invalid';
 
       result = searchJoin(input, { logger: noOpLogger });
 
       expect(result).toBeUndefined();
     });
 
-    test("should return undefined if argument is undefined", () => {
+    test('should return undefined if argument is undefined', () => {
       result = searchJoin(undefined, { logger: noOpLogger });
 
       expect(result).toBeUndefined();
     });
   });
 
-  describe("searchJoin logging", () => {
-    test("should log error if argument is not a string", () => {
+  describe('searchJoin logging', () => {
+    test('should log error if argument is not a string', () => {
       input = 123;
 
       searchJoin(input, { logger });
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        "SearchJoin: must be a string, got number instead",
+        'SearchJoin: must be a string, got number instead',
       );
     });
 
-    test("should log error if argument is invalid search join", () => {
-      input = "invalid";
+    test('should log error if argument is invalid search join', () => {
+      input = 'invalid';
 
       searchJoin(input, { logger });
 
@@ -82,11 +82,11 @@ describe("searchJoin function", () => {
       );
     });
 
-    test("should log info if argument is undefined", () => {
+    test('should log info if argument is undefined', () => {
       searchJoin(undefined, { logger });
 
       expect(info).toHaveBeenCalledExactlyOnceWith(
-        "SearchJoin: no value given",
+        'SearchJoin: no value given',
       );
     });
   });

@@ -1,6 +1,6 @@
-import { SORT_BY } from "@/constants";
-import type { ILogger, TResult } from "@/types";
-import { encodeSearchParam, isNonEmptyString, typeName } from "@/utils";
+import { SORT_BY } from '@/constants';
+import type { ILogger, TResult } from '@/types';
+import { encodeSearchParam, isNonEmptyString, typeName } from '@/utils';
 
 export type TSortBy = (typeof SORT_BY)[keyof typeof SORT_BY];
 
@@ -37,7 +37,7 @@ export function orderBySortBy(
   }
 
   if (!arg.length) {
-    log?.info("OrderBySortBy: no values given");
+    log?.info('OrderBySortBy: no values given');
     return EMPTY_RESULT;
   }
 
@@ -66,7 +66,7 @@ export function orderBySortBy(
     }
 
     if (
-      typeof sortBy !== "undefined" &&
+      typeof sortBy !== 'undefined' &&
       !Object.values(SORT_BY).includes(sortBy)
     ) {
       log?.warn(
@@ -81,7 +81,7 @@ export function orderBySortBy(
   }, new Map<string, TSortBy>());
 
   if (!filteredValues.size) {
-    log?.info("OrderBySortBy: no values remaining to parse");
+    log?.info('OrderBySortBy: no values remaining to parse');
     return EMPTY_RESULT;
   }
 
@@ -97,11 +97,11 @@ export function orderBySortBy(
   );
 
   const params = new URLSearchParams();
-  params.set("orderBy", orderBySortedBy.orderBy.join(";"));
-  params.set("sortedBy", orderBySortedBy.sortedBy.join(";"));
+  params.set('orderBy', orderBySortedBy.orderBy.join(';'));
+  params.set('sortedBy', orderBySortedBy.sortedBy.join(';'));
 
-  const orderResult = orderBySortedBy.orderBy.join(";");
-  const sortedResult = orderBySortedBy.sortedBy.join(";");
+  const orderResult = orderBySortedBy.orderBy.join(';');
+  const sortedResult = orderBySortedBy.sortedBy.join(';');
 
   return {
     orderBy: { raw: orderResult, encoded: encodeSearchParam(orderResult) },

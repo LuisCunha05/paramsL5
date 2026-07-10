@@ -1,5 +1,5 @@
-import type { ILogger } from "@/types";
-import { isNumber, typeName } from "@/utils";
+import type { ILogger } from '@/types';
+import { isNumber, typeName } from '@/utils';
 
 export type TLimit = number;
 
@@ -13,7 +13,7 @@ export function limit(
 ): string | undefined {
   const log = options.logger ?? console;
   if (arg === undefined) {
-    log?.info("Limit: no value given");
+    log?.info('Limit: no value given');
     return;
   }
 

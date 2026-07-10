@@ -1,5 +1,5 @@
-import type { ILogger, TResult } from "@/types";
-import { encodeSearchParam, isNonEmptyString, typeName } from "@/utils";
+import type { ILogger, TResult } from '@/types';
+import { encodeSearchParam, isNonEmptyString, typeName } from '@/utils';
 
 export type TFilter = Array<string>;
 
@@ -20,7 +20,7 @@ export function filter(
   }
 
   if (!arg.length) {
-    log?.info("Filter: no values given");
+    log?.info('Filter: no values given');
     return;
   }
 
@@ -35,7 +35,7 @@ export function filter(
   });
 
   if (!filteredValues.length) {
-    log?.info("Filter: no values remaining to parse");
+    log?.info('Filter: no values remaining to parse');
     return;
   }
 
@@ -44,7 +44,7 @@ export function filter(
   if (!uniqueValues.length) return;
 
   return {
-    raw: uniqueValues.join(";"),
-    encoded: encodeSearchParam(uniqueValues.join(";")),
+    raw: uniqueValues.join(';'),
+    encoded: encodeSearchParam(uniqueValues.join(';')),
   };
 }
