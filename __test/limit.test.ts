@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { LOG_LEVEL } from '@/constants'
 import { limit } from '@/generators/limit'
+import { Logger } from '@/logger'
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any
@@ -14,7 +16,12 @@ beforeEach(() => {
   expected = undefined
 })
 
-const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+const info = vi.fn()
+const warn = vi.fn()
+const error = vi.fn()
+const logger = { info, warn, error }
+const noOpLogger = Logger({ logLevel: LOG_LEVEL.NONE })
+
 afterEach(() => {
   vi.clearAllMocks()
 })
@@ -31,7 +38,7 @@ describe('limit function', () => {
     })
 
     test('should have a default value', () => {
-      result = limit()
+      result = limit(undefined, { logger: noOpLogger })
 
       expect(result).toBeUndefined()
     })
@@ -40,14 +47,14 @@ describe('limit function', () => {
   describe('validations and edge cases', () => {
     test('should return undefined if called with a negative number', () => {
       input = -10
-      result = limit(input)
+      result = limit(input, { logger: noOpLogger })
 
       expect(result).toBeUndefined()
     })
 
     test('should return undefined if called with a non-number', () => {
       input = null
-      result = limit(input)
+      result = limit(input, { logger: noOpLogger })
 
       expect(result).toBeUndefined()
     })
@@ -56,57 +63,53 @@ describe('limit function', () => {
   describe('Limit logging', () => {
     test('should log error if argument is a negative number', () => {
       input = -10
-      limit(input)
+      limit(input, { logger })
 
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining(
-          'Limit must be a positive integer or zero, got number instead',
-        ),
+      expect(error).toHaveBeenCalledExactlyOnceWith(
+        'Limit: must be a positive integer or zero, got number instead',
       )
     })
 
     test('should log error if argument is null', () => {
       input = null
-      limit(input)
+      limit(input, { logger })
 
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining(
-          'Limit must be a positive integer or zero, got null instead',
-        ),
+      expect(error).toHaveBeenCalledExactlyOnceWith(
+        'Limit: must be a positive integer or zero, got null instead',
       )
     })
 
     test('should log error if argument is an object', () => {
       input = {}
-      limit(input)
+      limit(input, { logger })
 
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining(
-          'Limit must be a positive integer or zero, got object instead',
-        ),
+      expect(error).toHaveBeenCalledExactlyOnceWith(
+        'Limit: must be a positive integer or zero, got object instead',
       )
     })
 
     test('should log error if argument is an array', () => {
       input = []
-      limit(input)
+      limit(input, { logger })
 
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining(
-          'Limit must be a positive integer or zero, got Array instead',
-        ),
+      expect(error).toHaveBeenCalledExactlyOnceWith(
+        'Limit: must be a positive integer or zero, got Array instead',
       )
     })
 
     test('should log error if argument is NaN', () => {
       input = NaN
-      limit(input)
+      limit(input, { logger })
 
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining(
-          'Limit must be a positive integer or zero, got NaN instead',
-        ),
+      expect(error).toHaveBeenCalledExactlyOnceWith(
+        'Limit: must be a positive integer or zero, got NaN instead',
       )
+    })
+
+    test('should log info if argument is undefined', () => {
+      limit(undefined, { logger })
+
+      expect(info).toHaveBeenCalledExactlyOnceWith('Limit: no value given')
     })
   })
 })

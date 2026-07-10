@@ -32,7 +32,7 @@ export function searchCriteria(
 
   const filteredValues = arg.filter((item, index) => {
     if (!Array.isArray(item)) {
-      log?.error(
+      log?.warn(
         `SearchCriteria: must have a type of array, got ${typeName(item)} instead`,
       )
       return false
@@ -40,14 +40,14 @@ export function searchCriteria(
 
     if (item.length !== 2) {
       log?.warn(
-        `SearchCriteria must have a key-value array, but got length ${item.length} at index ${index} instead`,
+        `SearchCriteria: must have a key-value array, but got length ${item.length} at index ${index} instead`,
       )
       return false
     }
 
     if (!isNonEmptyString(item[0])) {
       log?.warn(
-        `SearchCriteria must have keys as non-empty strings, but got ${typeName(item[0])} at index ${index} instead`,
+        `SearchCriteria: must have keys as non-empty strings, but got ${typeName(item[0])} at index ${index} instead`,
       )
       return false
     }

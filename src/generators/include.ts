@@ -13,15 +13,22 @@ export function include(
 ): TResult | undefined {
   const log = options.logger ?? console
   if (!Array.isArray(arg)) {
-    log?.error(`Argument must be a array, got ${typeName(arg)} instead`)
+    log?.error(
+      `Include: argument must be an array, got ${typeName(arg)} instead`,
+    )
+    return
+  }
+
+  if (!arg.length) {
+    log?.info('Include: no values given')
     return
   }
 
   const filteredValues = arg.reduce(
     (result, item) => {
       if (!isNonEmptyString(item)) {
-        log?.warn(
-          `Include value must be a string, got ${typeName(arg)} instead`,
+        log?.info(
+          `Include: include value must be a string, got ${typeName(item)} instead`,
         )
         return result
       }
@@ -31,9 +38,13 @@ export function include(
     },
     [] as Array<string>,
   )
-  const uniqueValues = Array.from(new Set(filteredValues))
 
-  if (!uniqueValues.length) return
+  if (!filteredValues.length) {
+    log?.info('Include: no values remaining to parse')
+    return
+  }
+
+  const uniqueValues = Array.from(new Set(filteredValues))
 
   const result = uniqueValues.join(',')
 

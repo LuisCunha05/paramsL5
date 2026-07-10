@@ -12,16 +12,19 @@ export function searchJoin(
   options: TSearchJoinOptions = {},
 ): string | undefined {
   const log = options.logger ?? console
-  if (!arg) return
+  if (arg === undefined) {
+    log?.info('SearchJoin: no value given')
+    return
+  }
 
   if (!isNonEmptyString(arg)) {
-    log?.error(`SearchJoin must be an string, got ${typeName(arg)} instead`)
+    log?.error(`SearchJoin: must be a string, got ${typeName(arg)} instead`)
     return
   }
 
   if (!(arg === SEARCH_JOIN.AND || arg === SEARCH_JOIN.OR)) {
     log?.error(
-      `SearchJoin must be either "${SEARCH_JOIN.AND}" or "${SEARCH_JOIN.OR}"`,
+      `SearchJoin: must be either "${SEARCH_JOIN.AND}" or "${SEARCH_JOIN.OR}", got "${arg}" instead`,
     )
     return
   }

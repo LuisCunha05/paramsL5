@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { createClient } from '@/client'
-import { CONDITIONS, URL_ENCODED_CHARS as URC } from '@/constants'
+import { CONDITIONS, LOG_LEVEL, URL_ENCODED_CHARS as URC } from '@/constants'
+import { Logger } from '@/logger'
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any
@@ -14,6 +15,8 @@ beforeEach(() => {
   result = undefined
   expected = undefined
 })
+
+const noOpLogger = Logger({ logLevel: LOG_LEVEL.NONE })
 
 afterEach(() => {
   vi.clearAllMocks()
@@ -36,6 +39,7 @@ describe('createClient function', () => {
           searchJoin: 'or',
           searchCondition: CONDITIONS.LIKE,
         },
+        logger: noOpLogger,
       })
 
       result = paramsL5(input)
@@ -48,7 +52,10 @@ describe('createClient function', () => {
     test('should change the default limit when defaultOptions is provided', () => {
       expected = '77'
 
-      const paramsL5 = createClient({ defaultOptions: { limit: 77 } })
+      const paramsL5 = createClient({
+        defaultOptions: { limit: 77 },
+        logger: noOpLogger,
+      })
 
       result = paramsL5()
 
@@ -59,7 +66,10 @@ describe('createClient function', () => {
       input = { limit: 10 }
       expected = '10'
 
-      const paramsL5 = createClient({ defaultOptions: { limit: 77 } })
+      const paramsL5 = createClient({
+        defaultOptions: { limit: 77 },
+        logger: noOpLogger,
+      })
 
       result = paramsL5(input)
 
@@ -71,7 +81,10 @@ describe('createClient function', () => {
     test('should change the default page when defaultOptions is provided', () => {
       expected = '2'
 
-      const paramsL5 = createClient({ defaultOptions: { page: 2 } })
+      const paramsL5 = createClient({
+        defaultOptions: { page: 2 },
+        logger: noOpLogger,
+      })
 
       result = paramsL5()
 
@@ -82,7 +95,10 @@ describe('createClient function', () => {
       input = { page: 3 }
       expected = '3'
 
-      const paramsL5 = createClient({ defaultOptions: { page: 2 } })
+      const paramsL5 = createClient({
+        defaultOptions: { page: 2 },
+        logger: noOpLogger,
+      })
 
       result = paramsL5(input)
 
@@ -95,7 +111,10 @@ describe('createClient function', () => {
       input = { orderBySortBy: [['name']] }
       expected = 'desc'
 
-      const paramsL5 = createClient({ defaultOptions: { sortBy: 'desc' } })
+      const paramsL5 = createClient({
+        defaultOptions: { sortBy: 'desc' },
+        logger: noOpLogger,
+      })
 
       result = paramsL5(input)
 
@@ -106,7 +125,10 @@ describe('createClient function', () => {
       input = { orderBySortBy: [['name', 'asc']] }
       expected = 'asc'
 
-      const paramsL5 = createClient({ defaultOptions: { sortBy: 'desc' } })
+      const paramsL5 = createClient({
+        defaultOptions: { sortBy: 'desc' },
+        logger: noOpLogger,
+      })
 
       result = paramsL5(input)
 
@@ -118,7 +140,10 @@ describe('createClient function', () => {
     test('should change the default searchJoin when defaultOptions is provided', () => {
       expected = 'or'
 
-      const paramsL5 = createClient({ defaultOptions: { searchJoin: 'or' } })
+      const paramsL5 = createClient({
+        defaultOptions: { searchJoin: 'or' },
+        logger: noOpLogger,
+      })
 
       result = paramsL5()
 
@@ -129,7 +154,10 @@ describe('createClient function', () => {
       input = { searchJoin: 'and' }
       expected = 'and'
 
-      const paramsL5 = createClient({ defaultOptions: { searchJoin: 'or' } })
+      const paramsL5 = createClient({
+        defaultOptions: { searchJoin: 'or' },
+        logger: noOpLogger,
+      })
 
       result = paramsL5(input)
 
@@ -144,6 +172,7 @@ describe('createClient function', () => {
 
       const paramsL5 = createClient({
         defaultOptions: { searchCondition: CONDITIONS.GTE },
+        logger: noOpLogger,
       })
 
       result = paramsL5(input)
@@ -157,6 +186,7 @@ describe('createClient function', () => {
 
       const paramsL5 = createClient({
         defaultOptions: { searchCondition: CONDITIONS.GTE },
+        logger: noOpLogger,
       })
 
       result = paramsL5(input)

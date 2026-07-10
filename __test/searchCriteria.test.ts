@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { LOG_LEVEL } from '@/constants'
 import { searchCriteria } from '@/generators/searchCriteria'
-import type { ILogger } from '@/types'
+import { Logger } from '@/logger'
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any
@@ -9,22 +10,11 @@ let result: any
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let expected: any
 
-const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
-const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-const consoleInfo = vi.spyOn(console, 'info').mockImplementation(() => { })
-
-const loggerMocks = () => {
-  const info = vi.fn()
-  const warn = vi.fn()
-  const error = vi.fn()
-  const logger: ILogger = {
-    info,
-    warn,
-    error,
-  }
-
-  return {info, warn, error, logger}
-}
+const info = vi.fn()
+const warn = vi.fn()
+const error = vi.fn()
+const logger = { info, warn, error }
+const noOpLogger = Logger({ logLevel: LOG_LEVEL.NONE })
 
 beforeEach(() => {
   input = undefined
@@ -119,7 +109,7 @@ describe('SearchCriteria params generation', () => {
 
 describe('SearchCriteria validation', () => {
   test('Should return undefined with empty input', () => {
-    result = searchCriteria()
+    result = searchCriteria(undefined, { logger: noOpLogger })
 
     expect(result).toBeUndefined()
   })
@@ -127,7 +117,7 @@ describe('SearchCriteria validation', () => {
   test("Shouldn't accept undefined for key", () => {
     input = [[undefined, 'value1']]
 
-    result = searchCriteria(input)
+    result = searchCriteria(input, { logger: noOpLogger })
 
     expect(result).toBeUndefined()
   })
@@ -135,7 +125,7 @@ describe('SearchCriteria validation', () => {
   test("Shouldn't accept number for key", () => {
     input = [[2, 'value1']]
 
-    result = searchCriteria(input)
+    result = searchCriteria(input, { logger: noOpLogger })
 
     expect(result).toBeUndefined()
   })
@@ -143,7 +133,7 @@ describe('SearchCriteria validation', () => {
   test("Shouldn't accept object for key", () => {
     input = [[{}, 'value1']]
 
-    result = searchCriteria(input)
+    result = searchCriteria(input, { logger: noOpLogger })
 
     expect(result).toBeUndefined()
   })
@@ -151,7 +141,7 @@ describe('SearchCriteria validation', () => {
   test("Shouldn't accept array for key", () => {
     input = [[[], 'value1']]
 
-    result = searchCriteria(input)
+    result = searchCriteria(input, { logger: noOpLogger })
 
     expect(result).toBeUndefined()
   })
@@ -159,7 +149,7 @@ describe('SearchCriteria validation', () => {
   test("Shouldn't accept null for key", () => {
     input = [[null, 'value1']]
 
-    result = searchCriteria(input)
+    result = searchCriteria(input, { logger: noOpLogger })
 
     expect(result).toBeUndefined()
   })
@@ -167,7 +157,7 @@ describe('SearchCriteria validation', () => {
   test("Shouldn't accept undefined for value", () => {
     input = [['key']]
 
-    result = searchCriteria(input)
+    result = searchCriteria(input, { logger: noOpLogger })
 
     expect(result).toBeUndefined()
   })
@@ -177,19 +167,19 @@ describe('SearchCriteria logging', () => {
   test('should log error if arg is not an array', () => {
     input = {}
 
-    searchCriteria(input)
+    searchCriteria(input, { logger })
 
-    expect(consoleError).toHaveBeenCalledWith(
+    expect(error).toHaveBeenCalledWith(
       'SearchCriteria: keys must have a type of array, got object instead',
     )
   })
 
-  test('should log error if item is not an array', () => {
+  test('should log warn if item is not an array', () => {
     input = ['invalid']
 
-    searchCriteria(input)
+    searchCriteria(input, { logger })
 
-    expect(consoleError).toHaveBeenCalledWith(
+    expect(warn).toHaveBeenCalledWith(
       'SearchCriteria: must have a type of array, got string instead',
     )
   })
@@ -197,100 +187,86 @@ describe('SearchCriteria logging', () => {
   test('should log warn if item does not have exactly 2 elements', () => {
     input = [['key']]
 
-    searchCriteria(input)
+    searchCriteria(input, { logger })
 
-    expect(consoleWarn).toHaveBeenCalledWith(
-      'SearchCriteria must have a key-value array, but got length 1 at index 0 instead',
+    expect(warn).toHaveBeenCalledWith(
+      'SearchCriteria: must have a key-value array, but got length 1 at index 0 instead',
     )
   })
 
   test('should log warn if key is not a non-empty string', () => {
     input = [[123, 'value']]
 
-    searchCriteria(input)
+    searchCriteria(input, { logger })
 
-    expect(consoleWarn).toHaveBeenCalledWith(
-      'SearchCriteria must have keys as non-empty strings, but got number at index 0 instead',
+    expect(warn).toHaveBeenCalledWith(
+      'SearchCriteria: must have keys as non-empty strings, but got number at index 0 instead',
     )
   })
 
   test('should log info with empty array', () => {
     input = []
 
-    searchCriteria(input)
+    searchCriteria(input, { logger })
 
-    expect(consoleInfo).toHaveBeenCalledWith('SearchCriteria: no values given')
+    expect(info).toHaveBeenCalledWith('SearchCriteria: no values given')
   })
 
   test("should log info when value ins't baseValue", () => {
     input = [['key', null]]
 
-    searchCriteria(input)
+    searchCriteria(input, { logger })
 
-    expect(consoleInfo).toHaveBeenCalledTimes(2)
+    expect(info).toHaveBeenCalledTimes(2)
 
-    expect(consoleInfo).toHaveBeenCalledWith(
+    expect(info).toHaveBeenNthCalledWith(
+      1,
       `SearchCriteria: ignoring invalid value, got null at index 0 instead`,
     )
-    expect(consoleInfo).toHaveBeenCalledWith(
+    expect(info).toHaveBeenNthCalledWith(
+      2,
       'SearchCriteria: no values remaning to parse',
     )
   })
 
   test('external logger should log invalid argument', () => {
-
-    const {error,logger} = loggerMocks()
-
     searchCriteria(null as any, { logger })
-    expect(error).toHaveBeenCalledWith('SearchCriteria: keys must have a type of array, got null instead')
+    expect(error).toHaveBeenCalledWith(
+      'SearchCriteria: keys must have a type of array, got null instead',
+    )
   })
 
   test('external logger should log empty value', () => {
-
-    const {info,logger} = loggerMocks()
-
     searchCriteria([], { logger })
     expect(info).toHaveBeenCalledWith('SearchCriteria: no values given')
   })
 
   test('external logger should log invalid type for sub-argument', () => {
-
-    const {error,logger} = loggerMocks()
-
     searchCriteria([{} as any], { logger })
-    expect(error).toHaveBeenCalledWith('SearchCriteria: must have a type of array, got object instead')
+    expect(warn).toHaveBeenCalledWith('SearchCriteria: must have a type of array, got object instead')
   })
 
   test('external logger should log invalid amount of arguments', () => {
-
-    const {warn,logger} = loggerMocks()
-
     searchCriteria([["key"] as any], { logger })
-    expect(warn).toHaveBeenCalledWith('SearchCriteria must have a key-value array, but got length 1 at index 0 instead')
+    expect(warn).toHaveBeenCalledWith('SearchCriteria: must have a key-value array, but got length 1 at index 0 instead')
   })
 
   test('external logger should log invalid key type for sub-argument', () => {
-
-    const {warn,logger} = loggerMocks()
-
     searchCriteria([[1, "value"] as any], { logger })
-    expect(warn).toHaveBeenCalledWith('SearchCriteria must have keys as non-empty strings, but got number at index 0 instead')
+    expect(warn).toHaveBeenCalledWith('SearchCriteria: must have keys as non-empty strings, but got number at index 0 instead')
   })
 
   test('external logger should log non-baseValue value argument', () => {
-
-    const {info,logger} = loggerMocks()
-
-    searchCriteria([["key", null] as any], { logger })
-    expect(info).toHaveBeenCalledWith('SearchCriteria: ignoring invalid value, got null at index 0 instead')
+    searchCriteria([['key', null] as any], { logger })
+    expect(info).toHaveBeenCalledWith(
+      'SearchCriteria: ignoring invalid value, got null at index 0 instead',
+    )
   })
 
   test('external logger should log no remaning values', () => {
-
-    const {info,logger} = loggerMocks()
-
-    searchCriteria([["key", null] as any], { logger })
-    expect(info).toHaveBeenCalledWith('SearchCriteria: no values remaning to parse')
+    searchCriteria([['key', null] as any], { logger })
+    expect(info).toHaveBeenCalledWith(
+      'SearchCriteria: no values remaning to parse',
+    )
   })
-
 })

@@ -14,20 +14,30 @@ export function filter(
   const log = options.logger ?? console
   if (!Array.isArray(arg)) {
     log?.error(
-      `Argument of filter must be a array, got ${typeName(arg)} instead`,
+      `Filter: argument must be an array, got ${typeName(arg)} instead`,
     )
+    return
+  }
+
+  if (!arg.length) {
+    log?.info('Filter: no values given')
     return
   }
 
   const filteredValues = arg.filter((item) => {
     if (!isNonEmptyString(item)) {
-      log?.warn(`Include value must be a string, got ${typeName(arg)} instead`)
+      log?.info(
+        `Filter: include value must be a string, got ${typeName(item)} instead`,
+      )
       return false
     }
     return true
   })
 
-  if (!filteredValues.length) return
+  if (!filteredValues.length) {
+    log?.info('Filter: no values remaining to parse')
+    return
+  }
 
   const uniqueValues = Array.from(new Set(filteredValues))
 

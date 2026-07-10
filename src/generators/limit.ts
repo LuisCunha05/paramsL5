@@ -12,9 +12,14 @@ export function limit(
   options: TLimitOptions = {},
 ): string | undefined {
   const log = options.logger ?? console
+  if (arg === undefined) {
+    log?.info('Limit: no value given')
+    return
+  }
+
   if (!isInputValid(arg)) {
     log?.error(
-      `Limit must be a positive integer or zero, got ${typeName(arg)} instead`,
+      `Limit: must be a positive integer or zero, got ${typeName(arg)} instead`,
     )
     return
   }

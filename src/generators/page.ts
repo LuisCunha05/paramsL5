@@ -13,8 +13,13 @@ export function page(
 ): string | undefined {
   const log = options.logger ?? console
 
-  if (!arg || !isInputValid(arg)) {
-    log?.error(`Page must be a positive integer, got ${typeName(arg)} instead`)
+  if (arg === undefined) {
+    log?.info('Page: no value given')
+    return
+  }
+
+  if (!isInputValid(arg)) {
+    log?.error(`Page: must be a positive integer, got ${typeName(arg)} instead`)
     return
   }
 
