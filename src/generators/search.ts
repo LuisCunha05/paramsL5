@@ -56,7 +56,7 @@ export function search(
   const log = options.logger ?? console
   if (!Array.isArray(arg as TSearch)) {
     log?.error(
-      `Search keys must have a type of array, got ${typeName(arg)} instead`,
+      `Search: keys must have a type of array, got ${typeName(arg)} instead`,
     )
     return EMPTY_RESULT
   }
@@ -67,14 +67,14 @@ export function search(
     (result, item, index) => {
       if (!Array.isArray(item as TSearch[number])) {
         log?.error(
-          `Search must have a type of array, got ${typeName(item)} instead`,
+          `Search: must have a type of array, got ${typeName(item)} instead`,
         )
         return result
       }
 
       if (item.length < 2) {
         log?.error(
-          `Search must have a key-value array, but got length ${item.length} at index ${index} instead`,
+          `Search: must have a key-value array, but got length ${item.length} at index ${index} instead`,
         )
         return result
       }
@@ -82,7 +82,7 @@ export function search(
       const key = item[0]
       if (!isNonEmptyString(key)) {
         log?.error(
-          `Search must have keys as non-empty strings, but got ${typeName(key)} at index ${index} instead`,
+          `Search: must have keys as non-empty strings, but got ${typeName(key)} at index ${index} instead`,
         )
         return result
       }
@@ -98,21 +98,21 @@ export function search(
         if (!value.length) return result
         if (!condition) {
           log?.warn(
-            `Ignoring array value in Search because of missing condition, expected 'in' or 'between'`,
+            `Search: ignoring array value because of missing condition, expected 'in' or 'between'`,
           )
           return result
         }
 
         if (condition !== CONDITIONS.BTW && condition !== CONDITIONS.IN) {
           log?.warn(
-            `Ignoring array value in Search because got an array value for condition that is not 'in' or 'between' in index ${index}`,
+            `Search: ignoring array value because got an array value for condition that is not 'in' or 'between' in index ${index}`,
           )
           return result
         }
 
         if (condition === CONDITIONS.BTW && value.length !== 2) {
           log?.warn(
-            `Ignoring array value in Search because expected array with size 2 for condition 'between', but got ${value.length} instead in index ${index}`,
+            `Search: ignoring array value because expected array with size 2 for condition 'between', but got ${value.length} instead in index ${index}`,
           )
           return result
         }
@@ -121,7 +121,7 @@ export function search(
       } else {
         if (!isBaseValue(value)) {
           log?.warn(
-            `Ignoring value in Search because of incorrect type, expected BaseValue but got ${typeName(value)} instead`,
+            `Search: ignoring value because of incorrect type, expected BaseValue but got ${typeName(value)} instead`,
           )
           return result
         }
@@ -133,7 +133,7 @@ export function search(
         !Object.values(CONDITIONS).includes(condition)
       ) {
         log?.warn(
-          `Ignoring value for Condition in search because it didn't match possible values, got ${value}`,
+          `Search: ignoring value for condition because it didn't match possible values, got ${value}`,
         )
         return result
       }

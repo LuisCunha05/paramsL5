@@ -315,7 +315,7 @@ describe('search function', () => {
       search(input, { logger })
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        'Search must have keys as non-empty strings, but got string at index 0 instead',
+        'Search: must have keys as non-empty strings, but got string at index 0 instead',
       )
     })
 
@@ -325,7 +325,7 @@ describe('search function', () => {
       search(input, { logger })
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        'Search must have a type of array, got string instead',
+        'Search: must have a type of array, got string instead',
       )
     })
 
@@ -335,7 +335,7 @@ describe('search function', () => {
       search(input, { logger })
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        'Search keys must have a type of array, got string instead',
+        'Search: keys must have a type of array, got string instead',
       )
     })
 
@@ -345,7 +345,7 @@ describe('search function', () => {
       search(input, { logger })
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        'Search must have a key-value array, but got length 1 at index 0 instead',
+        'Search: must have a key-value array, but got length 1 at index 0 instead',
       )
     })
 
@@ -355,7 +355,7 @@ describe('search function', () => {
       search(input, { logger })
 
       expect(warn).toHaveBeenCalledExactlyOnceWith(
-        "Ignoring array value in Search because of missing condition, expected 'in' or 'between'",
+        "Search: ignoring array value because of missing condition, expected 'in' or 'between'",
       )
     })
 
@@ -365,7 +365,7 @@ describe('search function', () => {
       search(input, { logger })
 
       expect(warn).toHaveBeenCalledExactlyOnceWith(
-        "Ignoring array value in Search because got an array value for condition that is not 'in' or 'between' in index 0",
+        "Search: ignoring array value because got an array value for condition that is not 'in' or 'between' in index 0",
       )
     })
 
@@ -375,7 +375,7 @@ describe('search function', () => {
       search(input, { logger })
 
       expect(warn).toHaveBeenCalledExactlyOnceWith(
-        "Ignoring array value in Search because expected array with size 2 for condition 'between', but got 1 instead in index 0",
+        "Search: ignoring array value because expected array with size 2 for condition 'between', but got 1 instead in index 0",
       )
     })
 
@@ -385,7 +385,7 @@ describe('search function', () => {
       search(input, { logger })
 
       expect(warn).toHaveBeenCalledExactlyOnceWith(
-        'Ignoring value in Search because of incorrect type, expected BaseValue but got object instead',
+        'Search: ignoring value because of incorrect type, expected BaseValue but got object instead',
       )
     })
 
@@ -395,7 +395,7 @@ describe('search function', () => {
       search(input, { logger })
 
       expect(warn).toHaveBeenCalledExactlyOnceWith(
-        "Ignoring value for Condition in search because it didn't match possible values, got John",
+        "Search: ignoring value for condition because it didn't match possible values, got John",
       )
     })
   })

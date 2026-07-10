@@ -31,7 +31,7 @@ export function orderBySortBy(
   const log = options.logger ?? console
   if (!Array.isArray(arg as TOrderBySortBy)) {
     log?.error(
-      `OrderBySortBy keys must have a type of array, got ${typeName(arg)} instead`,
+      `OrderBySortBy: keys must have a type of array, got ${typeName(arg)} instead`,
     )
     return EMPTY_RESULT
   }
@@ -41,14 +41,14 @@ export function orderBySortBy(
   const filteredValues = arg.reduce((result, item, index) => {
     if (!Array.isArray(item as TOrderBySortByArguments)) {
       log?.error(
-        `OrderBySortBy must have a type of array, got ${typeName(item)} instead`,
+        `OrderBySortBy: must have a type of array, got ${typeName(item)} instead`,
       )
       return result
     }
 
     if (item.length < 1 || item.length > 2) {
       log?.error(
-        `OrderBySortBy must have a key-value array, but got length ${item.length} at index ${index} instead`,
+        `OrderBySortBy: must have a key-value array, but got length ${item.length} at index ${index} instead`,
       )
       return result
     }
@@ -57,7 +57,7 @@ export function orderBySortBy(
 
     if (!isNonEmptyString(key)) {
       log?.error(
-        `OrderBySortBy must have keys as non-empty strings, but got ${typeName(key)} at index ${index} instead`,
+        `OrderBySortBy: must have keys as non-empty strings, but got ${typeName(key)} at index ${index} instead`,
       )
       return result
     }
@@ -67,7 +67,7 @@ export function orderBySortBy(
       !Object.values(SORT_BY).includes(sortBy)
     ) {
       log?.error(
-        `OrderBySortBy must have a valid SORT_BY value, but got ${sortBy} at index ${index} instead`,
+        `OrderBySortBy: must have a valid SORT_BY value, but got ${sortBy} at index ${index} instead`,
       )
       return result
     }

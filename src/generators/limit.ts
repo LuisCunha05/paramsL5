@@ -14,7 +14,7 @@ export function limit(
   const log = options.logger ?? console
   if (!isInputValid(arg)) {
     log?.error(
-      `Limit must be a positive integer or zero, got ${typeName(arg)} instead`,
+      `Limit: must be a positive integer or zero, got ${typeName(arg)} instead`,
     )
     return
   }

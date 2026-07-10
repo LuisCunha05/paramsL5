@@ -184,7 +184,7 @@ describe('orderBySortBy function', () => {
       orderBySortBy(input, { logger })
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        'OrderBySortBy keys must have a type of array, got object instead',
+        'OrderBySortBy: keys must have a type of array, got object instead',
       )
     })
 
@@ -194,7 +194,7 @@ describe('orderBySortBy function', () => {
       orderBySortBy(input, { logger })
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        'OrderBySortBy must have a type of array, got string instead',
+        'OrderBySortBy: must have a type of array, got string instead',
       )
     })
 
@@ -204,7 +204,7 @@ describe('orderBySortBy function', () => {
       orderBySortBy(input, { logger })
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        'OrderBySortBy must have a key-value array, but got length 0 at index 0 instead',
+        'OrderBySortBy: must have a key-value array, but got length 0 at index 0 instead',
       )
     })
 
@@ -214,7 +214,7 @@ describe('orderBySortBy function', () => {
       orderBySortBy(input, { logger })
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        'OrderBySortBy must have a key-value array, but got length 3 at index 0 instead',
+        'OrderBySortBy: must have a key-value array, but got length 3 at index 0 instead',
       )
     })
 
@@ -224,7 +224,7 @@ describe('orderBySortBy function', () => {
       orderBySortBy(input, { logger })
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        'OrderBySortBy must have keys as non-empty strings, but got number at index 0 instead',
+        'OrderBySortBy: must have keys as non-empty strings, but got number at index 0 instead',
       )
     })
 
@@ -234,7 +234,7 @@ describe('orderBySortBy function', () => {
       orderBySortBy(input, { logger })
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        'OrderBySortBy must have a valid SORT_BY value, but got invalid_sort at index 0 instead',
+        'OrderBySortBy: must have a valid SORT_BY value, but got invalid_sort at index 0 instead',
       )
     })
   })

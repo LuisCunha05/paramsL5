@@ -94,7 +94,7 @@ describe('filter function', () => {
       filter(input, { logger })
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        'Argument of filter must be a array, got string instead',
+        'Filter: argument must be an array, got string instead',
       )
     })
 
@@ -104,7 +104,7 @@ describe('filter function', () => {
       filter(input, { logger })
 
       expect(warn).toHaveBeenCalledExactlyOnceWith(
-        'Include value must be a string, got Array instead',
+        'Filter: include value must be a string, got number instead',
       )
     })
   })

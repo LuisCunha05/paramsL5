@@ -190,7 +190,7 @@ describe('SearchCriteria logging', () => {
     searchCriteria(input, { logger })
 
     expect(warn).toHaveBeenCalledWith(
-      'SearchCriteria must have a key-value array, but got length 1 at index 0 instead',
+      'SearchCriteria: must have a key-value array, but got length 1 at index 0 instead',
     )
   })
 
@@ -200,7 +200,7 @@ describe('SearchCriteria logging', () => {
     searchCriteria(input, { logger })
 
     expect(warn).toHaveBeenCalledWith(
-      'SearchCriteria must have keys as non-empty strings, but got number at index 0 instead',
+      'SearchCriteria: must have keys as non-empty strings, but got number at index 0 instead',
     )
   })
 
@@ -249,17 +249,13 @@ describe('SearchCriteria logging', () => {
   })
 
   test('external logger should log invalid amount of arguments', () => {
-    searchCriteria([['key'] as any], { logger })
-    expect(warn).toHaveBeenCalledWith(
-      'SearchCriteria must have a key-value array, but got length 1 at index 0 instead',
-    )
+    searchCriteria([["key"] as any], { logger })
+    expect(warn).toHaveBeenCalledWith('SearchCriteria: must have a key-value array, but got length 1 at index 0 instead')
   })
 
   test('external logger should log invalid key type for sub-argument', () => {
-    searchCriteria([[1, 'value'] as any], { logger })
-    expect(warn).toHaveBeenCalledWith(
-      'SearchCriteria must have keys as non-empty strings, but got number at index 0 instead',
-    )
+    searchCriteria([[1, "value"] as any], { logger })
+    expect(warn).toHaveBeenCalledWith('SearchCriteria: must have keys as non-empty strings, but got number at index 0 instead')
   })
 
   test('external logger should log non-baseValue value argument', () => {

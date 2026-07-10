@@ -66,7 +66,7 @@ describe('limit function', () => {
       limit(input, { logger })
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        'Limit must be a positive integer or zero, got number instead',
+        'Limit: must be a positive integer or zero, got number instead',
       )
     })
 
@@ -75,7 +75,7 @@ describe('limit function', () => {
       limit(input, { logger })
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        'Limit must be a positive integer or zero, got null instead',
+        'Limit: must be a positive integer or zero, got null instead',
       )
     })
 
@@ -84,7 +84,7 @@ describe('limit function', () => {
       limit(input, { logger })
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        'Limit must be a positive integer or zero, got object instead',
+        'Limit: must be a positive integer or zero, got object instead',
       )
     })
 
@@ -93,7 +93,7 @@ describe('limit function', () => {
       limit(input, { logger })
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        'Limit must be a positive integer or zero, got Array instead',
+        'Limit: must be a positive integer or zero, got Array instead',
       )
     })
 
@@ -102,7 +102,7 @@ describe('limit function', () => {
       limit(input, { logger })
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        'Limit must be a positive integer or zero, got NaN instead',
+        'Limit: must be a positive integer or zero, got NaN instead',
       )
     })
   })
