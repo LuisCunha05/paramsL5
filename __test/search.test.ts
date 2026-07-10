@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { CONDITIONS, URL_ENCODED_CHARS as URC } from '@/constants'
+import { CONDITIONS, LOG_LEVEL, URL_ENCODED_CHARS as URC } from '@/constants'
 import { search } from '@/generators/search'
+import { Logger } from '@/logger'
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any
@@ -9,8 +10,11 @@ let result: any
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let expected: any
 
-const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
-const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+const info = vi.fn()
+const warn = vi.fn()
+const error = vi.fn()
+const logger = { info, warn, error }
+const noOpLogger = Logger({ logLevel: LOG_LEVEL.NONE })
 
 beforeEach(() => {
   input = undefined
@@ -182,7 +186,7 @@ describe('search function', () => {
       input = 'invalid'
       expected = { search: undefined, searchFields: undefined }
 
-      result = search(input)
+      result = search(input, { logger: noOpLogger })
 
       expect(result).toEqual(expected)
     })
@@ -197,7 +201,7 @@ describe('search function', () => {
         },
       }
 
-      result = search(input)
+      result = search(input, { logger: noOpLogger })
 
       expect(result).toEqual(expected)
     })
@@ -206,7 +210,7 @@ describe('search function', () => {
       input = [['', 'value']]
       expected = { search: undefined, searchFields: undefined }
 
-      result = search(input)
+      result = search(input, { logger: noOpLogger })
 
       expect(result).toEqual(expected)
     })
@@ -225,7 +229,7 @@ describe('search function', () => {
         },
       }
 
-      result = search(input)
+      result = search(input, { logger: noOpLogger })
 
       expect(result).toEqual(expected)
     })
@@ -243,7 +247,7 @@ describe('search function', () => {
         },
       }
 
-      result = search(input)
+      result = search(input, { logger: noOpLogger })
 
       expect(result).toEqual(expected)
     })
@@ -262,7 +266,7 @@ describe('search function', () => {
         },
       }
 
-      result = search(input)
+      result = search(input, { logger: noOpLogger })
 
       expect(result).toEqual(expected)
     })
@@ -271,7 +275,7 @@ describe('search function', () => {
       input = [['status', [1, 2, 3], CONDITIONS.DIFF]]
       expected = { search: undefined, searchFields: undefined }
 
-      result = search(input)
+      result = search(input, { logger: noOpLogger })
 
       expect(result).toEqual(expected)
     })
@@ -280,7 +284,7 @@ describe('search function', () => {
       input = [['status', ['active', 'pending'], CONDITIONS.GT]]
       expected = { search: undefined, searchFields: undefined }
 
-      result = search(input)
+      result = search(input, { logger: noOpLogger })
 
       expect(result).toEqual(expected)
     })
@@ -289,7 +293,7 @@ describe('search function', () => {
       input = [['status', ['active'], CONDITIONS.BTW]]
       expected = { search: undefined, searchFields: undefined }
 
-      result = search(input)
+      result = search(input, { logger: noOpLogger })
 
       expect(result).toEqual(expected)
     })
@@ -298,7 +302,7 @@ describe('search function', () => {
       input = [['status', [1, 2, 3], CONDITIONS.BTW]]
       expected = { search: undefined, searchFields: undefined }
 
-      result = search(input)
+      result = search(input, { logger: noOpLogger })
 
       expect(result).toEqual(expected)
     })
@@ -308,100 +312,90 @@ describe('search function', () => {
     test('should log error if key is not a non-empty string', () => {
       input = [['', 'value']]
 
-      search(input)
+      search(input, { logger })
 
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining('Search must have keys as non-empty strings'),
+      expect(error).toHaveBeenCalledExactlyOnceWith(
+        'Search must have keys as non-empty strings, but got string at index 0 instead',
       )
     })
 
     test('should log error if item is not an array', () => {
       input = [['name', 'John'], 'invalid']
 
-      search(input)
+      search(input, { logger })
 
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining('Search must have a type of array'),
+      expect(error).toHaveBeenCalledExactlyOnceWith(
+        'Search must have a type of array, got string instead',
       )
     })
 
     test('should log error if argument is not an array', () => {
       input = 'invalid'
 
-      search(input)
+      search(input, { logger })
 
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining('Search keys must have a type of array'),
+      expect(error).toHaveBeenCalledExactlyOnceWith(
+        'Search keys must have a type of array, got string instead',
       )
     })
 
     test('should log error if item length is less than 2', () => {
       input = [['name']]
 
-      search(input)
+      search(input, { logger })
 
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining('Search must have a key-value array'),
+      expect(error).toHaveBeenCalledExactlyOnceWith(
+        'Search must have a key-value array, but got length 1 at index 0 instead',
       )
     })
 
     test('should log warn if array value is missing condition', () => {
       input = [['status', ['active', 'pending']]]
 
-      search(input)
+      search(input, { logger })
 
-      expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining(
-          'Ignoring array value in Search because of missing condition',
-        ),
+      expect(warn).toHaveBeenCalledExactlyOnceWith(
+        "Ignoring array value in Search because of missing condition, expected 'in' or 'between'",
       )
     })
 
     test('should log warn if array value has invalid condition', () => {
       input = [['status', ['active', 'pending'], CONDITIONS.EQ]]
 
-      search(input)
+      search(input, { logger })
 
-      expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining(
-          "Ignoring array value in Search because got an array value for condition that is not 'in' or 'between'",
-        ),
+      expect(warn).toHaveBeenCalledExactlyOnceWith(
+        "Ignoring array value in Search because got an array value for condition that is not 'in' or 'between' in index 0",
       )
     })
 
     test('should log warn if array value for between condition does not have size 2', () => {
       input = [['date', ['2023-01-01'], CONDITIONS.BTW]]
 
-      search(input)
+      search(input, { logger })
 
-      expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining(
-          "Ignoring array value in Search because expected array with size 2 for condition 'between'",
-        ),
+      expect(warn).toHaveBeenCalledExactlyOnceWith(
+        "Ignoring array value in Search because expected array with size 2 for condition 'between', but got 1 instead in index 0",
       )
     })
 
     test('should log warn if value is not a BaseValue', () => {
       input = [['name', { obj: true }]]
 
-      search(input)
+      search(input, { logger })
 
-      expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining(
-          'Ignoring value in Search because of incorrect type',
-        ),
+      expect(warn).toHaveBeenCalledExactlyOnceWith(
+        'Ignoring value in Search because of incorrect type, expected BaseValue but got object instead',
       )
     })
 
     test('should log warn if condition is invalid', () => {
       input = [['name', 'John', 'INVALID_CONDITION']]
 
-      search(input)
+      search(input, { logger })
 
-      expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining(
-          "Ignoring value for Condition in search because it didn't match possible values",
-        ),
+      expect(warn).toHaveBeenCalledExactlyOnceWith(
+        "Ignoring value for Condition in search because it didn't match possible values, got John",
       )
     })
   })

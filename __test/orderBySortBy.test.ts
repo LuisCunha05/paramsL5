@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { SORT_BY, URL_ENCODED_CHARS as URC } from '@/constants'
+import { LOG_LEVEL, SORT_BY, URL_ENCODED_CHARS as URC } from '@/constants'
 import { orderBySortBy } from '@/generators/orderBySortBy'
+import { Logger } from '@/logger'
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any
@@ -9,7 +10,11 @@ let result: any
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let expected: any
 
-const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+const info = vi.fn()
+const warn = vi.fn()
+const error = vi.fn()
+const logger = { info, warn, error }
+const noOpLogger = Logger({ logLevel: LOG_LEVEL.NONE })
 
 beforeEach(() => {
   input = undefined
@@ -154,7 +159,7 @@ describe('orderBySortBy function', () => {
         sortedBy: undefined,
       }
 
-      result = orderBySortBy(input)
+      result = orderBySortBy(input, { logger: noOpLogger })
 
       expect(result).toEqual(expected)
     })
@@ -166,7 +171,7 @@ describe('orderBySortBy function', () => {
         sortedBy: undefined,
       }
 
-      result = orderBySortBy(input)
+      result = orderBySortBy(input, { logger: noOpLogger })
 
       expect(result).toEqual(expected)
     })
@@ -176,72 +181,60 @@ describe('orderBySortBy function', () => {
     test('should log error if arg is not an array', () => {
       input = {}
 
-      orderBySortBy(input)
+      orderBySortBy(input, { logger })
 
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining(
-          'OrderBySortBy keys must have a type of array, got object instead',
-        ),
+      expect(error).toHaveBeenCalledExactlyOnceWith(
+        'OrderBySortBy keys must have a type of array, got object instead',
       )
     })
 
     test('should log error if an item is not an array', () => {
       input = ['invalid']
 
-      orderBySortBy(input)
+      orderBySortBy(input, { logger })
 
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining(
-          'OrderBySortBy must have a type of array, got string instead',
-        ),
+      expect(error).toHaveBeenCalledExactlyOnceWith(
+        'OrderBySortBy must have a type of array, got string instead',
       )
     })
 
     test('should log error if an item is empty', () => {
       input = [[]]
 
-      orderBySortBy(input)
+      orderBySortBy(input, { logger })
 
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining(
-          'OrderBySortBy must have a key-value array, but got length 0 at index 0 instead',
-        ),
+      expect(error).toHaveBeenCalledExactlyOnceWith(
+        'OrderBySortBy must have a key-value array, but got length 0 at index 0 instead',
       )
     })
 
     test('should log error if an item has too many elements', () => {
       input = [['alog', 'acs', 'bla']]
 
-      orderBySortBy(input)
+      orderBySortBy(input, { logger })
 
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining(
-          'OrderBySortBy must have a key-value array, but got length 3 at index 0 instead',
-        ),
+      expect(error).toHaveBeenCalledExactlyOnceWith(
+        'OrderBySortBy must have a key-value array, but got length 3 at index 0 instead',
       )
     })
 
     test('should log error if key is not a non-empty string', () => {
       input = [[123, SORT_BY.ASC]]
 
-      orderBySortBy(input)
+      orderBySortBy(input, { logger })
 
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining(
-          'OrderBySortBy must have keys as non-empty strings, but got number at index 0 instead',
-        ),
+      expect(error).toHaveBeenCalledExactlyOnceWith(
+        'OrderBySortBy must have keys as non-empty strings, but got number at index 0 instead',
       )
     })
 
     test('should log error if sort value is not a valid SORT_BY value', () => {
       input = [['name', 'invalid_sort']]
 
-      orderBySortBy(input)
+      orderBySortBy(input, { logger })
 
-      expect(consoleError).toHaveBeenCalledWith(
-        expect.stringContaining(
-          'OrderBySortBy must have a valid SORT_BY value, but got invalid_sort at index 0 instead',
-        ),
+      expect(error).toHaveBeenCalledExactlyOnceWith(
+        'OrderBySortBy must have a valid SORT_BY value, but got invalid_sort at index 0 instead',
       )
     })
   })
