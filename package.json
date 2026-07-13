@@ -21,6 +21,7 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
+  "sideEffects": false,
   "exports": {
     ".": {
       "import": {
@@ -34,7 +35,7 @@
     }
   },
   "scripts": {
-    "build": "tsc && tsdown",
+    "build": "tsc --project tsconfig.build.json && tsdown",
     "test": "vitest --config vitest.config.ts",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
@@ -42,14 +43,18 @@
     "fmt:check": "oxfmt --check"
   },
   "devDependencies": {
-    "@types/jest": "^30.0.0",
+    "@arethetypeswrong/core": "^0.18.5",
     "@types/node": "^24.10.1",
     "oxfmt": "^0.58.0",
     "oxlint": "^1.73.0",
     "oxlint-tsgolint": "^0.24.0",
-    "tsdown": "^0.17.0",
+    "publint": "^0.3.21",
+    "tsdown": "^0.22.5",
     "typescript": "^7.0.2",
-    "vitest": "^4.0.18"
+    "vitest": "^4.1.10"
   },
+  "engines": {
+     "node": ">=20.0.0"
+   },
   "packageManager": "pnpm@11.10.0+sha512.0b7f8b98060031904c017e3a41eb187a16d40eeb829b95c4f8cb03681761fc4ab53dd219115b9b447f4dce1a05a214764461e7d3703392a9f32f9511ce8c86c8"
 }

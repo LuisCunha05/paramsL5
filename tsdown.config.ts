@@ -5,8 +5,15 @@ export default defineConfig({
   entry: ['./src/index.ts'],
   dts: true,
   shims: true,
-  skipNodeModulesBundle: true,
   clean: true,
   treeshake: true,
   minify: true,
+  outputOptions: {
+    exports:"named"
+  },
+  deps: {
+    skipNodeModulesBundle:true
+  },
+  publint: true,
+  attw:true
 });
