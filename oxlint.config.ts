@@ -33,5 +33,6 @@ export default defineConfig({
     'typescript/restrict-template-expressions': 'off',
     'typescript/strict-boolean-expressions': 'off',
     'unicorn/explicit-length-check': 'off',
+    'sort-imports': 'off',
   },
 });
