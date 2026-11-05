@@ -1,13 +1,13 @@
-import type { ILogger } from '@/types';
+import type { ILogger, Path } from '@/types';
 import { isArray, isNonEmptyString, typeName } from '@/utils';
 
-export type TWith = readonly string[];
+export type TWith<TTShape> = readonly Path<TTShape>[];
 export interface TWithOptions {
   logger?: ILogger;
 }
 
-export function withRel(
-  arg: TWith = [],
+export function withRel<TShape extends object>(
+  arg: TWith<TShape> = [],
   options: TWithOptions = {},
 ): string | undefined {
   const log = options.logger ?? console;

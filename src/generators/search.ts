@@ -5,7 +5,7 @@ import { isArray, isBaseValue, isNonEmptyString, typeName } from '@/utils';
 export type TCondition = (typeof CONDITIONS)[keyof typeof CONDITIONS];
 
 export type TSearchValue = BaseValue | null | undefined;
-type BetweenTuple<T> = [T, T];
+type BetweenTuple<TValue> = [TValue, TValue];
 
 export type TSearchIn = readonly [
   string,

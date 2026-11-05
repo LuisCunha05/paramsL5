@@ -1,14 +1,14 @@
-import type { ILogger } from '@/types';
+import type { ILogger, Path } from '@/types';
 import { isArray, isNonEmptyString, typeName } from '@/utils';
 
-export type TInclude = readonly string[];
+export type TInclude<TTShape> = readonly Path<TTShape>[];
 
 export interface TIncludeOptions {
   logger?: ILogger;
 }
 
-export function include(
-  arg: TInclude = [],
+export function include<TShape extends object>(
+  arg: TInclude<TShape> = [],
   options: TIncludeOptions = {},
 ): string | undefined {
   const log = options.logger ?? console;
@@ -24,7 +24,7 @@ export function include(
     return undefined;
   }
 
-  const filteredValues = arg.reduce<string[]>((result, item) => {
+  const filteredValues = arg.reduce<Path<TShape>[]>((result, item) => {
     if (!isNonEmptyString(item)) {
       log?.info(
         `Include: include value must be a string, got ${typeName(item)} instead`,

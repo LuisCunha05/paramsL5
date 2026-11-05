@@ -11,16 +11,16 @@ import {
 import { type TSearchJoin, searchJoin } from '@/generators/search-join';
 import { type TWith, withRel } from '@/generators/with';
 
-export interface TParams {
-  filter?: TFilter;
-  include?: TInclude;
-  limit?: TLimit;
-  orderBySortBy?: TOrderBySortBy;
-  page?: TPage;
-  search?: TSearch;
-  searchCriteria?: TSearchCriteria;
-  searchJoin?: TSearchJoin;
-  with?: TWith;
+export interface TParams<TShape = Record<string, unknown>> {
+  readonly filter?: TFilter<TShape>;
+  readonly include?: TInclude<TShape>;
+  readonly limit?: TLimit;
+  readonly orderBySortBy?: TOrderBySortBy;
+  readonly page?: TPage;
+  readonly search?: TSearch;
+  readonly searchCriteria?: TSearchCriteria;
+  readonly searchJoin?: TSearchJoin;
+  readonly with?: TWith<TShape>;
 }
 
 export interface TResultParams {

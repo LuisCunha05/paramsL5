@@ -1,14 +1,14 @@
-import type { ILogger } from '@/types';
+import type { ILogger, Path } from '@/types';
 import { isArray, isNonEmptyString, typeName } from '@/utils';
 
-export type TFilter = readonly string[];
+export type TFilter<TTShape> = readonly Path<TTShape>[];
 
 export interface TFilterOptions {
-  logger?: ILogger;
+  readonly logger?: ILogger;
 }
 
-export function filter(
-  arg: TFilter = [],
+export function filter<TShape extends object>(
+  arg: TFilter<TShape> = [],
   options: TFilterOptions = {},
 ): string | undefined {
   const log = options.logger ?? console;
