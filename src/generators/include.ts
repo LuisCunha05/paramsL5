@@ -1,30 +1,30 @@
-import type { ILogger, TResult } from '@/types';
-import { encodeSearchParam, isNonEmptyString, typeName } from '@/utils';
+import type { ILogger } from '@/types';
+import { isArray, isNonEmptyString, typeName } from '@/utils';
 
-export type TInclude = Array<string>;
+export type TInclude = readonly string[];
 
-export type TIncludeOptions = {
+export interface TIncludeOptions {
   logger?: ILogger;
-};
+}
 
 export function include(
   arg: TInclude = [],
   options: TIncludeOptions = {},
-): TResult | undefined {
+): string | undefined {
   const log = options.logger ?? console;
-  if (!Array.isArray(arg)) {
+  if (!isArray(arg)) {
     log?.error(
       `Include: argument must be an array, got ${typeName(arg)} instead`,
     );
-    return;
+    return undefined;
   }
 
   if (!arg.length) {
     log?.info('Include: no values given');
-    return;
+    return undefined;
   }
 
-  const filteredValues = arg.reduce((result, item) => {
+  const filteredValues = arg.reduce<string[]>((result, item) => {
     if (!isNonEmptyString(item)) {
       log?.info(
         `Include: include value must be a string, got ${typeName(item)} instead`,
@@ -34,19 +34,14 @@ export function include(
 
     result.push(item);
     return result;
-  }, [] as Array<string>);
+  }, []);
 
   if (!filteredValues.length) {
     log?.info('Include: no values remaining to parse');
-    return;
+    return undefined;
   }
 
-  const uniqueValues = Array.from(new Set(filteredValues));
+  const uniqueValues = [...new Set(filteredValues)];
 
-  const result = uniqueValues.join(',');
-
-  return {
-    raw: result,
-    encoded: encodeSearchParam(uniqueValues.join(',')),
-  };
+  return uniqueValues.join(',');
 }

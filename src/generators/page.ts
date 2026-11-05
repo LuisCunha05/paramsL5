@@ -1,11 +1,12 @@
+import { MIN_PAGE } from '@/constants';
 import type { ILogger } from '@/types';
 import { isNumber, typeName } from '@/utils';
 
 export type TPage = number;
 
-export type TPageOptions = {
+export interface TPageOptions {
   logger?: ILogger;
-};
+}
 
 export function page(
   arg?: TPage,
@@ -15,21 +16,21 @@ export function page(
 
   if (arg === undefined) {
     log?.info('Page: no value given');
-    return;
+    return undefined;
   }
 
   if (!isInputValid(arg)) {
     log?.error(
       `Page: must be a positive integer, got ${typeName(arg)} instead`,
     );
-    return;
+    return undefined;
   }
 
   return String(arg);
 }
 
 function predicate(value: number) {
-  return Number.isInteger(value) && value > 0;
+  return Number.isInteger(value) && value > MIN_PAGE;
 }
 
 function isInputValid(arg?: number): arg is number {

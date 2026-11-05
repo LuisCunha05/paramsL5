@@ -1,6 +1,6 @@
 import { SORT_BY } from '@/constants';
-import type { ILogger, TResult } from '@/types';
-import { encodeSearchParam, isNonEmptyString, typeName } from '@/utils';
+import type { ILogger } from '@/types';
+import { isArray, isNonEmptyString, typeName } from '@/utils';
 
 export type TSortBy = (typeof SORT_BY)[keyof typeof SORT_BY];
 
@@ -10,14 +10,17 @@ export type TOrderBySortByArguments =
   | TOrderBySortByValue
   | TOrderBySortByDefault;
 
-type TOrderBySortByOptions = { defaultSortBy?: TSortBy; logger?: ILogger };
+interface TOrderBySortByOptions {
+  defaultSortBy?: TSortBy;
+  logger?: ILogger;
+}
 
 export type TOrderBySortBy = readonly TOrderBySortByArguments[];
 
-type TOrderBySortByResult = {
-  orderBy: TResult | undefined;
-  sortedBy: TResult | undefined;
-};
+interface TOrderBySortByResult {
+  orderBy: string | undefined;
+  sortedBy: string | undefined;
+}
 
 const EMPTY_RESULT = {
   orderBy: undefined,
@@ -29,7 +32,7 @@ export function orderBySortBy(
   options: TOrderBySortByOptions = {},
 ): TOrderBySortByResult {
   const log = options.logger ?? console;
-  if (!Array.isArray(arg as TOrderBySortBy)) {
+  if (!isArray(arg)) {
     log?.error(
       `OrderBySortBy: keys must have a type of array, got ${typeName(arg)} instead`,
     );
@@ -42,7 +45,7 @@ export function orderBySortBy(
   }
 
   const filteredValues = arg.reduce((result, item, index) => {
-    if (!Array.isArray(item as TOrderBySortByArguments)) {
+    if (!isArray(item)) {
       log?.warn(
         `OrderBySortBy: must have a type of array, got ${typeName(item)} instead`,
       );
@@ -65,10 +68,7 @@ export function orderBySortBy(
       return result;
     }
 
-    if (
-      typeof sortBy !== 'undefined' &&
-      !Object.values(SORT_BY).includes(sortBy)
-    ) {
+    if (sortBy !== undefined && !Object.values(SORT_BY).includes(sortBy)) {
       log?.warn(
         `OrderBySortBy: must have a valid SORT_BY value, but got ${sortBy} at index ${index} instead`,
       );
@@ -85,7 +85,7 @@ export function orderBySortBy(
     return EMPTY_RESULT;
   }
 
-  const deduplicatedValues = Array.from(filteredValues);
+  const deduplicatedValues = [...filteredValues];
 
   const orderBySortedBy = deduplicatedValues.reduce(
     (result, [key, value]) => {
@@ -104,7 +104,7 @@ export function orderBySortBy(
   const sortedResult = orderBySortedBy.sortedBy.join(';');
 
   return {
-    orderBy: { raw: orderResult, encoded: encodeSearchParam(orderResult) },
-    sortedBy: { raw: sortedResult, encoded: encodeSearchParam(sortedResult) },
+    orderBy: orderResult,
+    sortedBy: sortedResult,
   };
 }

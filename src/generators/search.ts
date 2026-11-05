@@ -1,11 +1,6 @@
 import { CONDITIONS } from '@/constants';
-import type { BaseValue, ILogger, TResult } from '@/types';
-import {
-  encodeSearchParam,
-  isBaseValue,
-  isNonEmptyString,
-  typeName,
-} from '@/utils';
+import type { BaseValue, ILogger } from '@/types';
+import { isArray, isBaseValue, isNonEmptyString, typeName } from '@/utils';
 
 export type TCondition = (typeof CONDITIONS)[keyof typeof CONDITIONS];
 
@@ -40,21 +35,25 @@ export type TSearchItem =
 
 export type TSearch = readonly TSearchItem[];
 
-type TSearchOptions = { defaultCondition?: TCondition; logger?: ILogger };
+interface TSearchOptions {
+  defaultCondition?: TCondition;
+  logger?: ILogger;
+}
 
-export type TSearchResult = {
-  search: TResult | undefined;
-  searchFields: TResult | undefined;
-};
+export interface TSearchResult {
+  search: string | undefined;
+  searchFields: string | undefined;
+}
 
 const EMPTY_RESULT = { search: undefined, searchFields: undefined } as const;
+const TUPLE_SIZE = 2;
 
 export function search(
   arg: TSearch = [],
   options: TSearchOptions = {},
 ): TSearchResult {
   const log = options.logger ?? console;
-  if (!Array.isArray(arg as TSearch)) {
+  if (!isArray(arg)) {
     log?.error(
       `Search: keys must have a type of array, got ${typeName(arg)} instead`,
     );
@@ -68,21 +67,21 @@ export function search(
 
   const filteredValues = arg.reduce<[string, [BaseValue, TCondition]][]>(
     (result, item, index) => {
-      if (!Array.isArray(item as TSearch[number])) {
+      if (!isArray(item)) {
         log?.warn(
           `Search: must have a type of array, got ${typeName(item)} instead`,
         );
         return result;
       }
 
-      if (item.length < 2) {
+      if (item.length < TUPLE_SIZE) {
         log?.warn(
           `Search: must have a key-value array, but got length ${item.length} at index ${index} instead`,
         );
         return result;
       }
 
-      const key = item[0];
+      const [key, value, condition] = item;
       if (!isNonEmptyString(key)) {
         log?.warn(
           `Search: must have keys as non-empty strings, but got ${typeName(key)} at index ${index} instead`,
@@ -90,15 +89,16 @@ export function search(
         return result;
       }
 
-      const value = item[1];
-      const condition = item[2];
-
-      if (value === null || value === undefined) return result;
+      if (value === null || value === undefined) {
+        return result;
+      }
 
       let finalValue: BaseValue;
 
-      if (Array.isArray(value)) {
-        if (!value.length) return result;
+      if (isArray(value)) {
+        if (!value.length) {
+          return result;
+        }
         if (!condition) {
           log?.warn(
             `Search: ignoring array value because of missing condition, expected 'in' or 'between'`,
@@ -113,13 +113,15 @@ export function search(
           return result;
         }
 
-        if (condition === CONDITIONS.BTW && value.length !== 2) {
+        if (condition === CONDITIONS.BTW && value.length !== TUPLE_SIZE) {
           log?.warn(
-            `Search: ignoring array value because expected array with size 2 for condition 'between', but got ${value.length} instead in index ${index}`,
+            `Search: ignoring array value because expected array with size 2 for condition 'between', but got ${(value as unknown[]).length} instead in index ${index}`,
           );
           return result;
         }
-        if (!value.every((val) => isBaseValue(val))) return result;
+        if (!value.every((val) => isBaseValue(val))) {
+          return result;
+        }
 
         finalValue = value.join(',');
       } else {
@@ -168,18 +170,17 @@ export function search(
 
       return result;
     },
-    { search: [] as string[], fields: [] as string[] },
+    { fields: [] as string[], search: [] as string[] },
   );
 
-  if (searchAndFields.search.length === 0) return EMPTY_RESULT;
+  if (!searchAndFields.search.length) {
+    return EMPTY_RESULT;
+  }
 
   const searchResult = searchAndFields.search.join(';');
   const fieldsResult = searchAndFields.fields.join(';');
   return {
-    search: { raw: searchResult, encoded: encodeSearchParam(searchResult) },
-    searchFields: {
-      raw: fieldsResult,
-      encoded: encodeSearchParam(fieldsResult),
-    },
+    search: searchResult,
+    searchFields: fieldsResult,
   };
 }

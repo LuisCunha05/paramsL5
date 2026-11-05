@@ -1,19 +1,19 @@
 import { defineConfig } from 'tsdown';
 
 export default defineConfig({
-  format: ['cjs', 'esm', 'module'],
-  entry: ['./src/index.ts'],
-  dts: true,
-  shims: true,
+  attw: true,
   clean: true,
-  treeshake: true,
+  deps: {
+    neverBundle: true,
+  },
+  dts: true,
+  entry: ['./src/index.ts'],
+  format: ['cjs', 'esm', 'module'],
   minify: true,
   outputOptions: {
-    exports:"named"
-  },
-  deps: {
-    skipNodeModulesBundle:true
+    exports: 'named',
   },
   publint: true,
-  attw:true
+  shims: true,
+  treeshake: true,
 });

@@ -3,12 +3,11 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { LOG_LEVEL, URL_ENCODED_CHARS as URC } from '@/constants';
 import { include } from '@/generators/include';
 import { Logger } from '@/logger';
-import type { TResult } from '@/types';
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any;
-let result: TResult | undefined;
-let expected: TResult | undefined;
+let result: string | undefined;
+let expected: string | undefined;
 
 beforeEach(() => {
   input = undefined;
@@ -30,10 +29,7 @@ describe('include function', () => {
   describe('formatting', () => {
     test('should format include relations correctly', () => {
       input = ['author', 'comments'];
-      expected = {
-        raw: 'author,comments',
-        encoded: `author${URC.COMMA}comments`,
-      };
+      expected = 'author,comments';
 
       result = include(input, { logger: noOpLogger });
 

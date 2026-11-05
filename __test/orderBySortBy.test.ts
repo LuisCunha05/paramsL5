@@ -32,8 +32,8 @@ describe('orderBySortBy function', () => {
     test('should generate correct URL params for a single order/sort pair', () => {
       input = [['name', SORT_BY.ASC]];
       expected = {
-        orderBy: { raw: 'name', encoded: 'name' },
-        sortedBy: { raw: 'asc', encoded: 'asc' },
+        orderBy: 'name',
+        sortedBy: 'asc',
       };
 
       result = orderBySortBy(input);
@@ -48,14 +48,8 @@ describe('orderBySortBy function', () => {
         ['created_at', SORT_BY.ASC],
       ];
       expected = {
-        orderBy: {
-          raw: 'name;age;created_at',
-          encoded: `name${URC.SEMICOLON}age${URC.SEMICOLON}created_at`,
-        },
-        sortedBy: {
-          raw: 'asc;desc;asc',
-          encoded: `asc${URC.SEMICOLON}desc${URC.SEMICOLON}asc`,
-        },
+        orderBy: 'name;age;created_at',
+        sortedBy: 'asc;desc;asc',
       };
 
       result = orderBySortBy(input);
@@ -69,8 +63,8 @@ describe('orderBySortBy function', () => {
         ['name', SORT_BY.DESC],
       ];
       expected = {
-        orderBy: { raw: 'name', encoded: 'name' },
-        sortedBy: { raw: 'desc', encoded: 'desc' },
+        orderBy: 'name',
+        sortedBy: 'desc',
       };
 
       result = orderBySortBy(input);
@@ -81,14 +75,8 @@ describe('orderBySortBy function', () => {
     test('should allow multiple single value arrays', () => {
       input = [['key1'], ['key2']];
       expected = {
-        orderBy: {
-          raw: 'key1;key2',
-          encoded: `key1${URC.SEMICOLON}key2`,
-        },
-        sortedBy: {
-          raw: 'asc;asc',
-          encoded: `asc${URC.SEMICOLON}asc`,
-        },
+        orderBy: 'key1;key2',
+        sortedBy: 'asc;asc',
       };
 
       result = orderBySortBy(input);
@@ -101,8 +89,8 @@ describe('orderBySortBy function', () => {
     test('should allow key-only value with default ASC sortBy', () => {
       input = [['key']];
       expected = {
-        orderBy: { raw: 'key', encoded: 'key' },
-        sortedBy: { raw: 'asc', encoded: 'asc' },
+        orderBy: 'key',
+        sortedBy: 'asc',
       };
 
       result = orderBySortBy(input);
@@ -113,8 +101,8 @@ describe('orderBySortBy function', () => {
     test('should change the default sortBy', () => {
       input = [['key']];
       expected = {
-        orderBy: { raw: 'key', encoded: 'key' },
-        sortedBy: { raw: 'desc', encoded: 'desc' },
+        orderBy: 'key',
+        sortedBy: 'desc',
       };
 
       result = orderBySortBy(input, { defaultSortBy: SORT_BY.DESC });
@@ -125,14 +113,8 @@ describe('orderBySortBy function', () => {
     test('should allow multiple single value arrays with the default sortBy', () => {
       input = [['key1'], ['key2']];
       expected = {
-        orderBy: {
-          raw: 'key1;key2',
-          encoded: `key1${URC.SEMICOLON}key2`,
-        },
-        sortedBy: {
-          raw: 'desc;desc',
-          encoded: `desc${URC.SEMICOLON}desc`,
-        },
+        orderBy: 'key1;key2',
+        sortedBy: 'desc;desc',
       };
 
       result = orderBySortBy(input, { defaultSortBy: SORT_BY.DESC });

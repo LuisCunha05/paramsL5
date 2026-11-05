@@ -32,11 +32,8 @@ describe('search function', () => {
     test('should format a single search param correctly with default condition "="', () => {
       input = [['name', 'John']];
       expected = {
-        search: { raw: 'name:John', encoded: `name${URC.COLON}John` },
-        searchFields: {
-          raw: 'name:=',
-          encoded: `name${URC.COLON}${URC.EQUALS}`,
-        },
+        search: 'name:John',
+        searchFields: 'name:=',
       };
 
       result = search(input);
@@ -47,11 +44,8 @@ describe('search function', () => {
     test('should change default condition when options is provided', () => {
       input = [['name', 'John']];
       expected = {
-        search: { raw: 'name:John', encoded: `name${URC.COLON}John` },
-        searchFields: {
-          raw: 'name:>',
-          encoded: `name${URC.COLON}${URC.GREATER_THAN}`,
-        },
+        search: 'name:John',
+        searchFields: 'name:>',
       };
 
       result = search(input, { defaultCondition: CONDITIONS.GT });
@@ -62,11 +56,8 @@ describe('search function', () => {
     test('should format a valid key-value pair with a specific condition', () => {
       input = [['age', 18, CONDITIONS.GTE]];
       expected = {
-        search: { raw: 'age:18', encoded: `age${URC.COLON}18` },
-        searchFields: {
-          raw: 'age:>=',
-          encoded: `age${URC.COLON}${URC.GREATER_THAN}${URC.EQUALS}`,
-        },
+        search: 'age:18',
+        searchFields: 'age:>=',
       };
 
       result = search(input);
@@ -77,14 +68,8 @@ describe('search function', () => {
     test('should handle "in" condition with array of values', () => {
       input = [['status', ['active', 'pending'], CONDITIONS.IN]];
       expected = {
-        search: {
-          raw: 'status:active,pending',
-          encoded: `status${URC.COLON}active${URC.COMMA}pending`,
-        },
-        searchFields: {
-          raw: 'status:in',
-          encoded: `status${URC.COLON}in`,
-        },
+        search: 'status:active,pending',
+        searchFields: 'status:in',
       };
 
       result = search(input);
@@ -95,11 +80,8 @@ describe('search function', () => {
     test('should handle "in" condition with array of length 1', () => {
       input = [['status', ['active'], CONDITIONS.IN]];
       expected = {
-        search: { raw: 'status:active', encoded: `status${URC.COLON}active` },
-        searchFields: {
-          raw: 'status:in',
-          encoded: `status${URC.COLON}in`,
-        },
+        search: 'status:active',
+        searchFields: 'status:in',
       };
 
       result = search(input);
@@ -110,14 +92,8 @@ describe('search function', () => {
     test('should handle "between" condition with tuple of values', () => {
       input = [['date', ['2023-01-01', '2023-12-31'], CONDITIONS.BTW]];
       expected = {
-        search: {
-          raw: 'date:2023-01-01,2023-12-31',
-          encoded: `date${URC.COLON}2023-01-01${URC.COMMA}2023-12-31`,
-        },
-        searchFields: {
-          raw: `date:${CONDITIONS.BTW}`,
-          encoded: `date${URC.COLON}${CONDITIONS.BTW}`,
-        },
+        search: 'date:2023-01-01,2023-12-31',
+        searchFields: `date:${CONDITIONS.BTW}`,
       };
 
       result = search(input);
@@ -131,11 +107,8 @@ describe('search function', () => {
         ['name', 'Doe', CONDITIONS.LIKE],
       ];
       expected = {
-        search: { raw: 'name:Doe', encoded: `name${URC.COLON}Doe` },
-        searchFields: {
-          raw: 'name:like',
-          encoded: `name${URC.COLON}like`,
-        },
+        search: 'name:Doe',
+        searchFields: 'name:like',
       };
 
       result = search(input);
@@ -149,14 +122,8 @@ describe('search function', () => {
         ['email', 'gmail', CONDITIONS.ILIKE],
       ];
       expected = {
-        search: {
-          raw: 'name:John;email:gmail',
-          encoded: `name${URC.COLON}John${URC.SEMICOLON}email${URC.COLON}gmail`,
-        },
-        searchFields: {
-          raw: 'name:like;email:ilike',
-          encoded: `name${URC.COLON}like${URC.SEMICOLON}email${URC.COLON}ilike`,
-        },
+        search: 'name:John;email:gmail',
+        searchFields: 'name:like;email:ilike',
       };
 
       result = search(input);
@@ -195,11 +162,8 @@ describe('search function', () => {
     test('should ignore item if it is not an array', () => {
       input = [['name', 'John'], 'invalid'];
       expected = {
-        search: { raw: 'name:John', encoded: `name${URC.COLON}John` },
-        searchFields: {
-          raw: 'name:=',
-          encoded: `name${URC.COLON}${URC.EQUALS}`,
-        },
+        search: 'name:John',
+        searchFields: 'name:=',
       };
 
       result = search(input, { logger: noOpLogger });
@@ -223,11 +187,8 @@ describe('search function', () => {
         ['alsoIgnored', undefined],
       ];
       expected = {
-        search: { raw: 'status:active', encoded: `status${URC.COLON}active` },
-        searchFields: {
-          raw: 'status:=',
-          encoded: `status${URC.COLON}${URC.EQUALS}`,
-        },
+        search: 'status:active',
+        searchFields: 'status:=',
       };
 
       result = search(input, { logger: noOpLogger });
@@ -241,11 +202,8 @@ describe('search function', () => {
         ['status', 'active'],
       ];
       expected = {
-        search: { raw: 'status:active', encoded: `status${URC.COLON}active` },
-        searchFields: {
-          raw: 'status:=',
-          encoded: `status${URC.COLON}${URC.EQUALS}`,
-        },
+        search: 'status:active',
+        searchFields: 'status:=',
       };
 
       result = search(input, { logger: noOpLogger });
@@ -260,11 +218,8 @@ describe('search function', () => {
         ['invalidArray', [{}], CONDITIONS.IN],
       ];
       expected = {
-        search: { raw: 'status:active', encoded: `status${URC.COLON}active` },
-        searchFields: {
-          raw: 'status:=',
-          encoded: `status${URC.COLON}${URC.EQUALS}`,
-        },
+        search: 'status:active',
+        searchFields: 'status:=',
       };
 
       result = search(input, { logger: noOpLogger });

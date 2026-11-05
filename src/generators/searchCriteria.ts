@@ -1,60 +1,60 @@
-import type { BaseValue, ILogger, TResult } from '@/types';
-import {
-  encodeSearchParam,
-  isBaseValue,
-  isNonEmptyString,
-  typeName,
-} from '@/utils';
+import type { BaseValue, ILogger } from '@/types';
+import { isArray, isBaseValue, isNonEmptyString, typeName } from '@/utils';
 
 export type TCriteriaValue = BaseValue | null | undefined;
 export type TSearchCriteria = readonly (readonly [string, TCriteriaValue])[];
 
-export type TSearchCriteriaOptions = {
+export interface TSearchCriteriaOptions {
   logger?: ILogger;
-};
+}
+
+const CRITERIA_START_INDEX = 1;
+const KEY_VALUE_LENGTH = 2;
 
 export function searchCriteria(
   arg: TSearchCriteria = [],
   options: TSearchCriteriaOptions = {},
-): TResult | undefined {
+): string | undefined {
   const log = options.logger ?? console;
-  if (!Array.isArray(arg as TSearchCriteria)) {
+  if (!isArray(arg)) {
     log?.error(
       `SearchCriteria: keys must have a type of array, got ${typeName(arg)} instead`,
     );
-    return;
+    return undefined;
   }
 
   if (!arg.length) {
     log?.info(`SearchCriteria: no values given`);
-    return;
+    return undefined;
   }
 
   const filteredValues = arg.filter((item, index) => {
-    if (!Array.isArray(item)) {
+    if (!isArray(item)) {
       log?.warn(
         `SearchCriteria: must have a type of array, got ${typeName(item)} instead`,
       );
       return false;
     }
 
-    if (item.length !== 2) {
+    if (item.length !== KEY_VALUE_LENGTH) {
       log?.warn(
         `SearchCriteria: must have a key-value array, but got length ${item.length} at index ${index} instead`,
       );
       return false;
     }
 
-    if (!isNonEmptyString(item[0])) {
+    const [key, value] = item;
+
+    if (!isNonEmptyString(key)) {
       log?.warn(
-        `SearchCriteria: must have keys as non-empty strings, but got ${typeName(item[0])} at index ${index} instead`,
+        `SearchCriteria: must have keys as non-empty strings, but got ${typeName(key)} at index ${index} instead`,
       );
       return false;
     }
 
-    if (!isBaseValue(item[1])) {
+    if (!isBaseValue(value)) {
       log?.info(
-        `SearchCriteria: ignoring invalid value, got ${typeName(item[1])} at index ${index} instead`,
+        `SearchCriteria: ignoring invalid value, got ${typeName(value)} at index ${index} instead`,
       );
       return false;
     }
@@ -64,25 +64,16 @@ export function searchCriteria(
 
   if (!filteredValues.length) {
     log?.info('SearchCriteria: no values remaning to parse');
-    return;
+    return undefined;
   }
 
-  const deduplicatedValues = Array.from(
-    new Map(filteredValues as [string, BaseValue][]),
-  );
+  const deduplicatedValues = [...new Map(filteredValues)];
 
-  const result: TResult = {
-    raw: '',
-    encoded: '',
-  };
+  let result = '';
 
   deduplicatedValues.forEach(([key, value]) => {
-    result.raw += `&${key}=${value}`;
-    result.encoded += `&${encodeSearchParam(key)}=${encodeSearchParam(String(value))}`;
+    result += `&${key}=${value}`;
   });
 
-  result.raw = result.raw.substring(1);
-  result.encoded = result.encoded.substring(1);
-
-  return result;
+  return result.slice(CRITERIA_START_INDEX);
 }

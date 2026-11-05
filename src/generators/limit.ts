@@ -3,9 +3,9 @@ import { isNumber, typeName } from '@/utils';
 
 export type TLimit = number;
 
-export type TLimitOptions = {
+export interface TLimitOptions {
   logger?: ILogger;
-};
+}
 
 export function limit(
   arg?: TLimit,
@@ -14,14 +14,14 @@ export function limit(
   const log = options.logger ?? console;
   if (arg === undefined) {
     log?.info('Limit: no value given');
-    return;
+    return undefined;
   }
 
   if (!isInputValid(arg)) {
     log?.error(
       `Limit: must be a positive integer or zero, got ${typeName(arg)} instead`,
     );
-    return;
+    return undefined;
   }
 
   return String(arg);

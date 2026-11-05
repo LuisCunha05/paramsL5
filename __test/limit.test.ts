@@ -7,9 +7,8 @@ import { Logger } from '@/logger';
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any;
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
-let result: any;
-// biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
-let expected: any;
+let result: string | undefined;
+let expected: string | undefined;
 
 beforeEach(() => {
   input = undefined;

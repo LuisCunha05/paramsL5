@@ -1,29 +1,29 @@
-import type { ILogger, TResult } from '@/types';
-import { encodeSearchParam, isNonEmptyString, typeName } from '@/utils';
+import type { ILogger } from '@/types';
+import { isArray, isNonEmptyString, typeName } from '@/utils';
 
-export type TWith = Array<string>;
-export type TWithOptions = {
+export type TWith = readonly string[];
+export interface TWithOptions {
   logger?: ILogger;
-};
+}
 
 export function withRel(
   arg: TWith = [],
   options: TWithOptions = {},
-): TResult | undefined {
+): string | undefined {
   const log = options.logger ?? console;
-  if (!Array.isArray(arg)) {
+  if (!isArray(arg)) {
     log?.error(`With: argument must be an array, got ${typeName(arg)} instead`);
-    return;
+    return undefined;
   }
 
   if (!arg.length) {
     log?.info('With: no values given');
-    return;
+    return undefined;
   }
 
   const filteredValues = arg.filter((item) => {
     if (!isNonEmptyString(item)) {
-      log?.info(`With: value must be a string, got ${typeName(item)} instead`);
+      log?.warn(`With: value must be a string, got ${typeName(item)} instead`);
       return false;
     }
     return true;
@@ -31,18 +31,15 @@ export function withRel(
 
   if (!filteredValues.length) {
     log?.info('With: no values remaining to parse');
-    return;
+    return undefined;
   }
 
-  const uniqueValues = Array.from(new Set(filteredValues));
+  const uniqueValues = [...new Set(filteredValues)];
 
-  const params = new URLSearchParams();
-  params.set('with', uniqueValues.join(';'));
+  if (!uniqueValues.length) {
+    log?.info('With: no values remaining to parse');
+    return undefined;
+  }
 
-  const result = uniqueValues.join(';');
-
-  return {
-    raw: result,
-    encoded: encodeSearchParam(result),
-  };
+  return uniqueValues.join(';');
 }

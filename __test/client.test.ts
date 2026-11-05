@@ -119,7 +119,7 @@ describe('createClient function', () => {
 
       result = paramsL5(input);
 
-      expect(result?.sortBy?.raw).toBe(expected);
+      expect(result?.sortBy).toBe(expected);
     });
 
     test('should prioritize sortBy from params over defaultOptions', () => {
@@ -133,7 +133,7 @@ describe('createClient function', () => {
 
       result = paramsL5(input);
 
-      expect(result?.sortBy?.raw).toBe(expected);
+      expect(result?.sortBy).toBe(expected);
     });
   });
 

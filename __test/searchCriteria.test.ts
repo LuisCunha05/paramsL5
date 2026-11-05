@@ -8,8 +8,7 @@ import { Logger } from '@/logger';
 let input: any;
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let result: any;
-// biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
-let expected: any;
+let expected: string | undefined;
 
 const info = vi.fn();
 const warn = vi.fn();
@@ -30,22 +29,14 @@ afterEach(() => {
 describe('SearchCriteria params generation', () => {
   test('Should generate params correct string key-value', () => {
     input = [['key', 'value']];
-    expected = {
-      raw: 'key=value',
-      encoded: 'key=value',
-    };
-
-    result = searchCriteria(input);
+    ((expected = 'key=value'), (result = searchCriteria(input)));
 
     expect(result).toEqual(expected);
   });
 
   test('Should generate params correct boolean(true) key-value', () => {
     input = [['key', true]];
-    expected = {
-      raw: 'key=true',
-      encoded: 'key=true',
-    };
+    expected = 'key=true';
 
     result = searchCriteria(input);
 
@@ -54,10 +45,7 @@ describe('SearchCriteria params generation', () => {
 
   test('Should generate params correct boolean(false) key-value', () => {
     input = [['key', false]];
-    expected = {
-      raw: 'key=false',
-      encoded: 'key=false',
-    };
+    expected = 'key=false';
 
     result = searchCriteria(input);
 
@@ -66,10 +54,7 @@ describe('SearchCriteria params generation', () => {
 
   test('Should generate params correct number key-value', () => {
     input = [['key', 7]];
-    expected = {
-      raw: 'key=7',
-      encoded: 'key=7',
-    };
+    expected = 'key=7';
 
     result = searchCriteria(input);
 
@@ -82,10 +67,7 @@ describe('SearchCriteria params generation', () => {
       ['key2', 777],
       ['key3', false],
     ];
-    expected = {
-      raw: 'key1=value&key2=777&key3=false',
-      encoded: 'key1=value&key2=777&key3=false',
-    };
+    expected = 'key1=value&key2=777&key3=false';
 
     result = searchCriteria(input);
 
@@ -97,10 +79,7 @@ describe('SearchCriteria params generation', () => {
       ['key', 'value1'],
       ['key', 'value2'],
     ];
-    expected = {
-      raw: 'key=value2',
-      encoded: 'key=value2',
-    };
+    expected = 'key=value2';
 
     result = searchCriteria(input);
 

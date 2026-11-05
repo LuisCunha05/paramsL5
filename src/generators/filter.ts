@@ -1,27 +1,27 @@
-import type { ILogger, TResult } from '@/types';
-import { encodeSearchParam, isNonEmptyString, typeName } from '@/utils';
+import type { ILogger } from '@/types';
+import { isArray, isNonEmptyString, typeName } from '@/utils';
 
-export type TFilter = Array<string>;
+export type TFilter = readonly string[];
 
-export type TFilterOptions = {
+export interface TFilterOptions {
   logger?: ILogger;
-};
+}
 
 export function filter(
   arg: TFilter = [],
   options: TFilterOptions = {},
-): TResult | undefined {
+): string | undefined {
   const log = options.logger ?? console;
-  if (!Array.isArray(arg)) {
+  if (!isArray(arg)) {
     log?.error(
       `Filter: argument must be an array, got ${typeName(arg)} instead`,
     );
-    return;
+    return undefined;
   }
 
   if (!arg.length) {
     log?.info('Filter: no values given');
-    return;
+    return undefined;
   }
 
   const filteredValues = arg.filter((item) => {
@@ -36,15 +36,14 @@ export function filter(
 
   if (!filteredValues.length) {
     log?.info('Filter: no values remaining to parse');
-    return;
+    return undefined;
   }
 
-  const uniqueValues = Array.from(new Set(filteredValues));
+  const uniqueValues = [...new Set(filteredValues)];
 
-  if (!uniqueValues.length) return;
+  if (!uniqueValues.length) {
+    return undefined;
+  }
 
-  return {
-    raw: uniqueValues.join(';'),
-    encoded: encodeSearchParam(uniqueValues.join(';')),
-  };
+  return uniqueValues.join(';');
 }

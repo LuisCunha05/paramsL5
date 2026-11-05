@@ -3,12 +3,11 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { LOG_LEVEL, URL_ENCODED_CHARS as URC } from '@/constants';
 import { withRel } from '@/generators/with';
 import { Logger } from '@/logger';
-import type { TResult } from '@/types';
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any;
-let result: TResult | undefined;
-let expected: TResult | undefined;
+let result: string | undefined;
+let expected: string | undefined;
 
 beforeEach(() => {
   input = undefined;
@@ -30,10 +29,7 @@ describe('withRel function', () => {
   describe('formatting', () => {
     test('should format relations correctly', () => {
       input = ['posts', 'comments'];
-      expected = {
-        raw: 'posts;comments',
-        encoded: `posts${URC.SEMICOLON}comments`,
-      };
+      expected = 'posts;comments';
 
       result = withRel(input, { logger: noOpLogger });
 
@@ -83,7 +79,7 @@ describe('withRel function', () => {
 
       withRel(input, { logger });
 
-      expect(info).toHaveBeenCalledExactlyOnceWith(
+      expect(warn).toHaveBeenCalledExactlyOnceWith(
         'With: value must be a string, got number instead',
       );
     });
@@ -101,15 +97,12 @@ describe('withRel function', () => {
 
       withRel(input, { logger });
 
-      expect(info).toHaveBeenCalledTimes(2);
-      expect(info).toHaveBeenNthCalledWith(
-        1,
+      expect(info).toHaveBeenCalledOnce();
+      expect(warn).toHaveBeenCalledOnce();
+      expect(warn).toHaveBeenCalledWith(
         'With: value must be a string, got number instead',
       );
-      expect(info).toHaveBeenNthCalledWith(
-        2,
-        'With: no values remaining to parse',
-      );
+      expect(info).toHaveBeenCalledWith('With: no values remaining to parse');
     });
   });
 });

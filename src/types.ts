@@ -5,8 +5,3 @@ export interface ILogger {
   warn: (...args: unknown[]) => void;
   error: (...args: unknown[]) => void;
 }
-
-export type TResult = {
-  raw: string;
-  encoded: string;
-};

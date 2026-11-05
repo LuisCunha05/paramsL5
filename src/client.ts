@@ -2,31 +2,31 @@ import type { TParams, TResultParams } from '@/paramsL5';
 
 import { filter } from './generators/filter';
 import { include } from './generators/include';
-import { limit, type TLimit } from './generators/limit';
-import { orderBySortBy, type TSortBy } from './generators/orderBySortBy';
-import { page, type TPage } from './generators/page';
-import { search, type TCondition } from './generators/search';
+import { type TLimit, limit } from './generators/limit';
+import { type TSortBy, orderBySortBy } from './generators/orderBySortBy';
+import { type TPage, page } from './generators/page';
+import { type TCondition, search } from './generators/search';
 import { searchCriteria } from './generators/searchCriteria';
-import { searchJoin, type TSearchJoin } from './generators/searchJoin';
+import { type TSearchJoin, searchJoin } from './generators/searchJoin';
 import { withRel } from './generators/with';
 import type { ILogger } from './types';
 
-type DefaultOptions = {
+interface DefaultOptions {
   sortBy?: TSortBy;
   page?: TPage;
   limit?: TLimit;
   searchJoin?: TSearchJoin;
   searchCondition?: TCondition;
-};
+}
 
-export type ClientOptions = {
+export interface ClientOptions {
   defaultOptions?: DefaultOptions;
   logger?: ILogger;
-};
+}
 
 export function createClient(options: ClientOptions = {}) {
   return (params: TParams = {}) => {
-    const logger = options.logger;
+    const { logger } = options;
     const searchObj = search(params.search, {
       defaultCondition: options?.defaultOptions?.searchCondition,
       logger,
@@ -42,34 +42,54 @@ export function createClient(options: ClientOptions = {}) {
       include: include(params.include, { logger }),
       limit: limit(params.limit ?? options?.defaultOptions?.limit, { logger }),
       orderBy: orderBySortByObj.orderBy,
-      sortBy: orderBySortByObj.sortedBy,
       page: page(params.page ?? options?.defaultOptions?.page, { logger }),
+      params: undefined,
       search: searchObj?.search,
-      searchFields: searchObj?.searchFields,
       searchCriteria: searchCriteria(params.searchCriteria, { logger }),
+      searchFields: searchObj?.searchFields,
       searchJoin: searchJoin(
         params.searchJoin ?? options?.defaultOptions?.searchJoin,
         { logger },
       ),
+      sortBy: orderBySortByObj.sortedBy,
       with: withRel(params.with, { logger }),
-      params: undefined,
     };
 
     const searchParams = new URLSearchParams();
 
-    if (result.filter?.raw) searchParams.append('filter', result.filter.raw);
-    if (result.include?.raw) searchParams.append('include', result.include.raw);
-    if (result.limit) searchParams.append('limit', result.limit);
-    if (result.orderBy?.raw) searchParams.append('orderBy', result.orderBy.raw);
-    if (result.sortBy?.raw) searchParams.append('sortedBy', result.sortBy.raw);
-    if (result.page) searchParams.append('page', result.page);
-    if (result.search?.raw) searchParams.append('search', result.search.raw);
-    if (result.searchFields?.raw)
-      searchParams.append('searchFields', result.searchFields.raw);
-    if (result.searchCriteria?.raw)
-      searchParams.append('searchCriteria', result.searchCriteria.raw);
-    if (result.with?.raw) searchParams.append('with', result.with.raw);
-    if (result.searchJoin) searchParams.append('searchJoin', result.searchJoin);
+    if (result.filter) {
+      searchParams.append('filter', result.filter);
+    }
+    if (result.include) {
+      searchParams.append('include', result.include);
+    }
+    if (result.limit) {
+      searchParams.append('limit', result.limit);
+    }
+    if (result.orderBy) {
+      searchParams.append('orderBy', result.orderBy);
+    }
+    if (result.sortBy) {
+      searchParams.append('sortedBy', result.sortBy);
+    }
+    if (result.page) {
+      searchParams.append('page', result.page);
+    }
+    if (result.search) {
+      searchParams.append('search', result.search);
+    }
+    if (result.searchFields) {
+      searchParams.append('searchFields', result.searchFields);
+    }
+    if (result.searchCriteria) {
+      searchParams.append('searchCriteria', result.searchCriteria);
+    }
+    if (result.with) {
+      searchParams.append('with', result.with);
+    }
+    if (result.searchJoin) {
+      searchParams.append('searchJoin', result.searchJoin);
+    }
 
     result.params = searchParams.toString();
     return result;

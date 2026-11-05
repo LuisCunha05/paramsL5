@@ -31,10 +31,7 @@ describe('filter function', () => {
   describe('formatting', () => {
     test('should format a valid array of strings', () => {
       input = ['a', 'b', 'c'];
-      expected = {
-        raw: 'a;b;c',
-        encoded: `a${URC.SEMICOLON}b${URC.SEMICOLON}c`,
-      };
+      expected = 'a;b;c';
 
       result = filter(input, { logger: noOpLogger });
 
@@ -43,10 +40,7 @@ describe('filter function', () => {
 
     test('should return unique values if there are duplicates', () => {
       input = ['a', 'b', 'a', 'c', 'b'];
-      expected = {
-        raw: 'a;b;c',
-        encoded: `a${URC.SEMICOLON}b${URC.SEMICOLON}c`,
-      };
+      expected = 'a;b;c';
 
       result = filter(input, { logger: noOpLogger });
 
@@ -65,10 +59,7 @@ describe('filter function', () => {
 
     test('should filter out non-string items', () => {
       input = ['a', 123, 'b'];
-      expected = {
-        raw: 'a;b',
-        encoded: `a${URC.SEMICOLON}b`,
-      };
+      expected = 'a;b';
 
       result = filter(input, { logger: noOpLogger });
 
@@ -77,10 +68,7 @@ describe('filter function', () => {
 
     test('should filter out empty strings', () => {
       input = ['a', '', 'b', '   '];
-      expected = {
-        raw: 'a;b',
-        encoded: `a${URC.SEMICOLON}b`,
-      };
+      expected = 'a;b';
 
       result = filter(input, { logger: noOpLogger });
 
