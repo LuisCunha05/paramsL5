@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { LOG_LEVEL, SORT_BY, URL_ENCODED_CHARS as URC } from '@/constants';
-import { orderBySortBy } from '@/generators/orderBySortBy';
+import { LOG_LEVEL, SORT_BY } from '@/constants';
+import { orderBySortBy } from '@/generators/order-sort';
 import { Logger } from '@/logger';
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests

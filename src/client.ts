@@ -1,13 +1,13 @@
-import type { TParams, TResultParams } from '@/paramsL5';
+import type { TParams, TResultParams } from '@/params-l5';
 
 import { filter } from './generators/filter';
 import { include } from './generators/include';
 import { type TLimit, limit } from './generators/limit';
-import { type TSortBy, orderBySortBy } from './generators/orderBySortBy';
+import { type TSortBy, orderBySortBy } from './generators/order-sort';
 import { type TPage, page } from './generators/page';
 import { type TCondition, search } from './generators/search';
-import { searchCriteria } from './generators/searchCriteria';
-import { type TSearchJoin, searchJoin } from './generators/searchJoin';
+import { searchCriteria } from './generators/search-criteria';
+import { type TSearchJoin, searchJoin } from './generators/search-join';
 import { withRel } from './generators/with';
 import type { ILogger } from './types';
 

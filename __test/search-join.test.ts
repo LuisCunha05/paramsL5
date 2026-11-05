@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { LOG_LEVEL, SEARCH_JOIN } from '@/constants';
-import { searchJoin } from '@/generators/searchJoin';
+import { searchJoin } from '@/generators/search-join';
 import { Logger } from '@/logger';
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { CONDITIONS, LOG_LEVEL, URL_ENCODED_CHARS as URC } from '@/constants';
+import { CONDITIONS, LOG_LEVEL } from '@/constants';
 import { search } from '@/generators/search';
 import { Logger } from '@/logger';
 

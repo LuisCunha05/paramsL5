@@ -1,14 +1,14 @@
 import { type TFilter, filter } from '@/generators/filter';
 import { type TInclude, include } from '@/generators/include';
 import { type TLimit, limit } from '@/generators/limit';
-import { type TOrderBySortBy, orderBySortBy } from '@/generators/orderBySortBy';
+import { type TOrderBySortBy, orderBySortBy } from '@/generators/order-sort';
 import { type TPage, page } from '@/generators/page';
 import { type TSearch, search } from '@/generators/search';
 import {
   type TSearchCriteria,
   searchCriteria,
-} from '@/generators/searchCriteria';
-import { type TSearchJoin, searchJoin } from '@/generators/searchJoin';
+} from '@/generators/search-criteria';
+import { type TSearchJoin, searchJoin } from '@/generators/search-join';
 import { type TWith, withRel } from '@/generators/with';
 
 export interface TParams {

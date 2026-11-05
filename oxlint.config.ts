@@ -25,6 +25,7 @@ export default defineConfig({
     'no-unused-vars': 'warn',
     'no-use-before-define': 'off',
     'one-var': 'off',
+    'sort-imports': 'off',
     'typescript/ban-ts-comment': 'off',
     'typescript/explicit-function-return-type': 'off',
     'typescript/explicit-member-accessibility': 'off',
@@ -33,6 +34,5 @@ export default defineConfig({
     'typescript/restrict-template-expressions': 'off',
     'typescript/strict-boolean-expressions': 'off',
     'unicorn/explicit-length-check': 'off',
-    'sort-imports': 'off',
   },
 });
