@@ -1,8 +1,11 @@
-import type { BaseValue, ILogger } from '@/types';
+import type { BaseValue, ILogger, Path } from '@/types';
 import { isArray, isBaseValue, isNonEmptyString, typeName } from '@/utils';
 
 export type TCriteriaValue = BaseValue | null | undefined;
-export type TSearchCriteria = readonly (readonly [string, TCriteriaValue])[];
+export type TSearchCriteria<TTShape> = readonly (readonly [
+  NoInfer<Path<TTShape>>,
+  TCriteriaValue,
+])[];
 
 export interface TSearchCriteriaOptions {
   logger?: ILogger;
@@ -11,8 +14,8 @@ export interface TSearchCriteriaOptions {
 const CRITERIA_START_INDEX = 1;
 const KEY_VALUE_LENGTH = 2;
 
-export function searchCriteria(
-  arg: TSearchCriteria = [],
+export function searchCriteria<TShape extends object = Record<string, unknown>>(
+  arg: TSearchCriteria<TShape> = [],
   options: TSearchCriteriaOptions = {},
 ): string | undefined {
   const log = options.logger ?? console;

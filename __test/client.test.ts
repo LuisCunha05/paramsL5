@@ -195,4 +195,66 @@ describe('createClient function', () => {
       expect(result?.params).toBe(expected);
     });
   });
+
+  describe('client.for method', () => {
+    interface UserModel {
+      id: string;
+      name: string;
+      email: string;
+      profile: {
+        avatar: string;
+      };
+      posts: {
+        title: string;
+      };
+    }
+
+    test('should generate query params using client.for<Model>()', () => {
+      const client = createClient({
+        defaultOptions: { limit: 15 },
+        logger: noOpLogger,
+      });
+
+      const res = client.for<UserModel>()({
+        filter: ['id', 'email'],
+        include: ['profile', 'posts'],
+        orderBySortBy: [['name', 'asc']],
+      });
+
+      expect(res.filter).toBe('id;email');
+      expect(res.include).toBe('profile,posts');
+      expect(res.orderBy).toBe('name');
+      expect(res.sortBy).toBe('asc');
+      expect(res.limit).toBe('15');
+    });
+
+    test('should reject duplicate paths and duplicate keys at compile-time', () => {
+      const client = createClient({ logger: noOpLogger });
+
+      // Valid call
+      const valid = client.for<UserModel>()({
+        filter: ['id', 'email'],
+        include: ['profile', 'posts'],
+        orderBySortBy: [
+          ['name', 'asc'],
+          ['id', 'desc'],
+        ],
+      });
+      expect(valid.include).toBe('profile,posts');
+
+      // @ts-expect-error Duplicate path 'profile'
+      client.for<UserModel>()({ include: ['profile', 'profile'] });
+
+      // @ts-expect-error Duplicate path 'id'
+      client.for<UserModel>()({ filter: ['id', 'id'] });
+
+      client.for<UserModel>()({
+        orderBySortBy: [
+          ['name', 'asc'],
+          // @ts-expect-error Duplicate key 'name'
+          ['name', 'desc'],
+        ],
+      });
+    });
+  });
 });

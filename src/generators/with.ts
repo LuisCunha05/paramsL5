@@ -1,12 +1,12 @@
 import type { ILogger, Path } from '@/types';
 import { isArray, isNonEmptyString, typeName } from '@/utils';
 
-export type TWith<TTShape> = readonly Path<TTShape>[];
+export type TWith<TTShape> = readonly NoInfer<Path<TTShape>>[];
 export interface TWithOptions {
   logger?: ILogger;
 }
 
-export function withRel<TShape extends object>(
+export function withRel<TShape extends object = Record<string, unknown>>(
   arg: TWith<TShape> = [],
   options: TWithOptions = {},
 ): string | undefined {

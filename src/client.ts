@@ -9,7 +9,11 @@ import { type TCondition, search } from './generators/search';
 import { searchCriteria } from './generators/search-criteria';
 import { type TSearchJoin, searchJoin } from './generators/search-join';
 import { withRel } from './generators/with';
-import type { ILogger } from './types';
+import type {
+  ILogger,
+  ValidateFlatArray,
+  ValidateKeyTupleArray,
+} from './types';
 
 interface DefaultOptions {
   sortBy?: TSortBy;
@@ -24,8 +28,30 @@ export interface ClientOptions {
   logger?: ILogger;
 }
 
-export function createClient(options: ClientOptions = {}) {
-  return (params: TParams = {}) => {
+export type ValidateParams<TInput> = {
+  [K in keyof TInput]: K extends 'include' | 'with' | 'filter'
+    ? ValidateFlatArray<TInput[K]>
+    : K extends 'orderBySortBy' | 'search' | 'searchCriteria'
+      ? ValidateKeyTupleArray<TInput[K]>
+      : TInput[K];
+};
+
+export interface ClientRunner {
+  <TShape extends object = Record<string, unknown>>(
+    params?: TParams<TShape>,
+  ): TResultParams;
+
+  for: <TShape extends object>() => <const TInput extends TParams<TShape>>(
+    params?: ValidateParams<TInput> extends TInput
+      ? TInput
+      : ValidateParams<TInput>,
+  ) => TResultParams;
+}
+
+export function createClient(options: ClientOptions = {}): ClientRunner {
+  function runner<TShape extends object = Record<string, unknown>>(
+    params: TParams<TShape> = {},
+  ): TResultParams {
     const { logger } = options;
     const searchObj = search(params.search, {
       defaultCondition: options?.defaultOptions?.searchCondition,
@@ -93,5 +119,12 @@ export function createClient(options: ClientOptions = {}) {
 
     result.params = searchParams.toString();
     return result;
-  };
+  }
+
+  runner.for =
+    <TShape extends object>() =>
+    (params: TParams<TShape> = {}) =>
+      runner(params);
+
+  return runner;
 }

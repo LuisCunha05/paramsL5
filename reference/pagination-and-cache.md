@@ -28,6 +28,7 @@ While filtering, sorting, and eager loading operate on database query conditions
 ## Pagination Mechanics (`limit` & `page`)
 
 ### Under the Hood in `BaseRepository::paginate()`
+
 Inside `Prettus\Repository\Eloquent\BaseRepository.php` (lines 482–492):
 
 ```php
@@ -45,6 +46,7 @@ public function paginate($limit = null, $columns = ['*'], $method = "paginate")
 ```
 
 ### Execution Flow:
+
 1. `applyCriteria()` applies `RequestCriteria` (search, filter, with, orderBy).
 2. If `$limit` is not passed to the method call, it defaults to `config('repository.pagination.limit', 15)`.
 3. In controller code, developers often forward the request's `limit` parameter:
@@ -55,10 +57,13 @@ public function paginate($limit = null, $columns = ['*'], $method = "paginate")
 4. Laravel's underlying paginator automatically parses the `page` parameter from the HTTP request (`?page=2`).
 
 ### Parameter Preservation via `appends()`
+
 Notice line 488:
+
 ```php
 $results->appends(app('request')->query());
 ```
+
 `l5-repository` automatically appends the entire incoming request query string to all generated pagination links (`next_page_url`, `prev_page_url`).  
 This ensures that if a user paginates through a filtered search (`?search=name:John&page=1`), clicking the next page URL maintains the search criteria (`?search=name:John&page=2`).
 
@@ -67,6 +72,7 @@ This ensures that if a user paginates through a filtered search (`?search=name:J
 ## Cache Bypass (`skipCache`)
 
 ### Under the Hood in `CacheableRepository`
+
 In `Prettus\Repository\Traits\CacheableRepository.php` (lines 70–79):
 
 ```php
@@ -85,6 +91,7 @@ public function isSkippedCache()
 ```
 
 When caching is enabled in `config/repository.php`:
+
 ```php
 'cache' => [
     'enabled' => true,
@@ -94,9 +101,11 @@ When caching is enabled in `config/repository.php`:
     ],
 ],
 ```
+
 Every read operation (`all`, `paginate`, `find`, `findByField`) checks `isSkippedCache()`.
 
 ### Bypassing Cache via Request
+
 Passing `skipCache=true` or `skipCache=1` tells the repository to bypass the cache store and query the database directly:
 
 ```
@@ -108,6 +117,7 @@ Passing `skipCache=true` or `skipCache=1` tells the repository to bypass the cac
 ## Prerequisites for Caching
 
 For `skipCache` to have any effect:
+
 1. The repository must implement `Prettus\Repository\Contracts\CacheableInterface`.
 2. The repository must use the `Prettus\Repository\Traits\CacheableRepository` trait.
 3. Caching must be globally enabled in `config/repository.php` (`'enabled' => true`).
@@ -135,12 +145,15 @@ class PostRepository extends BaseRepository implements CacheableInterface
 ## Common Mistakes & Traps
 
 ### 1. Expecting `limit` to Work Automatically Without Controller Forwarding
+
 Unlike `search` and `filter` (which `RequestCriteria` pulls directly from `$this->request->get(...)`), `BaseRepository::paginate($limit = null)` only receives `$limit` as a method argument. If the controller executes `$repository->paginate()` without passing `$request->get('limit')`, the `?limit=50` URL parameter will be ignored!
 
 ### 2. Passing Negative or Extreme `limit` Values
+
 Passing unconstrained `limit` (e.g. `?limit=1000000`) can cause database timeouts and out-of-memory errors. The controller should validate and cap `limit` (e.g. `min(100, (int) $request->get('limit', 15))`).
 
 ### 3. Caching Serializer Issues in Newer Laravel Versions
+
 As noted in `config/repository.php`, Laravel 11/12/13 hardens cache serialization. If criteria objects are serialized into cache keys, all criteria classes should be whitelisted in `config/cache.php` under `serializable_classes`.
 
 ---
@@ -148,23 +161,31 @@ As noted in `config/repository.php`, Laravel 11/12/13 hardens cache serializatio
 ## Examples: Correct vs. Incorrect
 
 ### 1. Requesting a Specific Page and Limit
--  **Correct:**
-  ```
-  ?page=3&limit=25
-  ```
+
+- **Correct:**
+
+```
+?page=3&limit=25
+```
 
 ### 2. Bypassing Cache for Fresh Data
--  **Correct:**
-  ```
-  ?search=status:pending&skipCache=true
-  ```
-  or
-  ```
-  ?search=status:pending&skipCache=1
-  ```
+
+- **Correct:**
+
+```
+?search=status:pending&skipCache=true
+```
+
+or
+
+```
+?search=status:pending&skipCache=1
+```
 
 ### 3. Combining Search, Ordering, and Pagination
--  **Correct (All parameters survive pagination):**
-  ```
-  ?search=title:Laravel&orderBy=created_at&sortedBy=desc&limit=10&page=2
-  ```
+
+- **Correct (All parameters survive pagination):**
+
+```
+?search=title:Laravel&orderBy=created_at&sortedBy=desc&limit=10&page=2
+```

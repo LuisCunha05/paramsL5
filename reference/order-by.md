@@ -36,8 +36,8 @@ if (isset($orderBy) && !empty($orderBy)) {
     if (count($orderBySplit) > 1) {
         $sortedBySplit = explode(';', $sortedBy);
         foreach ($orderBySplit as $orderBySplitItemKey => $orderBySplitItem) {
-            $sortedBy = isset($sortedBySplit[$orderBySplitItemKey]) 
-                ? $sortedBySplit[$orderBySplitItemKey] 
+            $sortedBy = isset($sortedBySplit[$orderBySplitItemKey])
+                ? $sortedBySplit[$orderBySplitItemKey]
                 : $sortedBySplit[0];
             $model = $this->parserFieldsOrderBy($model, $orderBySplitItem, $sortedBy);
         }
@@ -48,6 +48,7 @@ if (isset($orderBy) && !empty($orderBy)) {
 ```
 
 ### Execution Flow:
+
 1. `orderBy` is split by **semicolon (`;`)**.
 2. If multiple sort fields are present, `sortedBy` is also split by semicolon.
 3. If `sortedBy` has fewer entries than `orderBy`, `RequestCriteria` **falls back to the first direction** (`$sortedBySplit[0]`).
@@ -65,16 +66,21 @@ You can sort by multiple columns by joining fields and directions with semicolon
 ```
 
 ### Generated SQL:
+
 ```sql
 ORDER BY `created_at` DESC, `title` ASC
 ```
 
 ### Fallback Behavior:
+
 If you supply multiple order columns but only one sort direction:
+
 ```
 ?orderBy=created_at;title;views&sortedBy=desc
 ```
+
 Because `count($sortedBySplit) < count($orderBySplit)`, every column automatically adopts `desc`:
+
 ```sql
 ORDER BY `created_at` DESC, `title` DESC, `views` DESC
 ```
@@ -120,71 +126,90 @@ if (count($split) > 1) {
 ```
 
 ### Syntax 1: Conventional Foreign Key (`table|column`)
+
 If your table follows standard Laravel naming conventions:
+
 - Main Table: `posts`
 - Target Table: `categories`
 - Foreign Key: `posts.category_id` -> `categories.id`
 
 URL:
+
 ```
 ?orderBy=categories|name&sortedBy=asc
 ```
+
 What `RequestCriteria` does:
+
 1. Infers the singular prefix: `Str::singular('categories')` ➔ `'category'`.
 2. Assumes local key is `posts.category_id`.
 3. Assumes foreign target key is `categories.id`.
 4. Executes:
    ```sql
-   SELECT `posts`.* 
-   FROM `posts` 
-   LEFT JOIN `categories` ON `posts`.`category_id` = `categories`.`id` 
+   SELECT `posts`.*
+   FROM `posts`
+   LEFT JOIN `categories` ON `posts`.`category_id` = `categories`.`id`
    ORDER BY `name` ASC
    ```
 
 ### Syntax 2: Custom Foreign Key (`table:fk|column`)
+
 If your foreign key name does not match the singular convention:
+
 - Main Table: `posts`
 - Target Table: `categories`
 - Custom Foreign Key on `posts`: `custom_cat_id`
 
 URL:
+
 ```
 ?orderBy=categories:custom_cat_id|name&sortedBy=asc
 ```
+
 Executes:
+
 ```sql
-SELECT `posts`.* 
-FROM `posts` 
-LEFT JOIN `categories` ON `posts`.`custom_cat_id` = `categories`.`id` 
+SELECT `posts`.*
+FROM `posts`
+LEFT JOIN `categories` ON `posts`.`custom_cat_id` = `categories`.`id`
 ORDER BY `name` ASC
 ```
 
 ### Syntax 3: Custom Foreign Key + Custom Primary Key (`table:fk,pk|column`)
+
 If both the foreign key and the target table's primary key are non-standard:
+
 - Main Table: `posts`
 - Target Table: `categories`
 - Custom Foreign Key on `posts`: `category_code`
 - Custom Key on `categories`: `code`
 
 URL:
+
 ```
 ?orderBy=categories:category_code,code|name&sortedBy=asc
 ```
+
 Executes:
+
 ```sql
-SELECT `posts`.* 
-FROM `posts` 
-LEFT JOIN `categories` ON `posts`.`category_code` = `categories`.`code` 
+SELECT `posts`.*
+FROM `posts`
+LEFT JOIN `categories` ON `posts`.`category_code` = `categories`.`code`
 ORDER BY `name` ASC
 ```
 
 ### Preventing Column Ambiguity with Qualified Names
+
 Notice that in the examples above, `sortColumn` was `name`. If both `posts` and `categories` have a `name` column:
+
 ```
 # Ambiguous column error!
 ?orderBy=categories|name
 ```
+
 You can explicitly qualify the sort column with the table name:
+
 ```
 # Safe and unambiguous:
 ?orderBy=categories|categories.name
@@ -195,28 +220,37 @@ You can explicitly qualify the sort column with the table name:
 ## Common Mistakes & Traps
 
 ### 1. Ambiguous Column Collisions
+
 Sorting by `id` on joined queries without prefixing:
+
 ```
 ?orderBy=categories|id
 ```
+
 Crashes with:
 `Column 'id' in order clause is ambiguous`.  
 **Fix:** Pass `categories|categories.id` or `posts.id`.
 
 ### 2. Duplicate Rows from One-to-Many Relationships
+
 If you join a table that has a one-to-many relationship (for example, sorting posts by `comments|created_at`), SQL's `LEFT JOIN` duplicates parent `posts` rows for every matching child comment!  
 Cross-table sorting is primarily designed for **belongsTo** relationships.
 
 ### 3. Invalid Direction Value
+
 Passing values other than `asc` or `desc` (e.g. `sortedBy=up` or `sortedBy=descending`):
 Laravel's query builder will either throw an exception or execute unpredictable sorting depending on the database driver.
 
 ### 4. Overriding `select` Clauses
+
 Notice that `parserFieldsOrderBy()` calls:
+
 ```php
 $model->addSelect($table.'.*');
 ```
+
 If you combine a cross-table `orderBy` with `filter=title`:
+
 - `filter` sets `SELECT posts.title`
 - `orderBy` adds `SELECT posts.*`
 - The result is that **all** columns of `posts` are selected regardless of `filter`!
@@ -226,38 +260,46 @@ If you combine a cross-table `orderBy` with `filter=title`:
 ## Examples: Correct vs. Incorrect
 
 ### 1. Basic Single Column
+
 - ❌ **Incorrect (direction in orderBy):**
   ```
   ?orderBy=created_at desc
   ```
--  **Correct (direction in sortedBy):**
-  ```
-  ?orderBy=created_at&sortedBy=desc
-  ```
+- **Correct (direction in sortedBy):**
+
+```
+?orderBy=created_at&sortedBy=desc
+```
 
 ### 2. Multi-Column with Different Directions
+
 - ❌ **Incorrect (using comma):**
   ```
   ?orderBy=created_at,views&sortedBy=desc,asc
   ```
--  **Correct (using semicolon):**
-  ```
-  ?orderBy=created_at;views&sortedBy=desc;asc
-  ```
+- **Correct (using semicolon):**
+
+```
+?orderBy=created_at;views&sortedBy=desc;asc
+```
 
 ### 3. Cross-Table Sorting
+
 - ❌ **Incorrect (using dot notation instead of pipe):**
   ```
   ?orderBy=category.name&sortedBy=asc
   ```
-  *(Generates `ORDER BY category.name` without joining the categories table, crashing with unknown column)*
--  **Correct (using pipe syntax):**
-  ```
-  ?orderBy=categories|name&sortedBy=asc
-  ```
+  _(Generates `ORDER BY category.name` without joining the categories table, crashing with unknown column)_
+- **Correct (using pipe syntax):**
+
+```
+?orderBy=categories|name&sortedBy=asc
+```
 
 ### 4. Cross-Table with Custom Foreign Key
--  **Correct:**
-  ```
-  ?orderBy=authors:created_by_user_id|name&sortedBy=asc
-  ```
+
+- **Correct:**
+
+```
+?orderBy=authors:created_by_user_id|name&sortedBy=asc
+```

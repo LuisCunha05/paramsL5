@@ -24,7 +24,7 @@
 
 ## Overview
 
-The `with` and `withCount` parameters enable **database-level eager loading** directly from the HTTP request. 
+The `with` and `withCount` parameters enable **database-level eager loading** directly from the HTTP request.
 
 - `with`: Tells Eloquent to fetch related models in batch queries to prevent the N+1 problem.
 - `withCount`: Tells Eloquent to calculate the number of related records using an aggregate SQL subquery without hydrating the related models.
@@ -48,6 +48,7 @@ if ($withCount) {
 ```
 
 ### Execution Mechanics:
+
 1. `RequestCriteria` retrieves `with` from `$request->get('with')`.
 2. Splits the string by **semicolon (`;`)**.
 3. Passes the array of relation strings directly into Eloquent's `$model->with(...)`.
@@ -64,6 +65,7 @@ Always separate multiple relationships with **semicolons (`;`)**:
 ```
 
 This transforms into:
+
 ```php
 $model->with(['author', 'comments', 'tags']);
 ```
@@ -79,6 +81,7 @@ Eloquent's standard dot notation (`parent.child.subchild`) is fully supported:
 ```
 
 This instructs Eloquent to:
+
 1. Eager-load the `author` relation.
 2. Eager-load the `profile` relation on the `author`.
 3. Eager-load the `comments` relation.
@@ -95,14 +98,16 @@ This instructs Eloquent to:
 ```
 
 ### Generated SQL:
+
 ```sql
-SELECT `posts`.*, 
+SELECT `posts`.*,
        (SELECT COUNT(*) FROM `comments` WHERE `posts`.`id` = `comments`.`post_id`) AS `comments_count`,
        (SELECT COUNT(*) FROM `likes` WHERE `posts`.`id` = `likes`.`post_id`) AS `likes_count`
 FROM `posts`
 ```
 
 The count is placed directly onto the Eloquent model attributes as `{relation}_count`:
+
 - `$post->comments_count`
 - `$post->likes_count`
 
@@ -112,15 +117,16 @@ The count is placed directly onto the Eloquent model attributes as `{relation}_c
 
 A frequent source of confusion in `l5-repository` is the distinction between `with` and `include`:
 
-| Feature | `with` | `include` |
-|---|---|---|
-| **Handled By** | `RequestCriteria` (Eloquent ORM) | `FractalPresenter` (League Fractal) |
-| **Layer** | **Database / SQL Query** | **Output / JSON Serialization** |
-| **Delimiter** | **Semicolon (`;`)** | **Comma (`,`)** |
-| **Action** | Eager-loads relations into Eloquent memory | Serializes related models into JSON response |
-| **Prerequisite** | Eloquent model relationship method | Presenter + Transformer definition |
+| Feature          | `with`                                     | `include`                                    |
+| ---------------- | ------------------------------------------ | -------------------------------------------- |
+| **Handled By**   | `RequestCriteria` (Eloquent ORM)           | `FractalPresenter` (League Fractal)          |
+| **Layer**        | **Database / SQL Query**                   | **Output / JSON Serialization**              |
+| **Delimiter**    | **Semicolon (`;`)**                        | **Comma (`,`)**                              |
+| **Action**       | Eager-loads relations into Eloquent memory | Serializes related models into JSON response |
+| **Prerequisite** | Eloquent model relationship method         | Presenter + Transformer definition           |
 
 ### The Golden Rule:
+
 - Use `with` to control **database performance** (preventing N+1 queries).
 - Use `include` to control **JSON payload shape**.
 - In an ideal API setup using Fractal Presenters, pass **both**:
@@ -134,29 +140,40 @@ A frequent source of confusion in `l5-repository` is the distinction between `wi
 ## Common Mistakes & Traps
 
 ### 1. The Comma Delimiter Trap
+
 Using commas instead of semicolons:
+
 ```
 ?with=author,comments
 ```
+
 `explode(';', 'author,comments')` returns `['author,comments']`. Eloquent looks for a relationship method named `author,comments()` on the Model and crashes:
 `Illuminate\Database\Eloquent\RelationNotFoundException: Call to undefined relationship [author,comments] on model [Post].`
 
 ### 2. Invalid / Missing Relation Fatal Exception
+
 `RequestCriteria` performs **no validation** against whether a relation actually exists or is allowed. If a malicious or mistaken user passes:
+
 ```
 ?with=nonExistentRelation
 ```
+
 Laravel immediately crashes with an unhandled 500 error (`RelationNotFoundException`).
 
 ### 3. Security & DoS Vulnerability
+
 Because `RequestCriteria` directly passes raw user input to Eloquent's `with()`, clients can request deeply nested relations:
+
 ```
 ?with=user.posts.comments.author.posts.comments
 ```
+
 This can generate massive database memory spikes, heavy query loads, or expose internal relations (e.g. `with=secretAuditLogs;user.passwordResets`).
 
 ### 4. Relationship Pruning with `filter`
+
 If you select specific columns using `filter`, **you must include the foreign key**:
+
 ```
 # FAILS: author relation will be null!
 ?with=author&filter=id;title
@@ -170,37 +187,45 @@ If you select specific columns using `filter`, **you must include the foreign ke
 ## Examples: Correct vs. Incorrect
 
 ### 1. Eager Loading Multiple Relations
+
 - ❌ **Incorrect (uses comma):**
   ```
   ?with=author,comments,tags
   ```
--  **Correct (uses semicolon):**
-  ```
-  ?with=author;comments;tags
-  ```
+- **Correct (uses semicolon):**
+
+```
+?with=author;comments;tags
+```
 
 ### 2. Eager Loading Nested Relations
+
 - ❌ **Incorrect (using slash or arrow syntax):**
   ```
   ?with=comments/author
   ```
--  **Correct (dot notation):**
-  ```
-  ?with=comments.author;author.profile
-  ```
+- **Correct (dot notation):**
+
+```
+?with=comments.author;author.profile
+```
 
 ### 3. Combining `with` and `withCount`
--  **Correct:**
-  ```
-  ?with=author&withCount=comments;likes
-  ```
+
+- **Correct:**
+
+```
+?with=author&withCount=comments;likes
+```
 
 ### 4. Working with Filter
+
 - ❌ **Incorrect (foreign key dropped):**
   ```
   ?with=category&filter=id;title
   ```
--  **Correct (foreign key included):**
-  ```
-  ?with=category&filter=id;title;category_id
-  ```
+- **Correct (foreign key included):**
+
+```
+?with=category&filter=id;title;category_id
+```

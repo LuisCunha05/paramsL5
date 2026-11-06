@@ -1,6 +1,6 @@
 import { paramsL5 } from '@/params-l5';
 
-export type { ClientOptions } from '@/client';
+export type { ClientOptions, ClientRunner } from '@/client';
 export { createClient } from '@/client';
 export {
   CONDITIONS,
@@ -31,6 +31,13 @@ export type { TWith } from '@/generators/with';
 export { withRel } from '@/generators/with';
 export type { TParams, TResultParams } from '@/params-l5';
 export { paramsL5 } from '@/params-l5';
-export type { BaseValue } from './types';
+export type {
+  BaseValue,
+  ILogger,
+  NoDuplicates,
+  NoDuplicateKeys,
+  Path,
+} from './types';
+export { uniquePaths } from './types';
 
 export default paramsL5;

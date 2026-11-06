@@ -1,21 +1,25 @@
 import { SORT_BY } from '@/constants';
-import type { ILogger } from '@/types';
+import type { ILogger, Path } from '@/types';
 import { isArray, isNonEmptyString, typeName } from '@/utils';
 
 export type TSortBy = (typeof SORT_BY)[keyof typeof SORT_BY];
 
-export type TOrderBySortByValue = readonly [string, TSortBy?];
-export type TOrderBySortByDefault = readonly [string];
-export type TOrderBySortByArguments =
-  | TOrderBySortByValue
-  | TOrderBySortByDefault;
+export type TOrderBySortByValue<TTShape> = readonly [
+  NoInfer<Path<TTShape>>,
+  TSortBy?,
+];
+export type TOrderBySortByDefault<TTShape> = readonly [NoInfer<Path<TTShape>>];
+export type TOrderBySortByArguments<TTShape> =
+  | TOrderBySortByValue<TTShape>
+  | TOrderBySortByDefault<TTShape>;
 
 interface TOrderBySortByOptions {
   defaultSortBy?: TSortBy;
   logger?: ILogger;
 }
 
-export type TOrderBySortBy = readonly TOrderBySortByArguments[];
+export type TOrderBySortBy<TTShape> =
+  readonly TOrderBySortByArguments<TTShape>[];
 
 interface TOrderBySortByResult {
   orderBy: string | undefined;
@@ -27,8 +31,11 @@ const EMPTY_RESULT = {
   sortedBy: undefined,
 } as const;
 
-export function orderBySortBy(
-  arg: TOrderBySortBy = [],
+const MIN_TUPLE_SIZE = 1;
+const MAX_TUPLE_SIZE = 2;
+
+export function orderBySortBy<TShape extends object = Record<string, unknown>>(
+  arg: TOrderBySortBy<TShape> = [],
   options: TOrderBySortByOptions = {},
 ): TOrderBySortByResult {
   const log = options.logger ?? console;
@@ -52,7 +59,7 @@ export function orderBySortBy(
       return result;
     }
 
-    if (item.length < 1 || item.length > 2) {
+    if (item.length < MIN_TUPLE_SIZE || item.length > MAX_TUPLE_SIZE) {
       log?.warn(
         `OrderBySortBy: must have a key-value array, but got length ${item.length} at index ${index} instead`,
       );
@@ -78,7 +85,7 @@ export function orderBySortBy(
     result.set(key, sortBy ?? options?.defaultSortBy ?? SORT_BY.ASC);
 
     return result;
-  }, new Map<string, TSortBy>());
+  }, new Map<Path<TShape>, TSortBy>());
 
   if (!filteredValues.size) {
     log?.info('OrderBySortBy: no values remaining to parse');
@@ -93,12 +100,8 @@ export function orderBySortBy(
       result.sortedBy.push(value);
       return result;
     },
-    { orderBy: [] as string[], sortedBy: [] as TSortBy[] },
+    { orderBy: [] as Path<TShape>[], sortedBy: [] as TSortBy[] },
   );
-
-  const params = new URLSearchParams();
-  params.set('orderBy', orderBySortedBy.orderBy.join(';'));
-  params.set('sortedBy', orderBySortedBy.sortedBy.join(';'));
 
   const orderResult = orderBySortedBy.orderBy.join(';');
   const sortedResult = orderBySortedBy.sortedBy.join(';');

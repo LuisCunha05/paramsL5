@@ -1,13 +1,13 @@
 import type { ILogger, Path } from '@/types';
 import { isArray, isNonEmptyString, typeName } from '@/utils';
 
-export type TInclude<TTShape> = readonly Path<TTShape>[];
+export type TInclude<TTShape> = readonly NoInfer<Path<TTShape>>[];
 
 export interface TIncludeOptions {
   logger?: ILogger;
 }
 
-export function include<TShape extends object>(
+export function include<TShape extends object = Record<string, unknown>>(
   arg: TInclude<TShape> = [],
   options: TIncludeOptions = {},
 ): string | undefined {

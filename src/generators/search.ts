@@ -1,5 +1,5 @@
 import { CONDITIONS } from '@/constants';
-import type { BaseValue, ILogger } from '@/types';
+import type { BaseValue, ILogger, Path } from '@/types';
 import { isArray, isBaseValue, isNonEmptyString, typeName } from '@/utils';
 
 export type TCondition = (typeof CONDITIONS)[keyof typeof CONDITIONS];
@@ -7,33 +7,36 @@ export type TCondition = (typeof CONDITIONS)[keyof typeof CONDITIONS];
 export type TSearchValue = BaseValue | null | undefined;
 type BetweenTuple<TValue> = [TValue, TValue];
 
-export type TSearchIn = readonly [
-  string,
+export type TSearchIn<TTShape> = readonly [
+  NoInfer<Path<TTShape>>,
   (string | number)[],
   Extract<TCondition, 'in'>,
 ];
 
-export type TSearchBetween = readonly [
-  string,
+export type TSearchBetween<TTShape> = readonly [
+  NoInfer<Path<TTShape>>,
   BetweenTuple<string> | BetweenTuple<number>,
   Extract<TCondition, 'between'>,
 ];
 
-export type TSearchEqual = readonly [string, TSearchValue];
+export type TSearchEqual<TTShape> = readonly [
+  NoInfer<Path<TTShape>>,
+  TSearchValue,
+];
 
-export type TSearchRegular = readonly [
-  string,
+export type TSearchRegular<TTShape> = readonly [
+  NoInfer<Path<TTShape>>,
   TSearchValue,
   Exclude<TCondition, 'in' | 'between'> | undefined,
 ];
 
-export type TSearchItem =
-  | TSearchRegular
-  | TSearchIn
-  | TSearchBetween
-  | TSearchEqual;
+export type TSearchItem<TTShape> =
+  | TSearchRegular<TTShape>
+  | TSearchIn<TTShape>
+  | TSearchBetween<TTShape>
+  | TSearchEqual<TTShape>;
 
-export type TSearch = readonly TSearchItem[];
+export type TSearch<TTShape> = readonly TSearchItem<TTShape>[];
 
 interface TSearchOptions {
   defaultCondition?: TCondition;
@@ -48,8 +51,8 @@ export interface TSearchResult {
 const EMPTY_RESULT = { search: undefined, searchFields: undefined } as const;
 const TUPLE_SIZE = 2;
 
-export function search(
-  arg: TSearch = [],
+export function search<TShape extends object = Record<string, unknown>>(
+  arg: TSearch<TShape> = [],
   options: TSearchOptions = {},
 ): TSearchResult {
   const log = options.logger ?? console;
@@ -65,7 +68,7 @@ export function search(
     return EMPTY_RESULT;
   }
 
-  const filteredValues = arg.reduce<[string, [BaseValue, TCondition]][]>(
+  const filteredValues = arg.reduce<[Path<TShape>, [BaseValue, TCondition]][]>(
     (result, item, index) => {
       if (!isArray(item)) {
         log?.warn(
@@ -177,10 +180,8 @@ export function search(
     return EMPTY_RESULT;
   }
 
-  const searchResult = searchAndFields.search.join(';');
-  const fieldsResult = searchAndFields.fields.join(';');
   return {
-    search: searchResult,
-    searchFields: fieldsResult,
+    search: searchAndFields.search.join(';'),
+    searchFields: searchAndFields.fields.join(';'),
   };
 }

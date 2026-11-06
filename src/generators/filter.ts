@@ -1,13 +1,13 @@
 import type { ILogger, Path } from '@/types';
 import { isArray, isNonEmptyString, typeName } from '@/utils';
 
-export type TFilter<TTShape> = readonly Path<TTShape>[];
+export type TFilter<TTShape> = readonly NoInfer<Path<TTShape>>[];
 
 export interface TFilterOptions {
   readonly logger?: ILogger;
 }
 
-export function filter<TShape extends object>(
+export function filter<TShape extends object = Record<string, unknown>>(
   arg: TFilter<TShape> = [],
   options: TFilterOptions = {},
 ): string | undefined {

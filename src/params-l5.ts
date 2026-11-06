@@ -11,14 +11,14 @@ import {
 import { type TSearchJoin, searchJoin } from '@/generators/search-join';
 import { type TWith, withRel } from '@/generators/with';
 
-export interface TParams<TShape = Record<string, unknown>> {
+export interface TParams<TShape extends object = Record<string, unknown>> {
   readonly filter?: TFilter<TShape>;
   readonly include?: TInclude<TShape>;
   readonly limit?: TLimit;
-  readonly orderBySortBy?: TOrderBySortBy;
+  readonly orderBySortBy?: TOrderBySortBy<TShape>;
   readonly page?: TPage;
-  readonly search?: TSearch;
-  readonly searchCriteria?: TSearchCriteria;
+  readonly search?: TSearch<TShape>;
+  readonly searchCriteria?: TSearchCriteria<TShape>;
   readonly searchJoin?: TSearchJoin;
   readonly with?: TWith<TShape>;
 }
@@ -38,7 +38,9 @@ export interface TResultParams {
   params: string | undefined;
 }
 
-export function paramsL5(arg: TParams = {}) {
+export function paramsL5<TShape extends object = Record<string, unknown>>(
+  arg: TParams<TShape> = {},
+) {
   const searchObj = search(arg.search);
   const orderBySortByObj = orderBySortBy(arg.orderBySortBy);
 

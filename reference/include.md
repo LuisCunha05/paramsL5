@@ -50,6 +50,7 @@ protected function parseIncludes()
 ```
 
 ### Execution Flow:
+
 1. When the repository transforms query results via `$repository->parserResult($results)`, the Presenter is instantiated.
 2. The constructor calls `parseIncludes()`.
 3. It fetches the parameter specified by `config('repository.fractal.params.include')` (default `'include'`).
@@ -75,6 +76,7 @@ Fractal splits the string by comma and enables each requested resource.
 For `include` to have any effect, your application must have two components configured:
 
 ### 1. Presenter Binding
+
 The repository must have a Fractal presenter bound:
 
 ```php
@@ -98,6 +100,7 @@ class PostRepository extends BaseRepository
 ```
 
 ### 2. Transformer Available Includes
+
 The Transformer class must declare which includes are available via `$availableIncludes`, and provide matching `include{Relation}` methods:
 
 ```php
@@ -141,10 +144,13 @@ If an include is passed that is not listed in `$availableIncludes`, Fractal sile
 ## The N+1 Query Disaster & Mitigation
 
 ### The Problem
+
 When Fractal executes `includeComments(Post $post)`:
+
 ```php
 return $this->collection($post->comments, new CommentTransformer());
 ```
+
 Accessing `$post->comments` accesses Eloquent's dynamic property. If `comments` was not eager-loaded at the database level, Eloquent executes a lazy SQL query for **every single post in the list**:
 
 ```sql
@@ -159,6 +165,7 @@ SELECT * FROM comments WHERE post_id = 15;
 ```
 
 ### The Solution: Combine `include` with `with`
+
 Always pair `include` with `with` in your API client calls:
 
 ```
@@ -172,13 +179,13 @@ Always pair `include` with `with` in your API client calls:
 
 ## `include` vs. `with`: Summary
 
-| Aspect | `with` | `include` |
-|---|---|---|
-| **Delimiter** | **Semicolon (`;`)** | **Comma (`,`)** |
-| **System** | Laravel Eloquent ORM | League Fractal Serializer |
-| **Action** | SQL Query eager-loading | JSON Payload formatting |
-| **Absence** | Data is not in Eloquent memory | Data is not in the JSON output |
-| **Failure Mode** | Unhandled 500 exception | Silently ignored |
+| Aspect           | `with`                         | `include`                      |
+| ---------------- | ------------------------------ | ------------------------------ |
+| **Delimiter**    | **Semicolon (`;`)**            | **Comma (`,`)**                |
+| **System**       | Laravel Eloquent ORM           | League Fractal Serializer      |
+| **Action**       | SQL Query eager-loading        | JSON Payload formatting        |
+| **Absence**      | Data is not in Eloquent memory | Data is not in the JSON output |
+| **Failure Mode** | Unhandled 500 exception        | Silently ignored               |
 
 ---
 
@@ -197,16 +204,20 @@ This embeds the `author` of the post, the `comments` list, and for every comment
 ## Common Mistakes & Traps
 
 ### 1. Using Semicolons (The L5 Inconsistency Trap)
+
 ```
 # FAILS: Fractal looks for an include literally named "author;comments"
 ?include=author;comments
 ```
+
 Because developers get used to `with=author;comments`, they mistakenly use `;` for `include`. Fractal treats the entire string as a single token, fails to find a matching include, and returns nothing.
 
 ### 2. Expecting `include` to Work Without a Presenter
+
 If a repository does not bind a Presenter (or `$repository->skipPresenter(true)` is invoked), `include` has **zero effect**. Eloquent models will be returned raw without any relations embedded.
 
 ### 3. Missing Method on Transformer
+
 If `comments` is added to `$availableIncludes`, but the method `includeComments()` is not defined on the Transformer, Fractal throws an exception:
 `BadMethodCallException: Method includeComments does not exist`.
 
@@ -215,27 +226,33 @@ If `comments` is added to `$availableIncludes`, but the method `includeComments(
 ## Examples: Correct vs. Incorrect
 
 ### 1. Requesting Multiple Includes
+
 - ❌ **Incorrect (uses semicolon):**
   ```
   ?include=author;comments;category
   ```
--  **Correct (uses comma):**
-  ```
-  ?include=author,comments,category
-  ```
+- **Correct (uses comma):**
+
+```
+?include=author,comments,category
+```
 
 ### 2. Nested Includes
+
 - ❌ **Incorrect (forward slash):**
   ```
   ?include=comments/author
   ```
--  **Correct (dot notation):**
-  ```
-  ?include=comments.author
-  ```
+- **Correct (dot notation):**
+
+```
+?include=comments.author
+```
 
 ### 3. High-Performance Full Request (Optimal API Client Usage)
--  **Correct (eager-loads at DB level AND serializes at JSON level):**
-  ```
-  ?with=author;comments.author&include=author,comments.author
-  ```
+
+- **Correct (eager-loads at DB level AND serializes at JSON level):**
+
+```
+?with=author;comments.author&include=author,comments.author
+```
