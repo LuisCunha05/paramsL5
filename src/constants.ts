@@ -81,4 +81,4 @@ export const LOG_LEVEL = Object.freeze({
   WARN: 2,
 } as const);
 
-export const MIN_PAGE = 0;
+

@@ -1,4 +1,3 @@
-import { MIN_PAGE } from '@/constants';
 import type { ILogger } from '@/types';
 import { isNumber, typeName } from '@/utils';
 
@@ -8,6 +7,7 @@ export interface TPageOptions {
   logger?: ILogger;
 }
 
+const MIN_PAGE = 0;
 export function page(
   arg?: TPage,
   options: TPageOptions = {},
