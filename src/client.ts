@@ -29,11 +29,11 @@ export interface ClientOptions {
 }
 
 export type ValidateParams<TInput> = {
-  [K in keyof TInput]: K extends 'include' | 'with' | 'filter'
-    ? ValidateFlatArray<TInput[K]>
-    : K extends 'orderBySortBy' | 'search' | 'searchCriteria'
-      ? ValidateKeyTupleArray<TInput[K]>
-      : TInput[K];
+  [KFn in keyof TInput]: KFn extends 'include' | 'with' | 'filter'
+    ? ValidateFlatArray<TInput[KFn]>
+    : KFn extends 'orderBySortBy' | 'search' | 'searchCriteria'
+      ? ValidateKeyTupleArray<TInput[KFn]>
+      : TInput[KFn];
 };
 
 export interface ClientRunner {
@@ -63,13 +63,51 @@ export function createClient(options: ClientOptions = {}): ClientRunner {
       logger,
     });
 
+    function toParams() {
+      const queryParams = new URLSearchParams();
+
+      if (result.filter) {
+        queryParams.append('filter', result.filter);
+      }
+      if (result.include) {
+        queryParams.append('include', result.include);
+      }
+      if (result.limit) {
+        queryParams.append('limit', result.limit);
+      }
+      if (result.orderBy) {
+        queryParams.append('orderBy', result.orderBy);
+      }
+      if (result.sortBy) {
+        queryParams.append('sortedBy', result.sortBy);
+      }
+      if (result.page) {
+        queryParams.append('page', result.page);
+      }
+      if (result.search) {
+        queryParams.append('search', result.search);
+      }
+      if (result.searchFields) {
+        queryParams.append('searchFields', result.searchFields);
+      }
+      if (result.searchCriteria) {
+        queryParams.append('searchCriteria', result.searchCriteria);
+      }
+      if (result.with) {
+        queryParams.append('with', result.with);
+      }
+      if (result.searchJoin) {
+        queryParams.append('searchJoin', result.searchJoin);
+      }
+      return queryParams.toString();
+    }
+
     const result: TResultParams = {
       filter: filter(params.filter, { logger }),
       include: include(params.include, { logger }),
       limit: limit(params.limit ?? options?.defaultOptions?.limit, { logger }),
       orderBy: orderBySortByObj.orderBy,
       page: page(params.page ?? options?.defaultOptions?.page, { logger }),
-      params: undefined,
       search: searchObj?.search,
       searchCriteria: searchCriteria(params.searchCriteria, { logger }),
       searchFields: searchObj?.searchFields,
@@ -78,46 +116,10 @@ export function createClient(options: ClientOptions = {}): ClientRunner {
         { logger },
       ),
       sortBy: orderBySortByObj.sortedBy,
+      toParams,
       with: withRel(params.with, { logger }),
     };
 
-    const searchParams = new URLSearchParams();
-
-    if (result.filter) {
-      searchParams.append('filter', result.filter);
-    }
-    if (result.include) {
-      searchParams.append('include', result.include);
-    }
-    if (result.limit) {
-      searchParams.append('limit', result.limit);
-    }
-    if (result.orderBy) {
-      searchParams.append('orderBy', result.orderBy);
-    }
-    if (result.sortBy) {
-      searchParams.append('sortedBy', result.sortBy);
-    }
-    if (result.page) {
-      searchParams.append('page', result.page);
-    }
-    if (result.search) {
-      searchParams.append('search', result.search);
-    }
-    if (result.searchFields) {
-      searchParams.append('searchFields', result.searchFields);
-    }
-    if (result.searchCriteria) {
-      searchParams.append('searchCriteria', result.searchCriteria);
-    }
-    if (result.with) {
-      searchParams.append('with', result.with);
-    }
-    if (result.searchJoin) {
-      searchParams.append('searchJoin', result.searchJoin);
-    }
-
-    result.params = searchParams.toString();
     return result;
   }
 

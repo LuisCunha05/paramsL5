@@ -45,7 +45,7 @@ describe('createClient function', () => {
 
       result = paramsL5(input);
 
-      expect(result?.params).toBe(expected);
+      expect(result?.toParams()).toBe(expected);
     });
   });
 
@@ -178,7 +178,7 @@ describe('createClient function', () => {
 
       result = paramsL5(input);
 
-      expect(result?.params).toBe(expected);
+      expect(result?.toParams()).toBe(expected);
     });
 
     test('should prioritize searchCondition from params over defaultOptions', () => {
@@ -192,7 +192,7 @@ describe('createClient function', () => {
 
       result = paramsL5(input);
 
-      expect(result?.params).toBe(expected);
+      expect(result?.toParams()).toBe(expected);
     });
   });
 
