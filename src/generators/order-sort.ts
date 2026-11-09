@@ -1,9 +1,9 @@
 import { SORT_BY } from '#s/constants';
 import { defaultLogger } from '#s/logger';
-import type { ILogger, Path } from '#s/types';
+import type { ILogger, Path, ToEnum } from '#s/types';
 import { isArray, isNonEmptyString, typeName } from '#s/utils';
 
-export type TSortBy = (typeof SORT_BY)[keyof typeof SORT_BY];
+export type TSortBy = ToEnum<typeof SORT_BY>;
 
 export type TOrderBySortByValue<TTShape> = readonly [
   NoInfer<Path<TTShape>>,

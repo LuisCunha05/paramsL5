@@ -1,9 +1,9 @@
 import { SEARCH_JOIN } from '#s/constants';
 import { defaultLogger } from '#s/logger';
-import type { ILogger } from '#s/types';
+import type { ILogger, ToEnum } from '#s/types';
 import { isNonEmptyString, typeName } from '#s/utils';
 
-export type TSearchJoin = (typeof SEARCH_JOIN)[keyof typeof SEARCH_JOIN];
+export type TSearchJoin = ToEnum<typeof SEARCH_JOIN>;
 export interface TSearchJoinOptions {
   logger?: ILogger;
 }

@@ -29,7 +29,7 @@ describe('createClient function', () => {
         orderBySortBy: [['name']],
         search: [['name', 'john']],
       };
-      expected = `limit=77&orderBy=name&sortedBy=desc&page=2&search=name${URC.COLON}john&searchFields=name${URC.COLON}like&searchJoin=or`;
+      expected = `limit=77&orderBy=name&page=2&search=name${URC.COLON}john&searchFields=name${URC.COLON}like&searchJoin=or&sortedBy=desc`;
 
       const paramsL5 = createClient({
         defaultOptions: {
@@ -118,7 +118,7 @@ describe('createClient function', () => {
 
       result = paramsL5(input);
 
-      expect(result?.sortBy).toBe(expected);
+      expect(result?.sortedBy).toBe(expected);
     });
 
     test('should prioritize sortBy from params over defaultOptions', () => {
@@ -132,7 +132,7 @@ describe('createClient function', () => {
 
       result = paramsL5(input);
 
-      expect(result?.sortBy).toBe(expected);
+      expect(result?.sortedBy).toBe(expected);
     });
   });
 
@@ -222,7 +222,7 @@ describe('createClient function', () => {
       expect(res.filter).toBe('id;email');
       expect(res.include).toBe('profile,posts');
       expect(res.orderBy).toBe('name');
-      expect(res.sortBy).toBe('asc');
+      expect(res.sortedBy).toBe('asc');
       expect(res.limit).toBe('15');
     });
 

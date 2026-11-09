@@ -1,4 +1,6 @@
-import type { BaseValue } from '#s/types';
+import type { BaseValue, ToEnum } from '#s/types';
+
+import { QUERY_NAMES } from './constants';
 
 const NON_EMPTY_STRING_LEN = 0;
 const HEX_ENCODING = 16;
@@ -67,4 +69,29 @@ export function decodeSearchParam(str: string) {
 
 export function isArray(value: unknown): value is readonly unknown[] {
   return Array.isArray(value);
+}
+
+export type TQueryKeys = ToEnum<typeof QUERY_NAMES>;
+export type TParamsStrings = Record<TQueryKeys, string | undefined>;
+export function assertQueryKey(val: unknown): val is TQueryKeys {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+  return Object.values(QUERY_NAMES).includes(val as TQueryKeys);
+}
+
+export function toParams(arg: Partial<TParamsStrings>): string {
+  const params = new URLSearchParams();
+
+  Object.keys(arg)
+    .toSorted()
+    .forEach((key) => {
+      if (!assertQueryKey(key)) {
+        return;
+      }
+      const val = arg[key];
+      if (val) {
+        params.append(key, val);
+      }
+    });
+
+  return params.toString();
 }

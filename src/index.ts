@@ -32,6 +32,6 @@ export type {
   NoDuplicates,
   NoDuplicateKeys,
   Path,
-} from './types';
+} from '#s/types';
 
 export default paramsL5;

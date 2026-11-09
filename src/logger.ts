@@ -1,4 +1,4 @@
-import type { ILogger } from './types';
+import type { ILogger } from '#s/types';
 
 export interface LogLevel {
   error?: boolean;

@@ -1,9 +1,9 @@
 import { CONDITIONS } from '#s/constants';
 import { defaultLogger } from '#s/logger';
-import type { BaseValue, ILogger, Path } from '#s/types';
+import type { BaseValue, ILogger, Path, ToEnum } from '#s/types';
 import { isArray, isBaseValue, isNonEmptyString, typeName } from '#s/utils';
 
-export type TCondition = (typeof CONDITIONS)[keyof typeof CONDITIONS];
+export type TCondition = ToEnum<typeof CONDITIONS>;
 
 export type TSearchValue = BaseValue | null | undefined;
 type BetweenTuple<TValue> = [TValue, TValue];

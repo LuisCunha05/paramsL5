@@ -10,6 +10,9 @@ import {
 } from '#s/generators/search-criteria';
 import { type TSearchJoin, searchJoin } from '#s/generators/search-join';
 import { type TWith, withRel } from '#s/generators/with';
+import { toParams, type TParamsStrings } from '#s/utils';
+
+import { QUERY_NAMES } from './constants';
 
 export interface TParams<TShape extends object = Record<string, unknown>> {
   readonly filter?: TFilter<TShape>;
@@ -23,81 +26,31 @@ export interface TParams<TShape extends object = Record<string, unknown>> {
   readonly with?: TWith<TShape>;
 }
 
-export interface TResultParams {
-  filter: string | undefined;
-  include: string | undefined;
-  limit: string | undefined;
-  orderBy: string | undefined;
-  sortBy: string | undefined;
-  page: string | undefined;
-  search: string | undefined;
-  searchFields: string | undefined;
-  searchCriteria: string | undefined;
-  searchJoin: string | undefined;
-  with: string | undefined;
+export type TResultParams = TParamsStrings & {
   toParams: () => string | undefined;
-}
+};
 
 export function paramsL5<TShape extends object = Record<string, unknown>>(
   arg: TParams<TShape> = {},
 ) {
-  function toParams() {
-    const params = new URLSearchParams();
-
-    if (result.filter) {
-      params.append('filter', result.filter);
-    }
-    if (result.include) {
-      params.append('include', result.include);
-    }
-    if (result.limit) {
-      params.append('limit', result.limit);
-    }
-    if (result.orderBy) {
-      params.append('orderBy', result.orderBy);
-    }
-    if (result.sortBy) {
-      params.append('sortedBy', result.sortBy);
-    }
-    if (result.page) {
-      params.append('page', result.page);
-    }
-    if (result.search) {
-      params.append('search', result.search);
-    }
-    if (result.searchFields) {
-      params.append('searchFields', result.searchFields);
-    }
-    if (result.searchCriteria) {
-      params.append('searchCriteria', result.searchCriteria);
-    }
-    if (result.with) {
-      params.append('with', result.with);
-    }
-    if (result.searchJoin) {
-      params.append('searchJoin', result.searchJoin);
-    }
-
-    return params.toString();
-  }
-
   const searchObj = search(arg.search);
   const orderBySortByObj = orderBySortBy(arg.orderBySortBy);
 
   const result: TResultParams = {
-    filter: filter(arg.filter),
-    include: include(arg.include),
-    limit: limit(arg.limit),
-    orderBy: orderBySortByObj.orderBy,
-    page: page(arg.page),
-    search: searchObj.search,
-    searchCriteria: searchCriteria(arg.searchCriteria),
-    searchFields: searchObj.searchFields,
-    searchJoin: searchJoin(arg.searchJoin),
-    sortBy: orderBySortByObj.sortedBy,
-    toParams,
-    with: withRel(arg.with),
+    [QUERY_NAMES.FLT]: filter(arg.filter),
+    [QUERY_NAMES.INC]: include(arg.include),
+    [QUERY_NAMES.LMT]: limit(arg.limit),
+    [QUERY_NAMES.OBY]: orderBySortByObj.orderBy,
+    [QUERY_NAMES.PAG]: page(arg.page),
+    [QUERY_NAMES.SRC]: searchObj.search,
+    [QUERY_NAMES.SCR]: searchCriteria(arg.searchCriteria),
+    [QUERY_NAMES.SFI]: searchObj.searchFields,
+    [QUERY_NAMES.SJO]: searchJoin(arg.searchJoin),
+    [QUERY_NAMES.SBY]: orderBySortByObj.sortedBy,
+    toParams: () => {},
+    [QUERY_NAMES.WTH]: withRel(arg.with),
   };
 
+  result.toParams = () => toParams(result);
   return result;
 }

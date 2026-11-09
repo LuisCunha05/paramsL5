@@ -1,5 +1,7 @@
 export type BaseValue = string | number | boolean;
 
+export type ToEnum<TObj> = TObj[keyof TObj];
+
 export interface ILogger {
   info: (...args: readonly unknown[]) => void;
   warn: (...args: readonly unknown[]) => void;

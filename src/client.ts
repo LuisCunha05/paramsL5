@@ -1,20 +1,21 @@
+import { QUERY_NAMES } from '#s/constants';
+import { filter } from '#s/generators/filter';
+import { include } from '#s/generators/include';
+import { type TLimit, limit } from '#s/generators/limit';
+import { type TSortBy, orderBySortBy } from '#s/generators/order-sort';
+import { type TPage, page } from '#s/generators/page';
+import { type TCondition, search } from '#s/generators/search';
+import { searchCriteria } from '#s/generators/search-criteria';
+import { type TSearchJoin, searchJoin } from '#s/generators/search-join';
+import { withRel } from '#s/generators/with';
 import { logger as loggerFn, type LogLevel } from '#s/logger';
 import type { TParams, TResultParams } from '#s/params-l5';
-
-import { filter } from './generators/filter';
-import { include } from './generators/include';
-import { type TLimit, limit } from './generators/limit';
-import { type TSortBy, orderBySortBy } from './generators/order-sort';
-import { type TPage, page } from './generators/page';
-import { type TCondition, search } from './generators/search';
-import { searchCriteria } from './generators/search-criteria';
-import { type TSearchJoin, searchJoin } from './generators/search-join';
-import { withRel } from './generators/with';
 import type {
   ILogger,
   ValidateFlatArray,
   ValidateKeyTupleArray,
-} from './types';
+} from '#s/types';
+import { toParams } from '#s/utils';
 
 interface DefaultOptions {
   sortBy?: TSortBy;
@@ -70,66 +71,30 @@ export function createClient(options: ClientOptions = {}): ClientRunner {
       logger,
     });
 
-    function toParams() {
-      const queryParams = new URLSearchParams();
-
-      if (result.filter) {
-        queryParams.append('filter', result.filter);
-      }
-      if (result.include) {
-        queryParams.append('include', result.include);
-      }
-      if (result.limit) {
-        queryParams.append('limit', result.limit);
-      }
-      if (result.orderBy) {
-        queryParams.append('orderBy', result.orderBy);
-      }
-      if (result.sortBy) {
-        queryParams.append('sortedBy', result.sortBy);
-      }
-      if (result.page) {
-        queryParams.append('page', result.page);
-      }
-      if (result.search) {
-        queryParams.append('search', result.search);
-      }
-      if (result.searchFields) {
-        queryParams.append('searchFields', result.searchFields);
-      }
-      if (result.searchCriteria) {
-        queryParams.append('searchCriteria', result.searchCriteria);
-      }
-      if (result.with) {
-        queryParams.append('with', result.with);
-      }
-      if (result.searchJoin) {
-        queryParams.append('searchJoin', result.searchJoin);
-      }
-      return queryParams.toString();
-    }
-
     const result: TResultParams = {
-      filter: filter(params.filter, { logger }),
-      include: include(params.include, { logger }),
-      limit: limit(params.limit, {
+      [QUERY_NAMES.FLT]: filter(params.filter, { logger }),
+      [QUERY_NAMES.INC]: include(params.include, { logger }),
+      [QUERY_NAMES.LMT]: limit(params.limit, {
         defaultValue: options?.defaultOptions?.limit,
         logger,
       }),
-      orderBy: orderBySortByObj.orderBy,
-      page: page(params.page ?? options?.defaultOptions?.page, { logger }),
-      search: searchObj?.search,
-      searchCriteria: searchCriteria(params.searchCriteria, { logger }),
-      searchFields: searchObj?.searchFields,
-      searchJoin: searchJoin(
+      [QUERY_NAMES.OBY]: orderBySortByObj.orderBy,
+      [QUERY_NAMES.PAG]: page(params.page ?? options?.defaultOptions?.page, {
+        logger,
+      }),
+      [QUERY_NAMES.SRC]: searchObj?.search,
+      [QUERY_NAMES.SCR]: searchCriteria(params.searchCriteria, { logger }),
+      [QUERY_NAMES.SFI]: searchObj?.searchFields,
+      [QUERY_NAMES.SJO]: searchJoin(
         params.searchJoin ?? options?.defaultOptions?.searchJoin,
         { logger },
       ),
-      sortBy: orderBySortByObj.sortedBy,
-      toParams,
-      with: withRel(params.with, { logger }),
+      [QUERY_NAMES.SBY]: orderBySortByObj.sortedBy,
+      toParams: () => {},
+      [QUERY_NAMES.WTH]: withRel(params.with, { logger }),
     };
 
+    result.toParams = () => toParams(result);
     return result;
   }
 
