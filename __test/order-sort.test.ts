@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { SORT_BY } from '@/constants';
-import { orderBySortBy } from '@/generators/order-sort';
-import { logger as loggerFn } from '@/logger';
+import { SORT_BY } from '#s/constants';
+import { orderBySortBy } from '#s/generators/order-sort';
+import { logger as loggerFn } from '#s/logger';
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any;

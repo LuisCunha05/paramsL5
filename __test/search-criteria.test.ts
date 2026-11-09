@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { searchCriteria } from '@/generators/search-criteria';
-import { logger as loggerFn } from '@/logger';
+import { searchCriteria } from '#s/generators/search-criteria';
+import { logger as loggerFn } from '#s/logger';
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any;

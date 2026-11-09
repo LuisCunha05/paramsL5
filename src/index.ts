@@ -1,31 +1,31 @@
-import { paramsL5 } from '@/params-l5';
+import { paramsL5 } from '#s/params-l5';
 
-export type { ClientOptions, ClientRunner } from '@/client';
-export { createClient } from '@/client';
-export { CONDITIONS, SEARCH_JOIN, SORT_BY } from '@/constants';
-export type { TFilter } from '@/generators/filter';
-export { filter } from '@/generators/filter';
-export type { TInclude } from '@/generators/include';
-export { include } from '@/generators/include';
-export type { TLimit } from '@/generators/limit';
-export { limit } from '@/generators/limit';
-export type { TOrderBySortBy } from '@/generators/order-sort';
-export { orderBySortBy } from '@/generators/order-sort';
-export type { TPage } from '@/generators/page';
-export { page } from '@/generators/page';
-export type { TCondition, TSearch, TSearchResult } from '@/generators/search';
-export { search } from '@/generators/search';
+export type { ClientOptions, ClientRunner } from '#s/client';
+export { createClient } from '#s/client';
+export { CONDITIONS, SEARCH_JOIN, SORT_BY } from '#s/constants';
+export type { TFilter } from '#s/generators/filter';
+export { filter } from '#s/generators/filter';
+export type { TInclude } from '#s/generators/include';
+export { include } from '#s/generators/include';
+export type { TLimit } from '#s/generators/limit';
+export { limit } from '#s/generators/limit';
+export type { TOrderBySortBy } from '#s/generators/order-sort';
+export { orderBySortBy } from '#s/generators/order-sort';
+export type { TPage } from '#s/generators/page';
+export { page } from '#s/generators/page';
+export type { TCondition, TSearch, TSearchResult } from '#s/generators/search';
+export { search } from '#s/generators/search';
 export type {
   TCriteriaValue,
   TSearchCriteria,
-} from '@/generators/search-criteria';
-export { searchCriteria } from '@/generators/search-criteria';
-export type { TSearchJoin } from '@/generators/search-join';
-export { searchJoin } from '@/generators/search-join';
-export type { TWith } from '@/generators/with';
-export { withRel } from '@/generators/with';
-export type { TParams, TResultParams } from '@/params-l5';
-export { paramsL5 } from '@/params-l5';
+} from '#s/generators/search-criteria';
+export { searchCriteria } from '#s/generators/search-criteria';
+export type { TSearchJoin } from '#s/generators/search-join';
+export { searchJoin } from '#s/generators/search-join';
+export type { TWith } from '#s/generators/with';
+export { withRel } from '#s/generators/with';
+export type { TParams, TResultParams } from '#s/params-l5';
+export { paramsL5 } from '#s/params-l5';
 export type {
   BaseValue,
   ILogger,

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { createClient } from '@/client';
-import { CONDITIONS, URL_ENCODED_CHARS as URC } from '@/constants';
+import { createClient } from '#s/client';
+import { CONDITIONS, URL_ENCODED_CHARS as URC } from '#s/constants';
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any;

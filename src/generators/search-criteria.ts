@@ -1,6 +1,6 @@
-import { defaultLogger } from '@/logger';
-import type { BaseValue, ILogger, Path } from '@/types';
-import { isArray, isBaseValue, isNonEmptyString, typeName } from '@/utils';
+import { defaultLogger } from '#s/logger';
+import type { BaseValue, ILogger, Path } from '#s/types';
+import { isArray, isBaseValue, isNonEmptyString, typeName } from '#s/utils';
 
 export type TCriteriaValue = BaseValue | null | undefined;
 export type TSearchCriteria<TTShape> = readonly (readonly [

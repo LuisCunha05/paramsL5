@@ -1,5 +1,5 @@
-import { logger as loggerFn, type LogLevel } from '@/logger';
-import type { TParams, TResultParams } from '@/params-l5';
+import { logger as loggerFn, type LogLevel } from '#s/logger';
+import type { TParams, TResultParams } from '#s/params-l5';
 
 import { filter } from './generators/filter';
 import { include } from './generators/include';

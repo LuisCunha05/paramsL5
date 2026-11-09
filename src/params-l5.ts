@@ -1,15 +1,15 @@
-import { type TFilter, filter } from '@/generators/filter';
-import { type TInclude, include } from '@/generators/include';
-import { type TLimit, limit } from '@/generators/limit';
-import { type TOrderBySortBy, orderBySortBy } from '@/generators/order-sort';
-import { type TPage, page } from '@/generators/page';
-import { type TSearch, search } from '@/generators/search';
+import { type TFilter, filter } from '#s/generators/filter';
+import { type TInclude, include } from '#s/generators/include';
+import { type TLimit, limit } from '#s/generators/limit';
+import { type TOrderBySortBy, orderBySortBy } from '#s/generators/order-sort';
+import { type TPage, page } from '#s/generators/page';
+import { type TSearch, search } from '#s/generators/search';
 import {
   type TSearchCriteria,
   searchCriteria,
-} from '@/generators/search-criteria';
-import { type TSearchJoin, searchJoin } from '@/generators/search-join';
-import { type TWith, withRel } from '@/generators/with';
+} from '#s/generators/search-criteria';
+import { type TSearchJoin, searchJoin } from '#s/generators/search-join';
+import { type TWith, withRel } from '#s/generators/with';
 
 export interface TParams<TShape extends object = Record<string, unknown>> {
   readonly filter?: TFilter<TShape>;

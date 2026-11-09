@@ -109,7 +109,7 @@ describe('someFunction function', () => {
 Whenever asserting on formatted strings that include URL encoded characters, specific conditions, or other shared values, use the constants defined in `src/constants.ts` (e.g., `CONDITIONS`, `URL_ENCODED_CHARS` as `URC`) rather than hardcoding the raw strings. This ensures consistency and prevents test failures if the underlying values change.
 
 ```typescript
-import { CONDITIONS, URL_ENCODED_CHARS as URC } from '@/constants';
+import { CONDITIONS, URL_ENCODED_CHARS as URC } from '#s/constants';
 
 // Example of using constants in assertions
 describe('formatting', () => {

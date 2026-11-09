@@ -1,7 +1,7 @@
-import { SEARCH_JOIN } from '@/constants';
-import { defaultLogger } from '@/logger';
-import type { ILogger } from '@/types';
-import { isNonEmptyString, typeName } from '@/utils';
+import { SEARCH_JOIN } from '#s/constants';
+import { defaultLogger } from '#s/logger';
+import type { ILogger } from '#s/types';
+import { isNonEmptyString, typeName } from '#s/utils';
 
 export type TSearchJoin = (typeof SEARCH_JOIN)[keyof typeof SEARCH_JOIN];
 export interface TSearchJoinOptions {

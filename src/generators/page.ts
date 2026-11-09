@@ -1,6 +1,6 @@
-import { defaultLogger } from '@/logger';
-import type { ILogger } from '@/types';
-import { isNumber, typeName } from '@/utils';
+import { defaultLogger } from '#s/logger';
+import type { ILogger } from '#s/types';
+import { isNumber, typeName } from '#s/utils';
 
 export type TPage = number;
 

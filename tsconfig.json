@@ -25,10 +25,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "noEmit": false,
-    "rootDir": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    }
+    "rootDir": "."
   },
   "include": ["src", "__test", "package.json", "*.config.ts"],
   "exclude": ["node_modules"]

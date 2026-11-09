@@ -1,7 +1,7 @@
-import { CONDITIONS } from '@/constants';
-import { defaultLogger } from '@/logger';
-import type { BaseValue, ILogger, Path } from '@/types';
-import { isArray, isBaseValue, isNonEmptyString, typeName } from '@/utils';
+import { CONDITIONS } from '#s/constants';
+import { defaultLogger } from '#s/logger';
+import type { BaseValue, ILogger, Path } from '#s/types';
+import { isArray, isBaseValue, isNonEmptyString, typeName } from '#s/utils';
 
 export type TCondition = (typeof CONDITIONS)[keyof typeof CONDITIONS];
 

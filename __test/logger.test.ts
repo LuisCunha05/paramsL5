@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
-import { LOGGER_PREFIX, logger as loggerFn } from '@/logger';
+import { LOGGER_PREFIX, logger as loggerFn } from '#s/logger';
 
 afterEach(() => {
   vi.clearAllMocks();

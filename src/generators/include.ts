@@ -1,6 +1,6 @@
-import { defaultLogger } from '@/logger';
-import type { ILogger, Path } from '@/types';
-import { isArray, isNonEmptyString, typeName } from '@/utils';
+import { defaultLogger } from '#s/logger';
+import type { ILogger, Path } from '#s/types';
+import { isArray, isNonEmptyString, typeName } from '#s/utils';
 
 export type TInclude<TTShape> = readonly NoInfer<Path<TTShape>>[];
 
