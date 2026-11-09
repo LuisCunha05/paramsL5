@@ -38,7 +38,7 @@ describe('MESSAGES catalog', () => {
 
     test('invalidKey returns formatted message with index', () => {
       expect(MESSAGES.invalidKey(QUERY_LABELS.SCR, 'number', 2)).toBe(
-        'SearchCriteria: must have keys as non-empty strings, got number at index 2 instead',
+        'SearchCriteria: must have keys as non-empty strings, but got number at index 2 instead',
       );
     });
   });

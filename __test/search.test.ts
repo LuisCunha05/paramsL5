@@ -291,7 +291,7 @@ describe('search function', () => {
       search(input, { logger });
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        'Search: keys must have a type of array, got string instead',
+        'Search: argument must be an array, got string instead',
       );
     });
 
@@ -311,7 +311,7 @@ describe('search function', () => {
       search(input, { logger });
 
       expect(warn).toHaveBeenCalledExactlyOnceWith(
-        "Search: ignoring array value because of missing condition, expected 'in' or 'between'",
+        "Search: ignoring array value: missing condition, expected 'in' or 'between'",
       );
     });
 
@@ -321,7 +321,7 @@ describe('search function', () => {
       search(input, { logger });
 
       expect(warn).toHaveBeenCalledExactlyOnceWith(
-        "Search: ignoring array value because got an array value for condition that is not 'in' or 'between' in index 0",
+        "Search: ignoring array value: invalid condition, expected 'in' or 'between' at index 0",
       );
     });
 
@@ -331,7 +331,7 @@ describe('search function', () => {
       search(input, { logger });
 
       expect(warn).toHaveBeenCalledExactlyOnceWith(
-        "Search: ignoring array value because expected array with size 2 for condition 'between', but got 1 instead in index 0",
+        "Search: ignoring array value: expected 2 elements for 'between', got 1 at index 0 instead",
       );
     });
 
@@ -343,7 +343,7 @@ describe('search function', () => {
       expect(info).toHaveBeenCalledTimes(2);
       expect(info).toHaveBeenNthCalledWith(
         1,
-        'Search: ignoring value because of incorrect type, expected BaseValue but got object instead',
+        'Search: ignoring value: expected BaseValue, got object instead',
       );
       expect(info).toHaveBeenNthCalledWith(
         2,
@@ -357,7 +357,7 @@ describe('search function', () => {
       search(input, { logger });
 
       expect(warn).toHaveBeenCalledExactlyOnceWith(
-        "Search: ignoring value for condition because it didn't match possible values, got John",
+        'Search: ignoring value: invalid condition value, got John',
       );
     });
 
@@ -377,7 +377,7 @@ describe('search function', () => {
       expect(info).toHaveBeenCalledTimes(2);
       expect(info).toHaveBeenNthCalledWith(
         1,
-        'Search: ignoring value because of incorrect type, expected BaseValue but got object instead',
+        'Search: ignoring value: expected BaseValue, got object instead',
       );
       expect(info).toHaveBeenNthCalledWith(
         2,

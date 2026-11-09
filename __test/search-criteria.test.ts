@@ -149,7 +149,7 @@ describe('SearchCriteria logging', () => {
     searchCriteria(input, { logger });
 
     expect(error).toHaveBeenCalledWith(
-      'SearchCriteria: keys must have a type of array, got object instead',
+      'SearchCriteria: argument must be an array, got object instead',
     );
   });
 
@@ -200,18 +200,18 @@ describe('SearchCriteria logging', () => {
 
     expect(info).toHaveBeenNthCalledWith(
       1,
-      `SearchCriteria: ignoring invalid value, got null at index 0 instead`,
+      'SearchCriteria: ignoring value: expected BaseValue, got null at index 0 instead',
     );
     expect(info).toHaveBeenNthCalledWith(
       2,
-      'SearchCriteria: no values remaning to parse',
+      'SearchCriteria: no values remaining to parse',
     );
   });
 
   test('external logger should log invalid argument', () => {
     searchCriteria(null as any, { logger });
     expect(error).toHaveBeenCalledWith(
-      'SearchCriteria: keys must have a type of array, got null instead',
+      'SearchCriteria: argument must be an array, got null instead',
     );
   });
 
@@ -244,14 +244,14 @@ describe('SearchCriteria logging', () => {
   test('external logger should log non-baseValue value argument', () => {
     searchCriteria([['key', null] as any], { logger });
     expect(info).toHaveBeenCalledWith(
-      'SearchCriteria: ignoring invalid value, got null at index 0 instead',
+      'SearchCriteria: ignoring value: expected BaseValue, got null at index 0 instead',
     );
   });
 
   test('external logger should log no remaning values', () => {
     searchCriteria([['key', null] as any], { logger });
     expect(info).toHaveBeenCalledWith(
-      'SearchCriteria: no values remaning to parse',
+      'SearchCriteria: no values remaining to parse',
     );
   });
 });

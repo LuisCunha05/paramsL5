@@ -9,6 +9,8 @@ const IGNORING_ARRAY = 'ignoring array value: ';
 const IGNORING_VALUE = 'ignoring value: ';
 const EXPECTED_IN_BETWEEN = "expected 'in' or 'between'";
 
+const BUT_GOT = ', but got ';
+
 const gotInstead = (type: string | number) => `, got ${type} instead`;
 const atIndexInstead = (type: string | number, index: number) =>
   ` at index ${index} instead`;
@@ -25,9 +27,9 @@ export const MESSAGES = {
 
   // Key-value tuple validations
   itemNotKeyValue: (label: string, length: number, index: number) =>
-    `${label}: must have a key-value array, but got length ${length}${atIndexInstead(length, index)}`,
+    `${label}: must have a key-value array${BUT_GOT}length ${length}${atIndexInstead(length, index)}`,
   invalidKey: (label: string, got: string, index: number) =>
-    `${label}: ${NON_EMPTY_STRING_KEYS}, got ${got}${atIndexInstead(got, index)}`,
+    `${label}: ${NON_EMPTY_STRING_KEYS}${BUT_GOT}${got}${atIndexInstead(got, index)}`,
 
   // Value validations
   mustBeString: (label: string, got: string) =>

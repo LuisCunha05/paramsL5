@@ -1,5 +1,6 @@
-import { CONDITIONS } from '#s/constants';
+import { CONDITIONS, QUERY_LABELS } from '#s/constants';
 import { defaultLogger } from '#s/logger';
+import { MESSAGES } from '#s/messages';
 import type { BaseValue, ILogger, Path, ToEnum } from '#s/types';
 import { isArray, isBaseValue, isNonEmptyString, typeName } from '#s/utils';
 
@@ -58,38 +59,32 @@ export function search<TShape extends object = Record<string, unknown>>(
 ): TSearchResult {
   const log = options.logger ?? defaultLogger;
   if (!isArray(arg)) {
-    log?.error(
-      `Search: keys must have a type of array, got ${typeName(arg)} instead`,
-    );
+    log?.error(MESSAGES.notArray(QUERY_LABELS.SRC, typeName(arg)));
     return EMPTY_RESULT;
   }
 
   if (!arg.length) {
-    log?.info('Search: no values given');
+    log?.info(MESSAGES.noValues(QUERY_LABELS.SRC));
     return EMPTY_RESULT;
   }
 
   const filteredValues = arg.reduce<[Path<TShape>, [BaseValue, TCondition]][]>(
     (result, item, index) => {
       if (!isArray(item)) {
-        log?.warn(
-          `Search: must have a type of array, got ${typeName(item)} instead`,
-        );
+        log?.warn(MESSAGES.itemNotArray(QUERY_LABELS.SRC, typeName(item)));
         return result;
       }
 
       if (item.length < TUPLE_SIZE) {
         log?.warn(
-          `Search: must have a key-value array, but got length ${item.length} at index ${index} instead`,
+          MESSAGES.itemNotKeyValue(QUERY_LABELS.SRC, item.length, index),
         );
         return result;
       }
 
       const [key, value, condition] = item;
       if (!isNonEmptyString(key)) {
-        log?.warn(
-          `Search: must have keys as non-empty strings, but got ${typeName(key)} at index ${index} instead`,
-        );
+        log?.warn(MESSAGES.invalidKey(QUERY_LABELS.SRC, typeName(key), index));
         return result;
       }
 
@@ -104,22 +99,22 @@ export function search<TShape extends object = Record<string, unknown>>(
           return result;
         }
         if (!condition) {
-          log?.warn(
-            `Search: ignoring array value because of missing condition, expected 'in' or 'between'`,
-          );
+          log?.warn(MESSAGES.missingConditionArray(QUERY_LABELS.SRC));
           return result;
         }
 
         if (condition !== CONDITIONS.BTW && condition !== CONDITIONS.IN) {
-          log?.warn(
-            `Search: ignoring array value because got an array value for condition that is not 'in' or 'between' in index ${index}`,
-          );
+          log?.warn(MESSAGES.invalidConditionArray(QUERY_LABELS.SRC, index));
           return result;
         }
 
         if (condition === CONDITIONS.BTW && value.length !== TUPLE_SIZE) {
           log?.warn(
-            `Search: ignoring array value because expected array with size 2 for condition 'between', but got ${(value as unknown[]).length} instead in index ${index}`,
+            MESSAGES.invalidBetweenSize(
+              QUERY_LABELS.SRC,
+              (value as unknown[]).length,
+              index,
+            ),
           );
           return result;
         }
@@ -131,7 +126,7 @@ export function search<TShape extends object = Record<string, unknown>>(
       } else {
         if (!isBaseValue(value)) {
           log?.info(
-            `Search: ignoring value because of incorrect type, expected BaseValue but got ${typeName(value)} instead`,
+            MESSAGES.invalidBaseValue(QUERY_LABELS.SRC, typeName(value)),
           );
           return result;
         }
@@ -142,9 +137,7 @@ export function search<TShape extends object = Record<string, unknown>>(
         condition !== undefined &&
         !Object.values(CONDITIONS).includes(condition)
       ) {
-        log?.warn(
-          `Search: ignoring value for condition because it didn't match possible values, got ${value}`,
-        );
+        log?.warn(MESSAGES.invalidCondition(QUERY_LABELS.SRC, value));
         return result;
       }
 
@@ -159,7 +152,7 @@ export function search<TShape extends object = Record<string, unknown>>(
   );
 
   if (!filteredValues.length) {
-    log?.info('Search: no values remaining to parse');
+    log?.info(MESSAGES.noRemaining(QUERY_LABELS.SRC));
     return EMPTY_RESULT;
   }
 

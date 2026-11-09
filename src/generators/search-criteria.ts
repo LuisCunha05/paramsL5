@@ -1,4 +1,6 @@
+import { QUERY_LABELS } from '#s/constants';
 import { defaultLogger } from '#s/logger';
+import { MESSAGES } from '#s/messages';
 import type { BaseValue, ILogger, Path } from '#s/types';
 import { isArray, isBaseValue, isNonEmptyString, typeName } from '#s/utils';
 
@@ -21,28 +23,24 @@ export function searchCriteria<TShape extends object = Record<string, unknown>>(
 ): string | undefined {
   const log = options.logger ?? defaultLogger;
   if (!isArray(arg)) {
-    log?.error(
-      `SearchCriteria: keys must have a type of array, got ${typeName(arg)} instead`,
-    );
+    log?.error(MESSAGES.notArray(QUERY_LABELS.SCR, typeName(arg)));
     return undefined;
   }
 
   if (!arg.length) {
-    log?.info(`SearchCriteria: no values given`);
+    log?.info(MESSAGES.noValues(QUERY_LABELS.SCR));
     return undefined;
   }
 
   const filteredValues = arg.filter((item, index) => {
     if (!isArray(item)) {
-      log?.warn(
-        `SearchCriteria: must have a type of array, got ${typeName(item)} instead`,
-      );
+      log?.warn(MESSAGES.itemNotArray(QUERY_LABELS.SCR, typeName(item)));
       return false;
     }
 
     if (item.length !== KEY_VALUE_LENGTH) {
       log?.warn(
-        `SearchCriteria: must have a key-value array, but got length ${item.length} at index ${index} instead`,
+        MESSAGES.itemNotKeyValue(QUERY_LABELS.SCR, item.length, index),
       );
       return false;
     }
@@ -50,15 +48,13 @@ export function searchCriteria<TShape extends object = Record<string, unknown>>(
     const [key, value] = item;
 
     if (!isNonEmptyString(key)) {
-      log?.warn(
-        `SearchCriteria: must have keys as non-empty strings, but got ${typeName(key)} at index ${index} instead`,
-      );
+      log?.warn(MESSAGES.invalidKey(QUERY_LABELS.SCR, typeName(key), index));
       return false;
     }
 
     if (!isBaseValue(value)) {
       log?.info(
-        `SearchCriteria: ignoring invalid value, got ${typeName(value)} at index ${index} instead`,
+        MESSAGES.invalidValueAtIndex(QUERY_LABELS.SCR, typeName(value), index),
       );
       return false;
     }
@@ -67,17 +63,16 @@ export function searchCriteria<TShape extends object = Record<string, unknown>>(
   });
 
   if (!filteredValues.length) {
-    log?.info('SearchCriteria: no values remaning to parse');
+    log?.info(MESSAGES.noRemaining(QUERY_LABELS.SCR));
     return undefined;
   }
 
   const deduplicatedValues = [...new Map(filteredValues)];
 
-  let result = '';
-
+  let stringParams = '';
   deduplicatedValues.forEach(([key, value]) => {
-    result += `&${key}=${value}`;
+    stringParams += `&${key}=${value}`;
   });
 
-  return result.slice(CRITERIA_START_INDEX);
+  return stringParams.slice(CRITERIA_START_INDEX);
 }

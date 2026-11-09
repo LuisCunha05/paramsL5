@@ -167,7 +167,7 @@ describe('orderBySortBy function', () => {
       orderBySortBy(input, { logger });
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        'OrderBySortBy: keys must have a type of array, got object instead',
+        'OrderBySortBy: argument must be an array, got object instead',
       );
     });
 

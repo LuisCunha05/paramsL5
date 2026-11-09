@@ -1,5 +1,6 @@
-import { SORT_BY } from '#s/constants';
+import { QUERY_LABELS, SORT_BY } from '#s/constants';
 import { defaultLogger } from '#s/logger';
+import { MESSAGES } from '#s/messages';
 import type { ILogger, Path, ToEnum } from '#s/types';
 import { isArray, isNonEmptyString, typeName } from '#s/utils';
 
@@ -41,28 +42,24 @@ export function orderBySortBy<TShape extends object = Record<string, unknown>>(
 ): TOrderBySortByResult {
   const log = options.logger ?? defaultLogger;
   if (!isArray(arg)) {
-    log?.error(
-      `OrderBySortBy: keys must have a type of array, got ${typeName(arg)} instead`,
-    );
+    log?.error(MESSAGES.notArray(QUERY_LABELS.OBY, typeName(arg)));
     return EMPTY_RESULT;
   }
 
   if (!arg.length) {
-    log?.info('OrderBySortBy: no values given');
+    log?.info(MESSAGES.noValues(QUERY_LABELS.OBY));
     return EMPTY_RESULT;
   }
 
   const filteredValues = arg.reduce((result, item, index) => {
     if (!isArray(item)) {
-      log?.warn(
-        `OrderBySortBy: must have a type of array, got ${typeName(item)} instead`,
-      );
+      log?.warn(MESSAGES.itemNotArray(QUERY_LABELS.OBY, typeName(item)));
       return result;
     }
 
     if (item.length < MIN_TUPLE_SIZE || item.length > MAX_TUPLE_SIZE) {
       log?.warn(
-        `OrderBySortBy: must have a key-value array, but got length ${item.length} at index ${index} instead`,
+        MESSAGES.itemNotKeyValue(QUERY_LABELS.OBY, item.length, index),
       );
       return result;
     }
@@ -70,16 +67,12 @@ export function orderBySortBy<TShape extends object = Record<string, unknown>>(
     const [key, sortBy] = item;
 
     if (!isNonEmptyString(key)) {
-      log?.warn(
-        `OrderBySortBy: must have keys as non-empty strings, but got ${typeName(key)} at index ${index} instead`,
-      );
+      log?.warn(MESSAGES.invalidKey(QUERY_LABELS.OBY, typeName(key), index));
       return result;
     }
 
     if (sortBy !== undefined && !Object.values(SORT_BY).includes(sortBy)) {
-      log?.warn(
-        `OrderBySortBy: must have a valid SORT_BY value, but got ${sortBy} at index ${index} instead`,
-      );
+      log?.warn(MESSAGES.invalidSortBy(QUERY_LABELS.OBY, sortBy, index));
       return result;
     }
 
@@ -89,7 +82,7 @@ export function orderBySortBy<TShape extends object = Record<string, unknown>>(
   }, new Map<Path<TShape>, TSortBy>());
 
   if (!filteredValues.size) {
-    log?.info('OrderBySortBy: no values remaining to parse');
+    log?.info(MESSAGES.noRemaining(QUERY_LABELS.OBY));
     return EMPTY_RESULT;
   }
 
