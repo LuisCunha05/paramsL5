@@ -38,6 +38,5 @@ export type {
   NoDuplicateKeys,
   Path,
 } from './types';
-export { uniquePaths } from './types';
 
 export default paramsL5;

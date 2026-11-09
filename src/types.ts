@@ -55,24 +55,14 @@ export type NoDuplicateKeys<
     : [THead, ...NoDuplicateKeys<TTail, TSeen>]
   : [];
 
-export type ValidateFlatArray<T> = T extends readonly unknown[]
-  ? readonly [...NoDuplicates<T>] extends T
-    ? T
-    : NoDuplicates<T>
-  : T;
+export type ValidateFlatArray<TArray> = TArray extends readonly unknown[]
+  ? readonly [...NoDuplicates<TArray>] extends TArray
+    ? TArray
+    : NoDuplicates<TArray>
+  : TArray;
 
-export type ValidateKeyTupleArray<T> = T extends readonly unknown[]
-  ? readonly [...NoDuplicateKeys<T>] extends T
-    ? T
-    : NoDuplicateKeys<T>
-  : T;
-
-export function uniquePaths<TShape>() {
-  return <const TPaths extends readonly Path<TShape>[]>(
-    paths: readonly [...NoDuplicates<TPaths>] extends TPaths
-      ? TPaths
-      : NoDuplicates<TPaths>,
-  ): TPaths =>
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-    paths as unknown as TPaths;
-}
+export type ValidateKeyTupleArray<TArray> = TArray extends readonly unknown[]
+  ? readonly [...NoDuplicateKeys<TArray>] extends TArray
+    ? TArray
+    : NoDuplicateKeys<TArray>
+  : TArray;
