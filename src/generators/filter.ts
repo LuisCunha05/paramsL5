@@ -1,4 +1,6 @@
+import { QUERY_LABELS } from '#s/constants';
 import { defaultLogger } from '#s/logger';
+import { MESSAGES } from '#s/messages';
 import type { ILogger, Path } from '#s/types';
 import { isArray, isNonEmptyString, typeName } from '#s/utils';
 
@@ -14,29 +16,25 @@ export function filter<TShape extends object = Record<string, unknown>>(
 ): string | undefined {
   const log = options.logger ?? defaultLogger;
   if (!isArray(arg)) {
-    log?.error(
-      `Filter: argument must be an array, got ${typeName(arg)} instead`,
-    );
+    log?.error(MESSAGES.notArray(QUERY_LABELS.FLT, typeName(arg)));
     return undefined;
   }
 
   if (!arg.length) {
-    log?.info('Filter: no values given');
+    log?.info(MESSAGES.noValues(QUERY_LABELS.FLT));
     return undefined;
   }
 
   const filteredValues = arg.filter((item) => {
     if (!isNonEmptyString(item)) {
-      log?.info(
-        `Filter: include value must be a string, got ${typeName(item)} instead`,
-      );
+      log?.info(MESSAGES.mustBeString(QUERY_LABELS.FLT, typeName(item)));
       return false;
     }
     return true;
   });
 
   if (!filteredValues.length) {
-    log?.info('Filter: no values remaining to parse');
+    log?.info(MESSAGES.noRemaining(QUERY_LABELS.FLT));
     return undefined;
   }
 

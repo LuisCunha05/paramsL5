@@ -1,4 +1,6 @@
+import { QUERY_LABELS } from '#s/constants';
 import { defaultLogger } from '#s/logger';
+import { MESSAGES } from '#s/messages';
 import type { ILogger, Path } from '#s/types';
 import { isArray, isNonEmptyString, typeName } from '#s/utils';
 
@@ -14,22 +16,18 @@ export function include<TShape extends object = Record<string, unknown>>(
 ): string | undefined {
   const log = options.logger ?? defaultLogger;
   if (!isArray(arg)) {
-    log?.error(
-      `Include: argument must be an array, got ${typeName(arg)} instead`,
-    );
+    log?.error(MESSAGES.notArray(QUERY_LABELS.INC, typeName(arg)));
     return undefined;
   }
 
   if (!arg.length) {
-    log?.info('Include: no values given');
+    log?.info(MESSAGES.noValues(QUERY_LABELS.INC));
     return undefined;
   }
 
   const filteredValues = arg.reduce<Path<TShape>[]>((result, item) => {
     if (!isNonEmptyString(item)) {
-      log?.info(
-        `Include: include value must be a string, got ${typeName(item)} instead`,
-      );
+      log?.info(MESSAGES.mustBeString(QUERY_LABELS.INC, typeName(item)));
       return result;
     }
 
@@ -38,7 +36,7 @@ export function include<TShape extends object = Record<string, unknown>>(
   }, []);
 
   if (!filteredValues.length) {
-    log?.info('Include: no values remaining to parse');
+    log?.info(MESSAGES.noRemaining(QUERY_LABELS.INC));
     return undefined;
   }
 

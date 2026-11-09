@@ -79,7 +79,7 @@ describe('include function', () => {
       include(input, { logger });
 
       expect(info).toHaveBeenCalledExactlyOnceWith(
-        'Include: include value must be a string, got number instead',
+        'Include: value must be a string, got number instead',
       );
     });
 
@@ -99,7 +99,7 @@ describe('include function', () => {
       expect(info).toHaveBeenCalledTimes(2);
       expect(info).toHaveBeenNthCalledWith(
         1,
-        'Include: include value must be a string, got number instead',
+        'Include: value must be a string, got number instead',
       );
       expect(info).toHaveBeenNthCalledWith(
         2,

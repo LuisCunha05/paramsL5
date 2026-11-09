@@ -92,7 +92,7 @@ describe('filter function', () => {
       filter(input, { logger });
 
       expect(info).toHaveBeenCalledExactlyOnceWith(
-        'Filter: include value must be a string, got number instead',
+        'Filter: value must be a string, got number instead',
       );
     });
 
@@ -112,7 +112,7 @@ describe('filter function', () => {
       expect(info).toHaveBeenCalledTimes(2);
       expect(info).toHaveBeenNthCalledWith(
         1,
-        'Filter: include value must be a string, got number instead',
+        'Filter: value must be a string, got number instead',
       );
       expect(info).toHaveBeenNthCalledWith(
         2,
