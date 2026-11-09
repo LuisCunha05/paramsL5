@@ -2,6 +2,7 @@ import type { BaseValue } from '@/types';
 
 const NON_EMPTY_STRING_LEN = 0;
 const HEX_ENCODING = 16;
+const START_CHAR = 0;
 export function isNonEmptyString(value: unknown): value is string {
   return (
     typeof value === 'string' && value.trim().length > NON_EMPTY_STRING_LEN
@@ -47,7 +48,8 @@ export function encodeSearchParam(str: string) {
   return encodeURIComponent(str)
     .replaceAll(
       /[!'\(\)*]/gv,
-      (c) => `%${c.codePointAt(0)?.toString(HEX_ENCODING).toUpperCase()}`,
+      (char) =>
+        `%${char.codePointAt(START_CHAR)?.toString(HEX_ENCODING).toUpperCase()}`,
     )
     .replaceAll('%20', '+');
 }
