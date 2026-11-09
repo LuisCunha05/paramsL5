@@ -1,6 +1,11 @@
 import { QUERY_LABELS } from '#s/constants';
 import { defaultLogger } from '#s/logger';
-import { MESSAGES } from '#s/messages';
+import {
+  msgMustBeString,
+  msgNoRemaining,
+  msgNoValues,
+  msgNotArray,
+} from '#s/messages';
 import type { ILogger, Path } from '#s/types';
 import { isArray, isNonEmptyString, typeName } from '#s/utils';
 
@@ -16,25 +21,25 @@ export function filter<TShape extends object = Record<string, unknown>>(
 ): string | undefined {
   const log = options.logger ?? defaultLogger;
   if (!isArray(arg)) {
-    log?.error(MESSAGES.notArray(QUERY_LABELS.FLT, typeName(arg)));
+    log?.error(msgNotArray(QUERY_LABELS.FLT, typeName(arg)));
     return undefined;
   }
 
   if (!arg.length) {
-    log?.info(MESSAGES.noValues(QUERY_LABELS.FLT));
+    log?.info(msgNoValues(QUERY_LABELS.FLT));
     return undefined;
   }
 
   const filteredValues = arg.filter((item) => {
     if (!isNonEmptyString(item)) {
-      log?.info(MESSAGES.mustBeString(QUERY_LABELS.FLT, typeName(item)));
+      log?.info(msgMustBeString(QUERY_LABELS.FLT, typeName(item)));
       return false;
     }
     return true;
   });
 
   if (!filteredValues.length) {
-    log?.info(MESSAGES.noRemaining(QUERY_LABELS.FLT));
+    log?.info(msgNoRemaining(QUERY_LABELS.FLT));
     return undefined;
   }
 

@@ -1,6 +1,11 @@
 import { QUERY_LABELS } from '#s/constants';
 import { defaultLogger } from '#s/logger';
-import { MESSAGES } from '#s/messages';
+import {
+  msgMustBeString,
+  msgNoRemaining,
+  msgNoValues,
+  msgNotArray,
+} from '#s/messages';
 import type { ILogger, Path } from '#s/types';
 import { isArray, isNonEmptyString, typeName } from '#s/utils';
 
@@ -15,32 +20,32 @@ export function withRel<TShape extends object = Record<string, unknown>>(
 ): string | undefined {
   const log = options.logger ?? defaultLogger;
   if (!isArray(arg)) {
-    log?.error(MESSAGES.notArray(QUERY_LABELS.WTH, typeName(arg)));
+    log?.error(msgNotArray(QUERY_LABELS.WTH, typeName(arg)));
     return undefined;
   }
 
   if (!arg.length) {
-    log?.info(MESSAGES.noValues(QUERY_LABELS.WTH));
+    log?.info(msgNoValues(QUERY_LABELS.WTH));
     return undefined;
   }
 
   const filteredValues = arg.filter((item) => {
     if (!isNonEmptyString(item)) {
-      log?.warn(MESSAGES.mustBeString(QUERY_LABELS.WTH, typeName(item)));
+      log?.warn(msgMustBeString(QUERY_LABELS.WTH, typeName(item)));
       return false;
     }
     return true;
   });
 
   if (!filteredValues.length) {
-    log?.info(MESSAGES.noRemaining(QUERY_LABELS.WTH));
+    log?.info(msgNoRemaining(QUERY_LABELS.WTH));
     return undefined;
   }
 
   const uniqueValues = [...new Set(filteredValues)];
 
   if (!uniqueValues.length) {
-    log?.info(MESSAGES.noRemaining(QUERY_LABELS.WTH));
+    log?.info(msgNoRemaining(QUERY_LABELS.WTH));
     return undefined;
   }
 

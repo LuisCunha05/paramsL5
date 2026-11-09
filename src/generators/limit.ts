@@ -1,6 +1,6 @@
 import { QUERY_LABELS } from '#s/constants';
 import { defaultLogger } from '#s/logger';
-import { MESSAGES } from '#s/messages';
+import { msgMustBePositiveInteger, msgNoValue } from '#s/messages';
 import type { ILogger } from '#s/types';
 import { isNumber, typeName } from '#s/utils';
 
@@ -20,14 +20,12 @@ export function limit(
   const log = options.logger ?? defaultLogger;
   const val = arg ?? options.defaultValue;
   if (val === undefined) {
-    log?.info(MESSAGES.noValue(QUERY_LABELS.LMT));
+    log?.info(msgNoValue(QUERY_LABELS.LMT));
     return undefined;
   }
 
   if (!isInputValid(val)) {
-    log?.error(
-      MESSAGES.mustBePositiveInteger(QUERY_LABELS.LMT, typeName(val), true),
-    );
+    log?.error(msgMustBePositiveInteger(QUERY_LABELS.LMT, typeName(val), true));
     return undefined;
   }
 

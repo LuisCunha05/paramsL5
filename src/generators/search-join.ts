@@ -1,6 +1,6 @@
 import { QUERY_LABELS, SEARCH_JOIN } from '#s/constants';
 import { defaultLogger } from '#s/logger';
-import { MESSAGES } from '#s/messages';
+import { msgMustBeEither, msgMustBeString, msgNoValue } from '#s/messages';
 import type { ILogger, ToEnum } from '#s/types';
 import { isNonEmptyString, typeName } from '#s/utils';
 
@@ -15,23 +15,18 @@ export function searchJoin(
 ): string | undefined {
   const log = options.logger ?? defaultLogger;
   if (arg === undefined) {
-    log?.info(MESSAGES.noValue(QUERY_LABELS.SJO));
+    log?.info(msgNoValue(QUERY_LABELS.SJO));
     return undefined;
   }
 
   if (!isNonEmptyString(arg)) {
-    log?.error(MESSAGES.mustBeString(QUERY_LABELS.SJO, typeName(arg)));
+    log?.error(msgMustBeString(QUERY_LABELS.SJO, typeName(arg)));
     return undefined;
   }
 
   if (!(arg === SEARCH_JOIN.AND || arg === SEARCH_JOIN.OR)) {
     log?.error(
-      MESSAGES.mustBeEither(
-        QUERY_LABELS.SJO,
-        SEARCH_JOIN.AND,
-        SEARCH_JOIN.OR,
-        arg,
-      ),
+      msgMustBeEither(QUERY_LABELS.SJO, SEARCH_JOIN.AND, SEARCH_JOIN.OR, arg),
     );
     return undefined;
   }

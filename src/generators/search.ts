@@ -1,6 +1,18 @@
 import { CONDITIONS, QUERY_LABELS } from '#s/constants';
 import { defaultLogger } from '#s/logger';
-import { MESSAGES } from '#s/messages';
+import {
+  msgInvalidBaseValue,
+  msgInvalidBetweenSize,
+  msgInvalidCondition,
+  msgInvalidConditionArray,
+  msgInvalidKey,
+  msgItemNotArray,
+  msgItemNotKeyValue,
+  msgMissingConditionArray,
+  msgNoRemaining,
+  msgNoValues,
+  msgNotArray,
+} from '#s/messages';
 import type { BaseValue, ILogger, Path, ToEnum } from '#s/types';
 import { isArray, isBaseValue, isNonEmptyString, typeName } from '#s/utils';
 
@@ -59,32 +71,30 @@ export function search<TShape extends object = Record<string, unknown>>(
 ): TSearchResult {
   const log = options.logger ?? defaultLogger;
   if (!isArray(arg)) {
-    log?.error(MESSAGES.notArray(QUERY_LABELS.SRC, typeName(arg)));
+    log?.error(msgNotArray(QUERY_LABELS.SRC, typeName(arg)));
     return EMPTY_RESULT;
   }
 
   if (!arg.length) {
-    log?.info(MESSAGES.noValues(QUERY_LABELS.SRC));
+    log?.info(msgNoValues(QUERY_LABELS.SRC));
     return EMPTY_RESULT;
   }
 
   const filteredValues = arg.reduce<[Path<TShape>, [BaseValue, TCondition]][]>(
     (result, item, index) => {
       if (!isArray(item)) {
-        log?.warn(MESSAGES.itemNotArray(QUERY_LABELS.SRC, typeName(item)));
+        log?.warn(msgItemNotArray(QUERY_LABELS.SRC, typeName(item)));
         return result;
       }
 
       if (item.length < TUPLE_SIZE) {
-        log?.warn(
-          MESSAGES.itemNotKeyValue(QUERY_LABELS.SRC, item.length, index),
-        );
+        log?.warn(msgItemNotKeyValue(QUERY_LABELS.SRC, item.length, index));
         return result;
       }
 
       const [key, value, condition] = item;
       if (!isNonEmptyString(key)) {
-        log?.warn(MESSAGES.invalidKey(QUERY_LABELS.SRC, typeName(key), index));
+        log?.warn(msgInvalidKey(QUERY_LABELS.SRC, typeName(key), index));
         return result;
       }
 
@@ -99,18 +109,18 @@ export function search<TShape extends object = Record<string, unknown>>(
           return result;
         }
         if (!condition) {
-          log?.warn(MESSAGES.missingConditionArray(QUERY_LABELS.SRC));
+          log?.warn(msgMissingConditionArray(QUERY_LABELS.SRC));
           return result;
         }
 
         if (condition !== CONDITIONS.BTW && condition !== CONDITIONS.IN) {
-          log?.warn(MESSAGES.invalidConditionArray(QUERY_LABELS.SRC, index));
+          log?.warn(msgInvalidConditionArray(QUERY_LABELS.SRC, index));
           return result;
         }
 
         if (condition === CONDITIONS.BTW && value.length !== TUPLE_SIZE) {
           log?.warn(
-            MESSAGES.invalidBetweenSize(
+            msgInvalidBetweenSize(
               QUERY_LABELS.SRC,
               (value as unknown[]).length,
               index,
@@ -125,9 +135,7 @@ export function search<TShape extends object = Record<string, unknown>>(
         finalValue = value.join(',');
       } else {
         if (!isBaseValue(value)) {
-          log?.info(
-            MESSAGES.invalidBaseValue(QUERY_LABELS.SRC, typeName(value)),
-          );
+          log?.info(msgInvalidBaseValue(QUERY_LABELS.SRC, typeName(value)));
           return result;
         }
         finalValue = value;
@@ -137,7 +145,7 @@ export function search<TShape extends object = Record<string, unknown>>(
         condition !== undefined &&
         !Object.values(CONDITIONS).includes(condition)
       ) {
-        log?.warn(MESSAGES.invalidCondition(QUERY_LABELS.SRC, value));
+        log?.warn(msgInvalidCondition(QUERY_LABELS.SRC, value));
         return result;
       }
 
@@ -152,7 +160,7 @@ export function search<TShape extends object = Record<string, unknown>>(
   );
 
   if (!filteredValues.length) {
-    log?.info(MESSAGES.noRemaining(QUERY_LABELS.SRC));
+    log?.info(msgNoRemaining(QUERY_LABELS.SRC));
     return EMPTY_RESULT;
   }
 

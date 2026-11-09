@@ -1,6 +1,14 @@
 import { QUERY_LABELS, SORT_BY } from '#s/constants';
 import { defaultLogger } from '#s/logger';
-import { MESSAGES } from '#s/messages';
+import {
+  msgInvalidKey,
+  msgInvalidSortBy,
+  msgItemNotArray,
+  msgItemNotKeyValue,
+  msgNoRemaining,
+  msgNoValues,
+  msgNotArray,
+} from '#s/messages';
 import type { ILogger, Path, ToEnum } from '#s/types';
 import { isArray, isNonEmptyString, typeName } from '#s/utils';
 
@@ -42,35 +50,35 @@ export function orderBySortBy<TShape extends object = Record<string, unknown>>(
 ): TOrderBySortByResult {
   const log = options.logger ?? defaultLogger;
   if (!isArray(arg)) {
-    log?.error(MESSAGES.notArray(QUERY_LABELS.OBY, typeName(arg)));
+    log?.error(msgNotArray(QUERY_LABELS.OBY, typeName(arg)));
     return EMPTY_RESULT;
   }
 
   if (!arg.length) {
-    log?.info(MESSAGES.noValues(QUERY_LABELS.OBY));
+    log?.info(msgNoValues(QUERY_LABELS.OBY));
     return EMPTY_RESULT;
   }
 
   const filteredValues = arg.reduce((result, item, index) => {
     if (!isArray(item)) {
-      log?.warn(MESSAGES.itemNotArray(QUERY_LABELS.OBY, typeName(item)));
+      log?.warn(msgItemNotArray(QUERY_LABELS.OBY, typeName(item)));
       return result;
     }
 
     if (item.length < MIN_TUPLE_SIZE || item.length > MAX_TUPLE_SIZE) {
-      log?.warn(MESSAGES.itemNotKeyValue(QUERY_LABELS.OBY, item.length, index));
+      log?.warn(msgItemNotKeyValue(QUERY_LABELS.OBY, item.length, index));
       return result;
     }
 
     const [key, sortBy] = item;
 
     if (!isNonEmptyString(key)) {
-      log?.warn(MESSAGES.invalidKey(QUERY_LABELS.OBY, typeName(key), index));
+      log?.warn(msgInvalidKey(QUERY_LABELS.OBY, typeName(key), index));
       return result;
     }
 
     if (sortBy !== undefined && !Object.values(SORT_BY).includes(sortBy)) {
-      log?.warn(MESSAGES.invalidSortBy(QUERY_LABELS.OBY, sortBy, index));
+      log?.warn(msgInvalidSortBy(QUERY_LABELS.OBY, sortBy, index));
       return result;
     }
 
@@ -80,7 +88,7 @@ export function orderBySortBy<TShape extends object = Record<string, unknown>>(
   }, new Map<Path<TShape>, TSortBy>());
 
   if (!filteredValues.size) {
-    log?.info(MESSAGES.noRemaining(QUERY_LABELS.OBY));
+    log?.info(msgNoRemaining(QUERY_LABELS.OBY));
     return EMPTY_RESULT;
   }
 

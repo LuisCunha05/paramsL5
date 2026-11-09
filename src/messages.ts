@@ -8,7 +8,6 @@ const VALUE_MUST_BE_STRING = 'value must be a string';
 const IGNORING_ARRAY = 'ignoring array value: ';
 const IGNORING_VALUE = 'ignoring value: ';
 const EXPECTED_IN_BETWEEN = "expected 'in' or 'between'";
-
 const BUT_GOT = ', but got ';
 
 function gotInstead(type: string | number) {
@@ -19,45 +18,96 @@ function atIndexInstead(index: number) {
   return ` at index ${index} instead`;
 }
 
-export const MESSAGES = {
-  // Generic collection / argument lifecycle
-  noValues: (label: string) => `${label}: ${NO_VALUES}`,
-  noValue: (label: string) => `${label}: ${NO_VALUE}`,
-  noRemaining: (label: string) => `${label}: ${NO_REMAINING}`,
-  notArray: (label: string, got: string) =>
-    `${label}: ${ARG_MUST_BE_ARRAY}${gotInstead(got)}`,
-  itemNotArray: (label: string, got: string) =>
-    `${label}: ${TYPE_ARRAY}${gotInstead(got)}`,
+// Generic collection / argument lifecycle
+export function msgNoValues(label: string) {
+  return `${label}: ${NO_VALUES}`;
+}
 
-  // Key-value tuple validations
-  itemNotKeyValue: (label: string, length: number, index: number) =>
-    `${label}: must have a key-value array${BUT_GOT}length ${length}${atIndexInstead(index)}`,
-  invalidKey: (label: string, got: string, index: number) =>
-    `${label}: ${NON_EMPTY_STRING_KEYS}${BUT_GOT}${got}${atIndexInstead(index)}`,
+export function msgNoValue(label: string) {
+  return `${label}: ${NO_VALUE}`;
+}
 
-  // Value validations
-  mustBeString: (label: string, got: string) =>
-    `${label}: ${VALUE_MUST_BE_STRING}${gotInstead(got)}`,
-  mustBePositiveInteger: (label: string, got: string, allowZero = false) =>
-    `${label}: must be a positive integer${allowZero ? ' or zero' : ''}${gotInstead(got)}`,
+export function msgNoRemaining(label: string) {
+  return `${label}: ${NO_REMAINING}`;
+}
 
-  // Generator-specific messages & conditions
-  mustBeEither: (label: string, valA: string, valB: string, got: string) =>
-    `${label}: must be either "${valA}" or "${valB}", got "${got}" instead`,
-  invalidSortBy: (label: string, got: unknown, index: number) =>
-    `${label}: must have a valid SORT_BY value, but got ${got}${atIndexInstead(index)}`,
+export function msgNotArray(label: string, got: string) {
+  return `${label}: ${ARG_MUST_BE_ARRAY}${gotInstead(got)}`;
+}
 
-  // Standardized ignoring messages (Search / SearchCriteria)
-  missingConditionArray: (label: string) =>
-    `${label}: ${IGNORING_ARRAY}missing condition, ${EXPECTED_IN_BETWEEN}`,
-  invalidConditionArray: (label: string, index: number) =>
-    `${label}: ${IGNORING_ARRAY}invalid condition, ${EXPECTED_IN_BETWEEN} at index ${index}`,
-  invalidBetweenSize: (label: string, length: number, index: number) =>
-    `${label}: ${IGNORING_ARRAY}expected 2 elements for 'between', got ${length}${atIndexInstead(index)}`,
-  invalidBaseValue: (label: string, got: string) =>
-    `${label}: ${IGNORING_VALUE}expected BaseValue${gotInstead(got)}`,
-  invalidCondition: (label: string, got: unknown) =>
-    `${label}: ${IGNORING_VALUE}invalid condition value, got ${got}`,
-  invalidValueAtIndex: (label: string, got: string, index: number) =>
-    `${label}: ${IGNORING_VALUE}expected BaseValue, got ${got}${atIndexInstead(index)}`,
-} as const;
+export function msgItemNotArray(label: string, got: string) {
+  return `${label}: ${TYPE_ARRAY}${gotInstead(got)}`;
+}
+
+// Key-value tuple validations
+export function msgItemNotKeyValue(
+  label: string,
+  length: number,
+  index: number,
+) {
+  return `${label}: must have a key-value array${BUT_GOT}length ${length}${atIndexInstead(index)}`;
+}
+
+export function msgInvalidKey(label: string, got: string, index: number) {
+  return `${label}: ${NON_EMPTY_STRING_KEYS}${BUT_GOT}${got}${atIndexInstead(index)}`;
+}
+
+// Value validations
+export function msgMustBeString(label: string, got: string) {
+  return `${label}: ${VALUE_MUST_BE_STRING}${gotInstead(got)}`;
+}
+
+export function msgMustBePositiveInteger(
+  label: string,
+  got: string,
+  allowZero = false,
+) {
+  return `${label}: must be a positive integer${allowZero ? ' or zero' : ''}${gotInstead(got)}`;
+}
+
+// Generator-specific messages & conditions
+export function msgMustBeEither(
+  label: string,
+  valA: string,
+  valB: string,
+  got: string,
+) {
+  return `${label}: must be either "${valA}" or "${valB}", got "${got}" instead`;
+}
+
+export function msgInvalidSortBy(label: string, got: unknown, index: number) {
+  return `${label}: must have a valid SORT_BY value${BUT_GOT}${got}${atIndexInstead(index)}`;
+}
+
+// Standardized ignoring messages (Search / SearchCriteria)
+export function msgMissingConditionArray(label: string) {
+  return `${label}: ${IGNORING_ARRAY}missing condition, ${EXPECTED_IN_BETWEEN}`;
+}
+
+export function msgInvalidConditionArray(label: string, index: number) {
+  return `${label}: ${IGNORING_ARRAY}invalid condition, ${EXPECTED_IN_BETWEEN} at index ${index}`;
+}
+
+export function msgInvalidBetweenSize(
+  label: string,
+  length: number,
+  index: number,
+) {
+  return `${label}: ${IGNORING_ARRAY}expected 2 elements for 'between', got ${length}${atIndexInstead(index)}`;
+}
+
+export function msgInvalidBaseValue(label: string, got: string) {
+  return `${label}: ${IGNORING_VALUE}expected BaseValue${gotInstead(got)}`;
+}
+
+export function msgInvalidCondition(label: string, got: unknown) {
+  return `${label}: ${IGNORING_VALUE}invalid condition value, got ${got}`;
+}
+
+export function msgInvalidValueAtIndex(
+  label: string,
+  got: string,
+  index: number,
+) {
+  return `${label}: ${IGNORING_VALUE}expected BaseValue, got ${got}${atIndexInstead(index)}`;
+}

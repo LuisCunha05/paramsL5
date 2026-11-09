@@ -1,6 +1,14 @@
 import { QUERY_LABELS } from '#s/constants';
 import { defaultLogger } from '#s/logger';
-import { MESSAGES } from '#s/messages';
+import {
+  msgInvalidKey,
+  msgInvalidValueAtIndex,
+  msgItemNotArray,
+  msgItemNotKeyValue,
+  msgNoRemaining,
+  msgNoValues,
+  msgNotArray,
+} from '#s/messages';
 import type { BaseValue, ILogger, Path } from '#s/types';
 import { isArray, isBaseValue, isNonEmptyString, typeName } from '#s/utils';
 
@@ -23,36 +31,36 @@ export function searchCriteria<TShape extends object = Record<string, unknown>>(
 ): string | undefined {
   const log = options.logger ?? defaultLogger;
   if (!isArray(arg)) {
-    log?.error(MESSAGES.notArray(QUERY_LABELS.SCR, typeName(arg)));
+    log?.error(msgNotArray(QUERY_LABELS.SCR, typeName(arg)));
     return undefined;
   }
 
   if (!arg.length) {
-    log?.info(MESSAGES.noValues(QUERY_LABELS.SCR));
+    log?.info(msgNoValues(QUERY_LABELS.SCR));
     return undefined;
   }
 
   const filteredValues = arg.filter((item, index) => {
     if (!isArray(item)) {
-      log?.warn(MESSAGES.itemNotArray(QUERY_LABELS.SCR, typeName(item)));
+      log?.warn(msgItemNotArray(QUERY_LABELS.SCR, typeName(item)));
       return false;
     }
 
     if (item.length !== KEY_VALUE_LENGTH) {
-      log?.warn(MESSAGES.itemNotKeyValue(QUERY_LABELS.SCR, item.length, index));
+      log?.warn(msgItemNotKeyValue(QUERY_LABELS.SCR, item.length, index));
       return false;
     }
 
     const [key, value] = item;
 
     if (!isNonEmptyString(key)) {
-      log?.warn(MESSAGES.invalidKey(QUERY_LABELS.SCR, typeName(key), index));
+      log?.warn(msgInvalidKey(QUERY_LABELS.SCR, typeName(key), index));
       return false;
     }
 
     if (!isBaseValue(value)) {
       log?.info(
-        MESSAGES.invalidValueAtIndex(QUERY_LABELS.SCR, typeName(value), index),
+        msgInvalidValueAtIndex(QUERY_LABELS.SCR, typeName(value), index),
       );
       return false;
     }
@@ -61,7 +69,7 @@ export function searchCriteria<TShape extends object = Record<string, unknown>>(
   });
 
   if (!filteredValues.length) {
-    log?.info(MESSAGES.noRemaining(QUERY_LABELS.SCR));
+    log?.info(msgNoRemaining(QUERY_LABELS.SCR));
     return undefined;
   }
 
