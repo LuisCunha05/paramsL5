@@ -1,4 +1,6 @@
+import { QUERY_LABELS } from '#s/constants';
 import { defaultLogger } from '#s/logger';
+import { MESSAGES } from '#s/messages';
 import type { ILogger } from '#s/types';
 import { isNumber, typeName } from '#s/utils';
 
@@ -18,13 +20,13 @@ export function limit(
   const log = options.logger ?? defaultLogger;
   const val = arg ?? options.defaultValue;
   if (val === undefined) {
-    log?.info('Limit: no value given');
+    log?.info(MESSAGES.noValue(QUERY_LABELS.LMT));
     return undefined;
   }
 
   if (!isInputValid(val)) {
     log?.error(
-      `Limit: must be a positive integer or zero, got ${typeName(val)} instead`,
+      MESSAGES.mustBePositiveInteger(QUERY_LABELS.LMT, typeName(val), true),
     );
     return undefined;
   }

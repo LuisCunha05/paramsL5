@@ -68,7 +68,7 @@ describe('searchJoin function', () => {
       searchJoin(input, { logger });
 
       expect(error).toHaveBeenCalledExactlyOnceWith(
-        'SearchJoin: must be a string, got number instead',
+        'SearchJoin: value must be a string, got number instead',
       );
     });
 

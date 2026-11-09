@@ -1,4 +1,6 @@
+import { QUERY_LABELS } from '#s/constants';
 import { defaultLogger } from '#s/logger';
+import { MESSAGES } from '#s/messages';
 import type { ILogger } from '#s/types';
 import { isNumber, typeName } from '#s/utils';
 
@@ -16,13 +18,13 @@ export function page(
   const log = options.logger ?? defaultLogger;
 
   if (arg === undefined) {
-    log?.info('Page: no value given');
+    log?.info(MESSAGES.noValue(QUERY_LABELS.PAG));
     return undefined;
   }
 
   if (!isInputValid(arg)) {
     log?.error(
-      `Page: must be a positive integer, got ${typeName(arg)} instead`,
+      MESSAGES.mustBePositiveInteger(QUERY_LABELS.PAG, typeName(arg), false),
     );
     return undefined;
   }
