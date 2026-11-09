@@ -1,4 +1,5 @@
 import { SEARCH_JOIN } from '@/constants';
+import { defaultLogger } from '@/logger';
 import type { ILogger } from '@/types';
 import { isNonEmptyString, typeName } from '@/utils';
 
@@ -11,7 +12,7 @@ export function searchJoin(
   arg?: TSearchJoin,
   options: TSearchJoinOptions = {},
 ): string | undefined {
-  const log = options.logger ?? console;
+  const log = options.logger ?? defaultLogger;
   if (arg === undefined) {
     log?.info('SearchJoin: no value given');
     return undefined;

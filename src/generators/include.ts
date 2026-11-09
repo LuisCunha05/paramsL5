@@ -1,3 +1,4 @@
+import { defaultLogger } from '@/logger';
 import type { ILogger, Path } from '@/types';
 import { isArray, isNonEmptyString, typeName } from '@/utils';
 
@@ -11,7 +12,7 @@ export function include<TShape extends object = Record<string, unknown>>(
   arg: TInclude<TShape> = [],
   options: TIncludeOptions = {},
 ): string | undefined {
-  const log = options.logger ?? console;
+  const log = options.logger ?? defaultLogger;
   if (!isArray(arg)) {
     log?.error(
       `Include: argument must be an array, got ${typeName(arg)} instead`,

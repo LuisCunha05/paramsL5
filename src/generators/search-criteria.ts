@@ -1,3 +1,4 @@
+import { defaultLogger } from '@/logger';
 import type { BaseValue, ILogger, Path } from '@/types';
 import { isArray, isBaseValue, isNonEmptyString, typeName } from '@/utils';
 
@@ -18,7 +19,7 @@ export function searchCriteria<TShape extends object = Record<string, unknown>>(
   arg: TSearchCriteria<TShape> = [],
   options: TSearchCriteriaOptions = {},
 ): string | undefined {
-  const log = options.logger ?? console;
+  const log = options.logger ?? defaultLogger;
   if (!isArray(arg)) {
     log?.error(
       `SearchCriteria: keys must have a type of array, got ${typeName(arg)} instead`,

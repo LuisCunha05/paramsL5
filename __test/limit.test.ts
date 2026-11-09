@@ -1,8 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { LOG_LEVEL } from '@/constants';
 import { limit } from '@/generators/limit';
-import { Logger } from '@/logger';
+import { logger as loggerFn } from '@/logger';
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any;
@@ -20,7 +19,6 @@ const info = vi.fn();
 const warn = vi.fn();
 const error = vi.fn();
 const logger = { info, warn, error };
-const noOpLogger = Logger({ logLevel: LOG_LEVEL.NONE });
 
 afterEach(() => {
   vi.clearAllMocks();
@@ -37,24 +35,31 @@ describe('limit function', () => {
       expect(result).toBe(expected);
     });
 
-    test('should have a default value', () => {
-      result = limit(undefined, { logger: noOpLogger });
+    test('should return undefined with no input', () => {
+      result = limit(undefined);
 
       expect(result).toBeUndefined();
+    });
+
+    test('should return defaultValue with no input', () => {
+      input = 6;
+      result = limit(undefined, { defaultValue: input });
+
+      expect(result).toBe(`${input}`);
     });
   });
 
   describe('validations and edge cases', () => {
     test('should return undefined if called with a negative number', () => {
       input = -10;
-      result = limit(input, { logger: noOpLogger });
+      result = limit(input);
 
       expect(result).toBeUndefined();
     });
 
     test('should return undefined if called with a non-number', () => {
       input = null;
-      result = limit(input, { logger: noOpLogger });
+      result = limit(input);
 
       expect(result).toBeUndefined();
     });
@@ -70,13 +75,11 @@ describe('limit function', () => {
       );
     });
 
-    test('should log error if argument is null', () => {
+    test('should log info if argument is null', () => {
       input = null;
       limit(input, { logger });
 
-      expect(error).toHaveBeenCalledExactlyOnceWith(
-        'Limit: must be a positive integer or zero, got null instead',
-      );
+      expect(info).toHaveBeenCalledExactlyOnceWith('Limit: no value given');
     });
 
     test('should log error if argument is an object', () => {

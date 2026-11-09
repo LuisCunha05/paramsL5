@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { LOG_LEVEL, SEARCH_JOIN } from '@/constants';
+import { SEARCH_JOIN } from '@/constants';
 import { searchJoin } from '@/generators/search-join';
-import { Logger } from '@/logger';
+import { logger as loggerFn } from '@/logger';
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any;
@@ -19,7 +19,7 @@ const info = vi.fn();
 const warn = vi.fn();
 const error = vi.fn();
 const logger = { info, warn, error };
-const noOpLogger = Logger({ logLevel: LOG_LEVEL.NONE });
+const noOpLogger = loggerFn();
 
 afterEach(() => {
   vi.clearAllMocks();

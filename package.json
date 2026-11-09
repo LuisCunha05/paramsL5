@@ -22,6 +22,9 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
+  "imports": {
+    "#/*": "./src/*"
+  },
   "exports": {
     ".": {
       "import": {

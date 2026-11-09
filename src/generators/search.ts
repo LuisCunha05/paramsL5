@@ -1,4 +1,5 @@
 import { CONDITIONS } from '@/constants';
+import { defaultLogger } from '@/logger';
 import type { BaseValue, ILogger, Path } from '@/types';
 import { isArray, isBaseValue, isNonEmptyString, typeName } from '@/utils';
 
@@ -55,7 +56,7 @@ export function search<TShape extends object = Record<string, unknown>>(
   arg: TSearch<TShape> = [],
   options: TSearchOptions = {},
 ): TSearchResult {
-  const log = options.logger ?? console;
+  const log = options.logger ?? defaultLogger;
   if (!isArray(arg)) {
     log?.error(
       `Search: keys must have a type of array, got ${typeName(arg)} instead`,

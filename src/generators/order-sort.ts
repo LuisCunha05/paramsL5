@@ -1,4 +1,5 @@
 import { SORT_BY } from '@/constants';
+import { defaultLogger } from '@/logger';
 import type { ILogger, Path } from '@/types';
 import { isArray, isNonEmptyString, typeName } from '@/utils';
 
@@ -38,7 +39,7 @@ export function orderBySortBy<TShape extends object = Record<string, unknown>>(
   arg: TOrderBySortBy<TShape> = [],
   options: TOrderBySortByOptions = {},
 ): TOrderBySortByResult {
-  const log = options.logger ?? console;
+  const log = options.logger ?? defaultLogger;
   if (!isArray(arg)) {
     log?.error(
       `OrderBySortBy: keys must have a type of array, got ${typeName(arg)} instead`,

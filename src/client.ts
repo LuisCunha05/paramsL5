@@ -1,3 +1,4 @@
+import { logger as loggerFn, type LogLevel } from '@/logger';
 import type { TParams, TResultParams } from '@/params-l5';
 
 import { filter } from './generators/filter';
@@ -25,7 +26,7 @@ interface DefaultOptions {
 
 export interface ClientOptions {
   defaultOptions?: DefaultOptions;
-  logger?: ILogger;
+  logging?: { logger?: ILogger; logLevel: LogLevel };
 }
 
 export type ValidateParams<TInput> = {
@@ -52,7 +53,13 @@ export function createClient(options: ClientOptions = {}): ClientRunner {
   function runner<TShape extends object = Record<string, unknown>>(
     params: TParams<TShape> = {},
   ): TResultParams {
-    const { logger } = options;
+    const { logging } = options;
+
+    const logger = loggerFn({
+      logLevel: logging?.logLevel,
+      logger: logging?.logger,
+    });
+
     const searchObj = search(params.search, {
       defaultCondition: options?.defaultOptions?.searchCondition,
       logger,
@@ -105,7 +112,10 @@ export function createClient(options: ClientOptions = {}): ClientRunner {
     const result: TResultParams = {
       filter: filter(params.filter, { logger }),
       include: include(params.include, { logger }),
-      limit: limit(params.limit ?? options?.defaultOptions?.limit, { logger }),
+      limit: limit(params.limit, {
+        defaultValue: options?.defaultOptions?.limit,
+        logger,
+      }),
       orderBy: orderBySortByObj.orderBy,
       page: page(params.page ?? options?.defaultOptions?.page, { logger }),
       search: searchObj?.search,

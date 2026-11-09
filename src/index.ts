@@ -2,12 +2,7 @@ import { paramsL5 } from '@/params-l5';
 
 export type { ClientOptions, ClientRunner } from '@/client';
 export { createClient } from '@/client';
-export {
-  CONDITIONS,
-  SEARCH_JOIN,
-  SORT_BY,
-  URL_ENCODED_CHARS,
-} from '@/constants';
+export { CONDITIONS, SEARCH_JOIN, SORT_BY } from '@/constants';
 export type { TFilter } from '@/generators/filter';
 export { filter } from '@/generators/filter';
 export type { TInclude } from '@/generators/include';

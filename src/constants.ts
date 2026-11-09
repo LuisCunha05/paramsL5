@@ -73,12 +73,3 @@ export const SORT_BY = Object.freeze({
   ASC: 'asc',
   DESC: 'desc',
 } as const);
-
-export const LOG_LEVEL = Object.freeze({
-  ERROR: 3,
-  INFO: 1,
-  NONE: 0,
-  WARN: 2,
-} as const);
-
-

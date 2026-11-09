@@ -1,39 +1,44 @@
-import { LOG_LEVEL } from './constants';
 import type { ILogger } from './types';
 
-type LogLevel = (typeof LOG_LEVEL)[keyof typeof LOG_LEVEL];
+export interface LogLevel {
+  error?: boolean;
+  info?: boolean;
+  warn?: boolean;
+}
 
 export const LOGGER_PREFIX = '[ParamsL5]';
 
 interface LoggerArgs {
-  logger?: ILogger;
-  logLevel?: LogLevel;
+  readonly logger?: ILogger;
+  readonly logLevel?: LogLevel;
 }
 
-export function Logger({ logger, logLevel }: Readonly<LoggerArgs>): ILogger {
+export function logger({ logger, logLevel }: LoggerArgs = {}): ILogger {
   const log: ILogger = logger ?? {
     error: console.error,
     info: console.info,
     warn: console.warn,
   };
 
-  const level = logLevel ?? LOG_LEVEL.NONE;
+  const { error = false, warn = false, info = false } = logLevel ?? {};
 
   return {
     error: (...args: readonly unknown[]) => {
-      if (level >= LOG_LEVEL.ERROR) {
+      if (error) {
         log.error(LOGGER_PREFIX, ...args);
       }
     },
     info: (...args: readonly unknown[]) => {
-      if (level >= LOG_LEVEL.INFO) {
+      if (info) {
         log.info(LOGGER_PREFIX, ...args);
       }
     },
     warn: (...args: readonly unknown[]) => {
-      if (level >= LOG_LEVEL.WARN) {
+      if (warn) {
         log.warn(LOGGER_PREFIX, ...args);
       }
     },
   };
 }
+
+export const defaultLogger = logger({ logLevel: { error: true } });

@@ -1,8 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { createClient } from '@/client';
-import { CONDITIONS, LOG_LEVEL, URL_ENCODED_CHARS as URC } from '@/constants';
-import { Logger } from '@/logger';
+import { CONDITIONS, URL_ENCODED_CHARS as URC } from '@/constants';
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any;
@@ -16,8 +15,6 @@ beforeEach(() => {
   result = undefined;
   expected = undefined;
 });
-
-const noOpLogger = Logger({ logLevel: LOG_LEVEL.NONE });
 
 afterEach(() => {
   vi.clearAllMocks();
@@ -40,7 +37,7 @@ describe('createClient function', () => {
           searchJoin: 'or',
           searchCondition: CONDITIONS.LIKE,
         },
-        logger: noOpLogger,
+        logging: { logLevel: { error: false } },
       });
 
       result = paramsL5(input);
@@ -55,7 +52,7 @@ describe('createClient function', () => {
 
       const paramsL5 = createClient({
         defaultOptions: { limit: 77 },
-        logger: noOpLogger,
+        logging: { logLevel: { error: false } },
       });
 
       result = paramsL5();
@@ -69,7 +66,7 @@ describe('createClient function', () => {
 
       const paramsL5 = createClient({
         defaultOptions: { limit: 77 },
-        logger: noOpLogger,
+        logging: { logLevel: { error: false } },
       });
 
       result = paramsL5(input);
@@ -84,7 +81,7 @@ describe('createClient function', () => {
 
       const paramsL5 = createClient({
         defaultOptions: { page: 2 },
-        logger: noOpLogger,
+        logging: { logLevel: { error: false } },
       });
 
       result = paramsL5();
@@ -98,7 +95,7 @@ describe('createClient function', () => {
 
       const paramsL5 = createClient({
         defaultOptions: { page: 2 },
-        logger: noOpLogger,
+        logging: { logLevel: { error: false } },
       });
 
       result = paramsL5(input);
@@ -114,7 +111,7 @@ describe('createClient function', () => {
 
       const paramsL5 = createClient({
         defaultOptions: { sortBy: 'desc' },
-        logger: noOpLogger,
+        logging: { logLevel: { error: false } },
       });
 
       result = paramsL5(input);
@@ -128,7 +125,7 @@ describe('createClient function', () => {
 
       const paramsL5 = createClient({
         defaultOptions: { sortBy: 'desc' },
-        logger: noOpLogger,
+        logging: { logLevel: { error: false } },
       });
 
       result = paramsL5(input);
@@ -143,7 +140,7 @@ describe('createClient function', () => {
 
       const paramsL5 = createClient({
         defaultOptions: { searchJoin: 'or' },
-        logger: noOpLogger,
+        logging: { logLevel: { error: false } },
       });
 
       result = paramsL5();
@@ -157,7 +154,7 @@ describe('createClient function', () => {
 
       const paramsL5 = createClient({
         defaultOptions: { searchJoin: 'or' },
-        logger: noOpLogger,
+        logging: { logLevel: { error: false } },
       });
 
       result = paramsL5(input);
@@ -173,7 +170,7 @@ describe('createClient function', () => {
 
       const paramsL5 = createClient({
         defaultOptions: { searchCondition: CONDITIONS.GTE },
-        logger: noOpLogger,
+        logging: { logLevel: { error: false } },
       });
 
       result = paramsL5(input);
@@ -187,7 +184,6 @@ describe('createClient function', () => {
 
       const paramsL5 = createClient({
         defaultOptions: { searchCondition: CONDITIONS.GTE },
-        logger: noOpLogger,
       });
 
       result = paramsL5(input);
@@ -212,7 +208,7 @@ describe('createClient function', () => {
     test('should generate query params using client.for<Model>()', () => {
       const client = createClient({
         defaultOptions: { limit: 15 },
-        logger: noOpLogger,
+        logging: { logLevel: { error: false } },
       });
 
       const res = client.for<UserModel>()({
@@ -229,7 +225,7 @@ describe('createClient function', () => {
     });
 
     test('should reject duplicate paths and duplicate keys at compile-time', () => {
-      const client = createClient({ logger: noOpLogger });
+      const client = createClient({ logging: { logLevel: { error: false } } });
 
       // Valid call
       const valid = client.for<UserModel>()({

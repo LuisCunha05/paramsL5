@@ -1,3 +1,4 @@
+import { defaultLogger } from '@/logger';
 import type { ILogger } from '@/types';
 import { isNumber, typeName } from '@/utils';
 
@@ -12,7 +13,7 @@ export function page(
   arg?: TPage,
   options: TPageOptions = {},
 ): string | undefined {
-  const log = options.logger ?? console;
+  const log = options.logger ?? defaultLogger;
 
   if (arg === undefined) {
     log?.info('Page: no value given');

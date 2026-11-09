@@ -1,3 +1,4 @@
+import { defaultLogger } from '@/logger';
 import type { ILogger } from '@/types';
 import { isNumber, typeName } from '@/utils';
 
@@ -5,30 +6,34 @@ export type TLimit = number;
 
 export interface TLimitOptions {
   logger?: ILogger;
+  defaultValue?: TLimit;
 }
+
+const MIN_LIMIT = 0;
 
 export function limit(
   arg?: TLimit,
   options: TLimitOptions = {},
 ): string | undefined {
-  const log = options.logger ?? console;
-  if (arg === undefined) {
+  const log = options.logger ?? defaultLogger;
+  const val = arg ?? options.defaultValue;
+  if (val === undefined) {
     log?.info('Limit: no value given');
     return undefined;
   }
 
-  if (!isInputValid(arg)) {
+  if (!isInputValid(val)) {
     log?.error(
-      `Limit: must be a positive integer or zero, got ${typeName(arg)} instead`,
+      `Limit: must be a positive integer or zero, got ${typeName(val)} instead`,
     );
     return undefined;
   }
 
-  return String(arg);
+  return String(val);
 }
 
 function predicate(value: number) {
-  return Number.isInteger(value) && value >= 0;
+  return Number.isInteger(value) && value >= MIN_LIMIT;
 }
 
 function isInputValid(arg?: number): arg is number {

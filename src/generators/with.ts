@@ -1,3 +1,4 @@
+import { defaultLogger } from '@/logger';
 import type { ILogger, Path } from '@/types';
 import { isArray, isNonEmptyString, typeName } from '@/utils';
 
@@ -10,7 +11,7 @@ export function withRel<TShape extends object = Record<string, unknown>>(
   arg: TWith<TShape> = [],
   options: TWithOptions = {},
 ): string | undefined {
-  const log = options.logger ?? console;
+  const log = options.logger ?? defaultLogger;
   if (!isArray(arg)) {
     log?.error(`With: argument must be an array, got ${typeName(arg)} instead`);
     return undefined;
