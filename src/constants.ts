@@ -39,7 +39,7 @@ export const QUERY_LABELS = Object.freeze({
   FLT: 'Filter',
   INC: 'Include',
   LMT: 'Limit',
-  OBY: 'OrderBy',
+  OBY: 'OrderBySortBy',
   PAG: 'Page',
   SBY: 'SortBy',
   SCR: 'SearchCriteria',
