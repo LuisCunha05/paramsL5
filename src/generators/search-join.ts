@@ -26,7 +26,12 @@ export function searchJoin(
 
   if (!(arg === SEARCH_JOIN.AND || arg === SEARCH_JOIN.OR)) {
     log?.error(
-      MESSAGES.mustBeEither(QUERY_LABELS.SJO, SEARCH_JOIN.AND, SEARCH_JOIN.OR, arg),
+      MESSAGES.mustBeEither(
+        QUERY_LABELS.SJO,
+        SEARCH_JOIN.AND,
+        SEARCH_JOIN.OR,
+        arg,
+      ),
     );
     return undefined;
   }

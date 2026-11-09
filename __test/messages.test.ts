@@ -1,11 +1,14 @@
 import { describe, expect, test } from 'vitest';
+
 import { QUERY_LABELS } from '#s/constants';
 import { MESSAGES } from '#s/messages';
 
 describe('MESSAGES catalog', () => {
   describe('lifecycle and argument checks', () => {
     test('noValues returns formatted message', () => {
-      expect(MESSAGES.noValues(QUERY_LABELS.FLT)).toBe('Filter: no values given');
+      expect(MESSAGES.noValues(QUERY_LABELS.FLT)).toBe(
+        'Filter: no values given',
+      );
     });
 
     test('noValue returns formatted message', () => {
@@ -13,7 +16,9 @@ describe('MESSAGES catalog', () => {
     });
 
     test('noRemaining returns formatted message', () => {
-      expect(MESSAGES.noRemaining(QUERY_LABELS.WTH)).toBe('With: no values remaining to parse');
+      expect(MESSAGES.noRemaining(QUERY_LABELS.WTH)).toBe(
+        'With: no values remaining to parse',
+      );
     });
 
     test('notArray returns formatted message', () => {
@@ -57,9 +62,9 @@ describe('MESSAGES catalog', () => {
     });
 
     test('mustBePositiveInteger with zero allowed', () => {
-      expect(MESSAGES.mustBePositiveInteger(QUERY_LABELS.LMT, 'string', true)).toBe(
-        'Limit: must be a positive integer or zero, got string instead',
-      );
+      expect(
+        MESSAGES.mustBePositiveInteger(QUERY_LABELS.LMT, 'string', true),
+      ).toBe('Limit: must be a positive integer or zero, got string instead');
     });
 
     test('mustBeEither returns formatted message', () => {

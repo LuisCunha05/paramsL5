@@ -58,9 +58,7 @@ export function orderBySortBy<TShape extends object = Record<string, unknown>>(
     }
 
     if (item.length < MIN_TUPLE_SIZE || item.length > MAX_TUPLE_SIZE) {
-      log?.warn(
-        MESSAGES.itemNotKeyValue(QUERY_LABELS.OBY, item.length, index),
-      );
+      log?.warn(MESSAGES.itemNotKeyValue(QUERY_LABELS.OBY, item.length, index));
       return result;
     }
 

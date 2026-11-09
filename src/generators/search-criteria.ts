@@ -39,9 +39,7 @@ export function searchCriteria<TShape extends object = Record<string, unknown>>(
     }
 
     if (item.length !== KEY_VALUE_LENGTH) {
-      log?.warn(
-        MESSAGES.itemNotKeyValue(QUERY_LABELS.SCR, item.length, index),
-      );
+      log?.warn(MESSAGES.itemNotKeyValue(QUERY_LABELS.SCR, item.length, index));
       return false;
     }
 

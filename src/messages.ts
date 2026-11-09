@@ -11,9 +11,13 @@ const EXPECTED_IN_BETWEEN = "expected 'in' or 'between'";
 
 const BUT_GOT = ', but got ';
 
-const gotInstead = (type: string | number) => `, got ${type} instead`;
-const atIndexInstead = (type: string | number, index: number) =>
-  ` at index ${index} instead`;
+function gotInstead(type: string | number) {
+  return `, got ${type} instead`;
+}
+
+function atIndexInstead(index: number) {
+  return ` at index ${index} instead`;
+}
 
 export const MESSAGES = {
   // Generic collection / argument lifecycle
@@ -27,9 +31,9 @@ export const MESSAGES = {
 
   // Key-value tuple validations
   itemNotKeyValue: (label: string, length: number, index: number) =>
-    `${label}: must have a key-value array${BUT_GOT}length ${length}${atIndexInstead(length, index)}`,
+    `${label}: must have a key-value array${BUT_GOT}length ${length}${atIndexInstead(index)}`,
   invalidKey: (label: string, got: string, index: number) =>
-    `${label}: ${NON_EMPTY_STRING_KEYS}${BUT_GOT}${got}${atIndexInstead(got, index)}`,
+    `${label}: ${NON_EMPTY_STRING_KEYS}${BUT_GOT}${got}${atIndexInstead(index)}`,
 
   // Value validations
   mustBeString: (label: string, got: string) =>
@@ -41,7 +45,7 @@ export const MESSAGES = {
   mustBeEither: (label: string, valA: string, valB: string, got: string) =>
     `${label}: must be either "${valA}" or "${valB}", got "${got}" instead`,
   invalidSortBy: (label: string, got: unknown, index: number) =>
-    `${label}: must have a valid SORT_BY value, but got ${got}${atIndexInstead(String(got), index)}`,
+    `${label}: must have a valid SORT_BY value, but got ${got}${atIndexInstead(index)}`,
 
   // Standardized ignoring messages (Search / SearchCriteria)
   missingConditionArray: (label: string) =>
@@ -49,11 +53,11 @@ export const MESSAGES = {
   invalidConditionArray: (label: string, index: number) =>
     `${label}: ${IGNORING_ARRAY}invalid condition, ${EXPECTED_IN_BETWEEN} at index ${index}`,
   invalidBetweenSize: (label: string, length: number, index: number) =>
-    `${label}: ${IGNORING_ARRAY}expected 2 elements for 'between', got ${length}${atIndexInstead(length, index)}`,
+    `${label}: ${IGNORING_ARRAY}expected 2 elements for 'between', got ${length}${atIndexInstead(index)}`,
   invalidBaseValue: (label: string, got: string) =>
     `${label}: ${IGNORING_VALUE}expected BaseValue${gotInstead(got)}`,
   invalidCondition: (label: string, got: unknown) =>
     `${label}: ${IGNORING_VALUE}invalid condition value, got ${got}`,
   invalidValueAtIndex: (label: string, got: string, index: number) =>
-    `${label}: ${IGNORING_VALUE}expected BaseValue, got ${got}${atIndexInstead(got, index)}`,
+    `${label}: ${IGNORING_VALUE}expected BaseValue, got ${got}${atIndexInstead(index)}`,
 } as const;
