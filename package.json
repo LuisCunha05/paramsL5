@@ -15,7 +15,7 @@
   "author": "luiscunha05",
   "repository": {
     "type": "git",
-    "url": "https://github.com/LuisCunha05/paramsL5.git"
+    "url": "git+https://github.com/LuisCunha05/paramsL5.git"
   },
   "type": "module",
   "sideEffects": false,
