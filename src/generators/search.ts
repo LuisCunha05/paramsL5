@@ -52,8 +52,9 @@ export type TSearchItem<TTShape> =
 
 export type TSearch<TTShape> = readonly TSearchItem<TTShape>[];
 
-interface TSearchOptions {
+export interface TSearchOptions {
   defaultCondition?: TCondition;
+  includeSearchFields?: boolean;
   logger?: ILogger;
 }
 
@@ -171,7 +172,9 @@ export function search<TShape extends object = Record<string, unknown>>(
       const newValue = typeof value === 'string' ? value.trim() : value;
 
       result.search.push(`${key}:${newValue}`);
-      result.fields.push(`${key}:${condition}`);
+      if (options.includeSearchFields === true) {
+        result.fields.push(`${key}:${condition}`);
+      }
 
       return result;
     },
@@ -184,6 +187,8 @@ export function search<TShape extends object = Record<string, unknown>>(
 
   return {
     search: searchAndFields.search.join(';'),
-    searchFields: searchAndFields.fields.join(';'),
+    searchFields: searchAndFields.fields.length
+      ? searchAndFields.fields.join(';')
+      : undefined,
   };
 }

@@ -17,6 +17,7 @@ export interface TParams<TShape extends object = Record<string, unknown>> {
   readonly orderBySortBy?: TOrderBySortBy<TShape>;
   readonly page?: TPage;
   readonly search?: TSearch<TShape>;
+  readonly includeSearchFields?: boolean;
   readonly searchJoin?: TSearchJoin;
   readonly with?: TWith<TShape>;
   // Future: withCount parameter support
@@ -29,7 +30,9 @@ export type TResultParams = TParamsStrings & {
 export function paramsL5<TShape extends object = Record<string, unknown>>(
   arg: TParams<TShape> = {},
 ) {
-  const searchObj = search(arg.search);
+  const searchObj = search(arg.search, {
+    includeSearchFields: arg.includeSearchFields,
+  });
   const orderBySortByObj = orderBySortBy(arg.orderBySortBy);
 
   const result: TResultParams = {

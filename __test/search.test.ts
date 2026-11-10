@@ -29,11 +29,11 @@ afterEach(() => {
 
 describe('search function', () => {
   describe('formatting', () => {
-    test('should format a single search param correctly with default condition "="', () => {
+    test('should format a single search param without searchFields by default', () => {
       input = [['name', 'John']];
       expected = {
         search: 'name:John',
-        searchFields: 'name:=',
+        searchFields: undefined,
       };
 
       result = search(input);
@@ -41,67 +41,82 @@ describe('search function', () => {
       expect(result).toEqual(expected);
     });
 
-    test('should change default condition when options is provided', () => {
+    test('should include searchFields when includeSearchFields is true', () => {
+      input = [['name', 'John', CONDITIONS.EQ]];
+      expected = {
+        search: 'name:John',
+        searchFields: 'name:=',
+      };
+
+      result = search(input, { includeSearchFields: true });
+
+      expect(result).toEqual(expected);
+    });
+
+    test('should change default condition when options is provided with includeSearchFields', () => {
       input = [['name', 'John']];
       expected = {
         search: 'name:John',
         searchFields: 'name:>',
       };
 
-      result = search(input, { defaultCondition: CONDITIONS.GT });
+      result = search(input, {
+        defaultCondition: CONDITIONS.GT,
+        includeSearchFields: true,
+      });
 
       expect(result).toEqual(expected);
     });
 
-    test('should format a valid key-value pair with a specific condition', () => {
+    test('should format a valid key-value pair with a specific condition when includeSearchFields is true', () => {
       input = [['age', 18, CONDITIONS.GTE]];
       expected = {
         search: 'age:18',
         searchFields: 'age:>=',
       };
 
-      result = search(input);
+      result = search(input, { includeSearchFields: true });
 
       expect(result).toEqual(expected);
     });
 
-    test('should handle "in" condition with array of values', () => {
+    test('should handle "in" condition with array of values when includeSearchFields is true', () => {
       input = [['status', ['active', 'pending'], CONDITIONS.IN]];
       expected = {
         search: 'status:active,pending',
         searchFields: 'status:in',
       };
 
-      result = search(input);
+      result = search(input, { includeSearchFields: true });
 
       expect(result).toEqual(expected);
     });
 
-    test('should handle "in" condition with array of length 1', () => {
+    test('should handle "in" condition with array of length 1 when includeSearchFields is true', () => {
       input = [['status', ['active'], CONDITIONS.IN]];
       expected = {
         search: 'status:active',
         searchFields: 'status:in',
       };
 
-      result = search(input);
+      result = search(input, { includeSearchFields: true });
 
       expect(result).toEqual(expected);
     });
 
-    test('should handle "between" condition with tuple of values', () => {
+    test('should handle "between" condition with tuple of values when includeSearchFields is true', () => {
       input = [['date', ['2023-01-01', '2023-12-31'], CONDITIONS.BTW]];
       expected = {
         search: 'date:2023-01-01,2023-12-31',
         searchFields: `date:${CONDITIONS.BTW}`,
       };
 
-      result = search(input);
+      result = search(input, { includeSearchFields: true });
 
       expect(result).toEqual(expected);
     });
 
-    test('should update the value if the key already exists (deduplication)', () => {
+    test('should update the value if the key already exists (deduplication) with includeSearchFields', () => {
       input = [
         ['name', 'John', CONDITIONS.LIKE],
         ['name', 'Doe', CONDITIONS.LIKE],
@@ -111,12 +126,12 @@ describe('search function', () => {
         searchFields: 'name:like',
       };
 
-      result = search(input);
+      result = search(input, { includeSearchFields: true });
 
       expect(result).toEqual(expected);
     });
 
-    test('should format multiple search params correctly', () => {
+    test('should format multiple search params correctly when includeSearchFields is true', () => {
       input = [
         ['name', 'John', CONDITIONS.LIKE],
         ['email', 'gmail', CONDITIONS.ILIKE],
@@ -126,7 +141,34 @@ describe('search function', () => {
         searchFields: 'name:like;email:ilike',
       };
 
+      result = search(input, { includeSearchFields: true });
+
+      expect(result).toEqual(expected);
+    });
+
+    test('should omit searchFields by default even when conditions are provided', () => {
+      input = [
+        ['name', 'John'],
+        ['age', 18, CONDITIONS.GTE],
+      ];
+      expected = {
+        search: 'name:John;age:18',
+        searchFields: undefined,
+      };
+
       result = search(input);
+
+      expect(result).toEqual(expected);
+    });
+
+    test('should omit searchFields when includeSearchFields option is false', () => {
+      input = [['age', 18, CONDITIONS.GTE]];
+      expected = {
+        search: 'age:18',
+        searchFields: undefined,
+      };
+
+      result = search(input, { includeSearchFields: false });
 
       expect(result).toEqual(expected);
     });
@@ -163,7 +205,7 @@ describe('search function', () => {
       input = [['name', 'John'], 'invalid'];
       expected = {
         search: 'name:John',
-        searchFields: 'name:=',
+        searchFields: undefined,
       };
 
       result = search(input, { logger: noOpLogger });
@@ -188,7 +230,7 @@ describe('search function', () => {
       ];
       expected = {
         search: 'status:active',
-        searchFields: 'status:=',
+        searchFields: undefined,
       };
 
       result = search(input, { logger: noOpLogger });
@@ -203,7 +245,7 @@ describe('search function', () => {
       ];
       expected = {
         search: 'status:active',
-        searchFields: 'status:=',
+        searchFields: undefined,
       };
 
       result = search(input, { logger: noOpLogger });
@@ -219,7 +261,7 @@ describe('search function', () => {
       ];
       expected = {
         search: 'status:active',
-        searchFields: 'status:=',
+        searchFields: undefined,
       };
 
       result = search(input, { logger: noOpLogger });

@@ -17,7 +17,7 @@ pnpm add params-l5
 ## Features
 
 - [x] **Search**: Search multiple fields with different conditions (`=`, `>=`, `<=`, `>`, `<`, `!=`, `in`, `like`, `ilike`, `between`).
-- [x] **SearchFields**: Automatically generated when using `search`, specifying the condition for each searched field.
+- [x] **SearchFields**: Specify the condition for each searched field (opt-in via `includeSearchFields: true`).
 - [x] **SearchJoin**: Specify `and` or `or` across multiple search parameters.
 - [x] **Filter**: Limit the fields returned in the response.
 - [x] **Include**: Request related entities in the response.
@@ -37,6 +37,7 @@ const queryParams = paramsL5({
     ['age', 18, CONDITIONS.GTE],
     ['status', ['active', 'pending'], CONDITIONS.IN],
   ],
+  includeSearchFields: true,
   searchJoin: SEARCH_JOIN.AND,
   filter: ['id', 'name', 'age', 'status'],
   include: ['profile', 'posts'],

@@ -22,6 +22,7 @@ interface DefaultOptions {
   limit?: TLimit;
   searchJoin?: TSearchJoin;
   searchCondition?: TCondition;
+  includeSearchFields?: boolean;
 }
 
 export interface ClientOptions {
@@ -62,6 +63,9 @@ export function createClient(options: ClientOptions = {}): ClientRunner {
 
     const searchObj = search(params.search, {
       defaultCondition: options?.defaultOptions?.searchCondition,
+      includeSearchFields:
+        params.includeSearchFields ??
+        options?.defaultOptions?.includeSearchFields,
       logger,
     });
 

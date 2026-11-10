@@ -38,6 +38,7 @@ describe('createClient function', () => {
           sortBy: 'desc',
           searchJoin: 'or',
           searchCondition: CONDITIONS.LIKE,
+          includeSearchFields: true,
         },
         logging: { logLevel: { error: false } },
       });
@@ -171,7 +172,10 @@ describe('createClient function', () => {
       expected = `search=age${URC.COLON}18&searchFields=age${URC.COLON}${URC.GREATER_THAN}${URC.EQUALS}`;
 
       const paramsL5 = createClient({
-        defaultOptions: { searchCondition: CONDITIONS.GTE },
+        defaultOptions: {
+          searchCondition: CONDITIONS.GTE,
+          includeSearchFields: true,
+        },
         logging: { logLevel: { error: false } },
       });
 
@@ -185,7 +189,56 @@ describe('createClient function', () => {
       expected = `search=age${URC.COLON}18&searchFields=age${URC.COLON}${URC.LESS_THAN}${URC.EQUALS}`;
 
       const paramsL5 = createClient({
-        defaultOptions: { searchCondition: CONDITIONS.GTE },
+        defaultOptions: {
+          searchCondition: CONDITIONS.GTE,
+          includeSearchFields: true,
+        },
+      });
+
+      result = paramsL5(input);
+
+      expect(result?.toParams()).toBe(expected);
+    });
+  });
+
+  describe('includeSearchFields', () => {
+    test('should omit searchFields by default when includeSearchFields is not set', () => {
+      input = { search: [['age', 18, CONDITIONS.GTE]] };
+      expected = `search=age${URC.COLON}18`;
+
+      const paramsL5 = createClient({
+        logging: { logLevel: { error: false } },
+      });
+
+      result = paramsL5(input);
+
+      expect(result?.toParams()).toBe(expected);
+    });
+
+    test('should include searchFields when defaultOptions has includeSearchFields true', () => {
+      input = { search: [['age', 18, CONDITIONS.GTE]] };
+      expected = `search=age${URC.COLON}18&searchFields=age${URC.COLON}${URC.GREATER_THAN}${URC.EQUALS}`;
+
+      const paramsL5 = createClient({
+        defaultOptions: { includeSearchFields: true },
+        logging: { logLevel: { error: false } },
+      });
+
+      result = paramsL5(input);
+
+      expect(result?.toParams()).toBe(expected);
+    });
+
+    test('should prioritize includeSearchFields from params over defaultOptions', () => {
+      input = {
+        search: [['age', 18, CONDITIONS.GTE]],
+        includeSearchFields: false,
+      };
+      expected = `search=age${URC.COLON}18`;
+
+      const paramsL5 = createClient({
+        defaultOptions: { includeSearchFields: true },
+        logging: { logLevel: { error: false } },
       });
 
       result = paramsL5(input);
