@@ -79,7 +79,7 @@ export function msgInvalidSortBy(label: string, got: unknown, index: number) {
   return `${label}: must have a valid SORT_BY value${BUT_GOT}${got}${atIndexInstead(index)}`;
 }
 
-// Standardized ignoring messages (Search / SearchCriteria)
+// Standardized ignoring messages (Search)
 export function msgMissingConditionArray(label: string) {
   return `${label}: ${IGNORING_ARRAY}missing condition, ${EXPECTED_IN_BETWEEN}`;
 }

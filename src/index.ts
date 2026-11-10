@@ -15,11 +15,6 @@ export type { TPage } from '#s/generators/page';
 export { page } from '#s/generators/page';
 export type { TCondition, TSearch, TSearchResult } from '#s/generators/search';
 export { search } from '#s/generators/search';
-export type {
-  TCriteriaValue,
-  TSearchCriteria,
-} from '#s/generators/search-criteria';
-export { searchCriteria } from '#s/generators/search-criteria';
 export type { TSearchJoin } from '#s/generators/search-join';
 export { searchJoin } from '#s/generators/search-join';
 export type { TWith } from '#s/generators/with';

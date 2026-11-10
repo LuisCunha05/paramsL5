@@ -4,10 +4,6 @@ import { type TLimit, limit } from '#s/generators/limit';
 import { type TOrderBySortBy, orderBySortBy } from '#s/generators/order-sort';
 import { type TPage, page } from '#s/generators/page';
 import { type TSearch, search } from '#s/generators/search';
-import {
-  type TSearchCriteria,
-  searchCriteria,
-} from '#s/generators/search-criteria';
 import { type TSearchJoin, searchJoin } from '#s/generators/search-join';
 import { type TWith, withRel } from '#s/generators/with';
 import { toParams, type TParamsStrings } from '#s/utils';
@@ -21,9 +17,9 @@ export interface TParams<TShape extends object = Record<string, unknown>> {
   readonly orderBySortBy?: TOrderBySortBy<TShape>;
   readonly page?: TPage;
   readonly search?: TSearch<TShape>;
-  readonly searchCriteria?: TSearchCriteria<TShape>;
   readonly searchJoin?: TSearchJoin;
   readonly with?: TWith<TShape>;
+  // Future: withCount parameter support
 }
 
 export type TResultParams = TParamsStrings & {
@@ -43,7 +39,6 @@ export function paramsL5<TShape extends object = Record<string, unknown>>(
     [QUERY_NAMES.OBY]: orderBySortByObj.orderBy,
     [QUERY_NAMES.PAG]: page(arg.page),
     [QUERY_NAMES.SRC]: searchObj.search,
-    [QUERY_NAMES.SCR]: searchCriteria(arg.searchCriteria),
     [QUERY_NAMES.SFI]: searchObj.searchFields,
     [QUERY_NAMES.SJO]: searchJoin(arg.searchJoin),
     [QUERY_NAMES.SBY]: orderBySortByObj.sortedBy,

@@ -19,7 +19,6 @@ pnpm add params-l5
 - [x] **Search**: Search multiple fields with different conditions (`=`, `>=`, `<=`, `>`, `<`, `!=`, `in`, `like`, `ilike`, `between`).
 - [x] **SearchFields**: Automatically generated when using `search`, specifying the condition for each searched field.
 - [x] **SearchJoin**: Specify `and` or `or` across multiple search parameters.
-- [x] **SearchCriteria**: Add custom criteria definitions to your queries.
 - [x] **Filter**: Limit the fields returned in the response.
 - [x] **Include**: Request related entities in the response.
 - [x] **With**: Define relations to be eager-loaded.
@@ -41,16 +40,16 @@ const queryParams = paramsL5({
   searchJoin: SEARCH_JOIN.AND,
   filter: ['id', 'name', 'age', 'status'],
   include: ['profile', 'posts'],
-  orderBySortBy: ['created_at', SORT_BY.DESC],
+  orderBySortBy: [['created_at', SORT_BY.DESC]],
   limit: 15,
   page: 2,
 });
 
 // Access the compiled raw query string:
-console.log(queryParams.params);
+console.log(queryParams.toParams());
 
 // Example Output representation (URL Encoded):
-// search=name%3AJohn%3Bage%3A18%3Bstatus%3Aactive%2Cpending&searchFields=name%3Alike%3Bage%3A%3E%3D%3Bstatus%3Ain&searchJoin=and&filter=id%3Bname%3Bage%3Bstatus&include=profile%3Bposts&orderBy=created_at&sortedBy=desc&limit=15&page=2
+// filter=id%3Bname%3Bage%3Bstatus&include=profile%2Cposts&limit=15&orderBy=created_at&page=2&search=name%3AJohn%3Bage%3A18%3Bstatus%3Aactive%2Cpending&searchFields=name%3Alike%3Bage%3A%3E%3D%3Bstatus%3Ain&searchJoin=and&sortedBy=desc
 ```
 
 ## Constants & Helpers

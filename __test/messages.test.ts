@@ -58,8 +58,8 @@ describe('Message functions', () => {
     });
 
     test('msgInvalidKey returns formatted message with index', () => {
-      expect(msgInvalidKey(QUERY_LABELS.SCR, 'number', 2)).toBe(
-        'SearchCriteria: must have keys as non-empty strings, but got number at index 2 instead',
+      expect(msgInvalidKey(QUERY_LABELS.OBY, 'number', 2)).toBe(
+        'OrderBySortBy: must have keys as non-empty strings, but got number at index 2 instead',
       );
     });
   });
@@ -128,8 +128,8 @@ describe('Message functions', () => {
     });
 
     test('msgInvalidValueAtIndex', () => {
-      expect(msgInvalidValueAtIndex(QUERY_LABELS.SCR, 'object', 0)).toBe(
-        'SearchCriteria: ignoring value: expected BaseValue, got object at index 0 instead',
+      expect(msgInvalidValueAtIndex(QUERY_LABELS.SRC, 'object', 0)).toBe(
+        'Search: ignoring value: expected BaseValue, got object at index 0 instead',
       );
     });
   });

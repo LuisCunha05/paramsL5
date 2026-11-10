@@ -5,7 +5,6 @@ import { type TLimit, limit } from '#s/generators/limit';
 import { type TSortBy, orderBySortBy } from '#s/generators/order-sort';
 import { type TPage, page } from '#s/generators/page';
 import { type TCondition, search } from '#s/generators/search';
-import { searchCriteria } from '#s/generators/search-criteria';
 import { type TSearchJoin, searchJoin } from '#s/generators/search-join';
 import { withRel } from '#s/generators/with';
 import { logger as loggerFn, type LogLevel } from '#s/logger';
@@ -33,7 +32,7 @@ export interface ClientOptions {
 export type ValidateParams<TInput> = {
   [KFn in keyof TInput]: KFn extends 'include' | 'with' | 'filter'
     ? ValidateFlatArray<TInput[KFn]>
-    : KFn extends 'orderBySortBy' | 'search' | 'searchCriteria'
+    : KFn extends 'orderBySortBy' | 'search'
       ? ValidateKeyTupleArray<TInput[KFn]>
       : TInput[KFn];
 };
@@ -83,7 +82,6 @@ export function createClient(options: ClientOptions = {}): ClientRunner {
         logger,
       }),
       [QUERY_NAMES.SRC]: searchObj?.search,
-      [QUERY_NAMES.SCR]: searchCriteria(params.searchCriteria, { logger }),
       [QUERY_NAMES.SFI]: searchObj?.searchFields,
       [QUERY_NAMES.SJO]: searchJoin(
         params.searchJoin ?? options?.defaultOptions?.searchJoin,
