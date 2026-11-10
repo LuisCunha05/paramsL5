@@ -6,6 +6,7 @@ import { type TPage, page } from '#s/generators/page';
 import { type TSearch, search } from '#s/generators/search';
 import { type TSearchJoin, searchJoin } from '#s/generators/search-join';
 import { type TWith, withRel } from '#s/generators/with';
+import { type TWithCount, withCount } from '#s/generators/with-count';
 import { toParams, type TParamsStrings } from '#s/utils';
 
 import { QUERY_NAMES } from './constants';
@@ -20,7 +21,7 @@ export interface TParams<TShape extends object = Record<string, unknown>> {
   readonly includeSearchFields?: boolean;
   readonly searchJoin?: TSearchJoin;
   readonly with?: TWith<TShape>;
-  // Future: withCount parameter support
+  readonly withCount?: TWithCount<TShape>;
 }
 
 export type TResultParams = TParamsStrings & {
@@ -47,6 +48,7 @@ export function paramsL5<TShape extends object = Record<string, unknown>>(
     [QUERY_NAMES.SBY]: orderBySortByObj.sortedBy,
     toParams: () => {},
     [QUERY_NAMES.WTH]: withRel(arg.with),
+    [QUERY_NAMES.WTC]: withCount(arg.withCount),
   };
 
   result.toParams = () => toParams(result);

@@ -31,6 +31,7 @@ export const QUERY_NAMES = Object.freeze({
   SFI: 'searchFields',
   SJO: 'searchJoin',
   SRC: 'search',
+  WTC: 'withCount',
   WTH: 'with',
 } as const);
 
@@ -44,5 +45,6 @@ export const QUERY_LABELS = Object.freeze({
   SFI: 'SearchFields',
   SJO: 'SearchJoin',
   SRC: 'Search',
+  WTC: 'WithCount',
   WTH: 'With',
 } as const);

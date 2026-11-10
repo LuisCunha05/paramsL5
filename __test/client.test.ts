@@ -247,6 +247,22 @@ describe('createClient function', () => {
     });
   });
 
+  describe('withCount', () => {
+    test('should generate withCount query param correctly', () => {
+      input = { withCount: ['comments', 'likes'] };
+      expected = `withCount=comments${URC.SEMICOLON}likes`;
+
+      const paramsL5 = createClient({
+        logging: { logLevel: { error: false } },
+      });
+
+      result = paramsL5(input);
+
+      expect(result?.withCount).toBe('comments;likes');
+      expect(result?.toParams()).toBe(expected);
+    });
+  });
+
   describe('client.for method', () => {
     interface UserModel {
       id: string;
@@ -269,11 +285,13 @@ describe('createClient function', () => {
       const res = client.for<UserModel>()({
         filter: ['id', 'email'],
         include: ['profile', 'posts'],
+        withCount: ['posts'],
         orderBySortBy: [['name', 'asc']],
       });
 
       expect(res.filter).toBe('id;email');
       expect(res.include).toBe('profile,posts');
+      expect(res.withCount).toBe('posts');
       expect(res.orderBy).toBe('name');
       expect(res.sortedBy).toBe('asc');
       expect(res.limit).toBe('15');
@@ -286,18 +304,23 @@ describe('createClient function', () => {
       const valid = client.for<UserModel>()({
         filter: ['id', 'email'],
         include: ['profile', 'posts'],
+        withCount: ['posts'],
         orderBySortBy: [
           ['name', 'asc'],
           ['id', 'desc'],
         ],
       });
       expect(valid.include).toBe('profile,posts');
+      expect(valid.withCount).toBe('posts');
 
       // @ts-expect-error Duplicate path 'profile'
       client.for<UserModel>()({ include: ['profile', 'profile'] });
 
       // @ts-expect-error Duplicate path 'id'
       client.for<UserModel>()({ filter: ['id', 'id'] });
+
+      // @ts-expect-error Duplicate path 'posts'
+      client.for<UserModel>()({ withCount: ['posts', 'posts'] });
 
       client.for<UserModel>()({
         orderBySortBy: [

@@ -35,6 +35,9 @@ describe('Message functions', () => {
       expect(msgNoRemaining(QUERY_LABELS.WTH)).toBe(
         'With: no values remaining to parse',
       );
+      expect(msgNoRemaining(QUERY_LABELS.WTC)).toBe(
+        'WithCount: no values remaining to parse',
+      );
     });
 
     test('msgNotArray returns formatted message', () => {

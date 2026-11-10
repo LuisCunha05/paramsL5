@@ -24,6 +24,8 @@ export type { TSearchJoin } from '#s/generators/search-join';
 export { searchJoin } from '#s/generators/search-join';
 export type { TWith } from '#s/generators/with';
 export { withRel } from '#s/generators/with';
+export type { TWithCount } from '#s/generators/with-count';
+export { withCount } from '#s/generators/with-count';
 export type { TParams, TResultParams } from '#s/params-l5';
 export { paramsL5 } from '#s/params-l5';
 export type {

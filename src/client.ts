@@ -7,6 +7,7 @@ import { type TPage, page } from '#s/generators/page';
 import { type TCondition, search } from '#s/generators/search';
 import { type TSearchJoin, searchJoin } from '#s/generators/search-join';
 import { withRel } from '#s/generators/with';
+import { withCount } from '#s/generators/with-count';
 import { logger as loggerFn, type LogLevel } from '#s/logger';
 import type { TParams, TResultParams } from '#s/params-l5';
 import type {
@@ -31,7 +32,7 @@ export interface ClientOptions {
 }
 
 export type ValidateParams<TInput> = {
-  [KFn in keyof TInput]: KFn extends 'include' | 'with' | 'filter'
+  [KFn in keyof TInput]: KFn extends 'include' | 'with' | 'withCount' | 'filter'
     ? ValidateFlatArray<TInput[KFn]>
     : KFn extends 'orderBySortBy' | 'search'
       ? ValidateKeyTupleArray<TInput[KFn]>
@@ -94,6 +95,7 @@ export function createClient(options: ClientOptions = {}): ClientRunner {
       [QUERY_NAMES.SBY]: orderBySortByObj.sortedBy,
       toParams: () => {},
       [QUERY_NAMES.WTH]: withRel(params.with, { logger }),
+      [QUERY_NAMES.WTC]: withCount(params.withCount, { logger }),
     };
 
     result.toParams = () => toParams(result);
