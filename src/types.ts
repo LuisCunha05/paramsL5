@@ -31,6 +31,24 @@ export type Path<
     : never
   : never;
 
+type ElementType<TType> = TType extends readonly (infer TInt)[]
+  ? ElementType<TInt>
+  : TType;
+
+export type PathPipe<
+  TSource,
+  TKeys extends Keys<TSource> = Keys<TSource>,
+> = TSource extends object
+  ? TKeys extends string
+    ? ElementType<TSource[TKeys]> extends object
+      ?
+          | TKeys
+          | `${TKeys}|${Keys<ElementType<TSource[TKeys]>>}`
+          | `${TKeys}:${string}|${Keys<ElementType<TSource[TKeys]>>}`
+      : TKeys
+    : never
+  : never;
+
 export type NoDuplicates<
   TTuple extends readonly unknown[],
   TSeen = never,

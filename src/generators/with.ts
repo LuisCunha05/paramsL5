@@ -6,10 +6,10 @@ import {
   msgNoValues,
   msgNotArray,
 } from '#s/messages';
-import type { ILogger, Path } from '#s/types';
+import type { ILogger, PathPipe } from '#s/types';
 import { isArray, isNonEmptyString, typeName } from '#s/utils';
 
-export type TWith<TTShape> = readonly NoInfer<Path<TTShape>>[];
+export type TWith<TTShape> = readonly NoInfer<PathPipe<TTShape>>[];
 export interface TWithOptions {
   logger?: ILogger;
 }

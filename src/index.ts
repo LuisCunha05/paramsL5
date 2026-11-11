@@ -34,6 +34,7 @@ export type {
   NoDuplicates,
   NoDuplicateKeys,
   Path,
+  PathPipe,
 } from '#s/types';
 
 export default paramsL5;

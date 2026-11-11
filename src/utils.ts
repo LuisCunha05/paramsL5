@@ -1,6 +1,5 @@
+import { QUERY_NAMES } from '#s/constants';
 import type { BaseValue, ToEnum } from '#s/types';
-
-import { QUERY_NAMES } from './constants';
 
 const NON_EMPTY_STRING_LEN = 0;
 const HEX_ENCODING = 16;

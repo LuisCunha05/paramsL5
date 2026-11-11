@@ -1,3 +1,4 @@
+import { QUERY_NAMES } from '#s/constants';
 import { type TFilter, filter } from '#s/generators/filter';
 import { type TInclude, include } from '#s/generators/include';
 import { type TLimit, limit } from '#s/generators/limit';
@@ -8,8 +9,6 @@ import { type TSearchJoin, searchJoin } from '#s/generators/search-join';
 import { type TWith, withRel } from '#s/generators/with';
 import { type TWithCount, withCount } from '#s/generators/with-count';
 import { toParams, type TParamsStrings } from '#s/utils';
-
-import { QUERY_NAMES } from './constants';
 
 export interface TParams<TShape extends object = Record<string, unknown>> {
   readonly filter?: TFilter<TShape>;
