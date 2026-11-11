@@ -1,6 +1,6 @@
 {
   "name": "params-l5",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "package to generate  l5repository query strings",
   "keywords": [
     "l5",

@@ -9,6 +9,21 @@ export interface TSearchJoinOptions {
   logger?: TLogger;
 }
 
+/**
+ * Formats the logical operator (`and` | `or`) that connects multiple search conditions.
+ *
+ * @remarks
+ * Fields are validated: `null`, `undefined`, and values other than `'and'` or `'or'` are filtered out safely.
+ *
+ * @param arg - The join strategy (`'and'` or `'or'`).
+ * @param options - Optional settings including custom logger.
+ * @returns The validated join string (`'and'` | `'or'`), or `undefined` if invalid.
+ *
+ * @example
+ * ```typescript
+ * searchJoin('and'); // => "and"
+ * ```
+ */
 export function searchJoin(
   arg?: TSearchJoin,
   options: TSearchJoinOptions = {},

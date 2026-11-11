@@ -14,6 +14,21 @@ export interface TWithOptions {
   logger?: TLogger;
 }
 
+/**
+ * Formats relations to eager load via repository `with` into a semicolon-separated string.
+ *
+ * @remarks
+ * Fields are validated: `null`, `undefined`, and invalid shapes (such as empty strings or non-string values) are filtered out safely.
+ *
+ * @param arg - Array of relation paths (supports dot and pipe notation).
+ * @param options - Optional settings including custom logger.
+ * @returns Semicolon-separated string of unique relation paths, or `undefined` if none remain.
+ *
+ * @example
+ * ```typescript
+ * withRel(['author', 'comments.author']); // => "author;comments.author"
+ * ```
+ */
 export function withRel<TShape extends object = Record<string, unknown>>(
   arg: TWith<TShape> = [],
   options: TWithOptions = {},

@@ -11,6 +11,21 @@ export interface TPageOptions {
 }
 
 const MIN_PAGE = 0;
+/**
+ * Formats the pagination page number into a query parameter string.
+ *
+ * @remarks
+ * Fields are validated: `null`, `undefined`, and invalid shapes/types (numbers <= 0, decimals, non-numeric values) are filtered out safely.
+ *
+ * @param arg - Page number to retrieve (integer >= 1).
+ * @param options - Optional settings including custom logger.
+ * @returns String representation of the page number, or `undefined` if invalid.
+ *
+ * @example
+ * ```typescript
+ * page(2); // => "2"
+ * ```
+ */
 export function page(
   arg?: TPage,
   options: TPageOptions = {},

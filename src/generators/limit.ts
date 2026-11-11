@@ -13,6 +13,21 @@ export interface TLimitOptions {
 
 const MIN_LIMIT = 0;
 
+/**
+ * Formats the pagination limit (records per page) into a query parameter string.
+ *
+ * @remarks
+ * Fields are validated: `null`, `undefined`, and invalid shapes/types (negative numbers, decimals, non-numeric values) are filtered out safely.
+ *
+ * @param arg - Number of records to return (integer >= 0).
+ * @param options - Optional settings including `defaultValue` and custom logger.
+ * @returns String representation of the limit, or `undefined` if invalid.
+ *
+ * @example
+ * ```typescript
+ * limit(15); // => "15"
+ * ```
+ */
 export function limit(
   arg?: TLimit,
   options: TLimitOptions = {},

@@ -51,6 +51,22 @@ export interface ClientRunner {
   ) => TResultParams;
 }
 
+/**
+ * Creates a reusable client runner configured with default query options and custom logger settings.
+ *
+ * @remarks
+ * Fields are validated: `null`, `undefined`, and invalid shapes are filtered out safely, falling back to configured defaults when available.
+ *
+ * @param options - Configuration options for defaults (`limit`, `sortBy`, etc.) and logging.
+ * @returns A query runner function with a `.for<TShape>()` helper for type-safe query generation.
+ *
+ * @example
+ * ```typescript
+ * const client = createClient({ defaultOptions: { limit: 15, sortBy: 'desc' } });
+ * const query = client({ page: 2 });
+ * console.log(query.toParams()); // => "limit=15&page=2&sortedBy=desc"
+ * ```
+ */
 export function createClient(options: ClientOptions = {}): ClientRunner {
   function runner<TShape extends object = Record<string, unknown>>(
     params: TParams<TShape> = {},

@@ -71,6 +71,25 @@ export interface TSearchResult {
 const EMPTY_RESULT = { search: undefined, searchFields: undefined } as const;
 const TUPLE_SIZE = 2;
 
+/**
+ * Formats search criteria into `search` and optional `searchFields` parameter strings.
+ *
+ * @remarks
+ * Fields are validated: `null`, `undefined`, and invalid shapes (such as malformed tuples, non-array inputs, or invalid conditions) are filtered out safely.
+ *
+ * @param arg - Array of search tuples in `[field, value, condition?]` format.
+ * @param options - Search options including `includeSearchFields` and `defaultCondition`.
+ * @returns An object containing `{ search, searchFields }`, or `undefined` values if no valid entries remain.
+ *
+ * @example
+ * ```typescript
+ * search([
+ *   ['name', 'John', CONDITIONS.LIKE],
+ *   ['age', 18, CONDITIONS.GTE],
+ * ], { includeSearchFields: true });
+ * // => { search: "name:John;age:18", searchFields: "name:like;age:>=" }
+ * ```
+ */
 export function search<TShape extends object = Record<string, unknown>>(
   arg: TSearch<TShape> = [],
   options: TSearchOptions = {},

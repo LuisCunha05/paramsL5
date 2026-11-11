@@ -27,6 +27,26 @@ export type TResultParams = TParamsStrings & {
   toParams: () => string | undefined;
 };
 
+/**
+ * Generates query parameters formatted for `l5-repository` and provides a `.toParams()` compiler.
+ *
+ * @remarks
+ * Fields are validated: `null`, `undefined`, and invalid shapes are filtered out safely.
+ *
+ * @param arg - Query parameter options (`search`, `filter`, `limit`, `orderBySortBy`, etc.).
+ * @returns An object with individual parameter strings and a `toParams()` method for URL encoding.
+ *
+ * @example
+ * ```typescript
+ * const query = paramsL5({
+ *   search: [['status', 'active']],
+ *   filter: ['id', 'name'],
+ *   limit: 10,
+ * });
+ * console.log(query.toParams());
+ * // => "filter=id%3Bname&limit=10&search=status%3Aactive"
+ * ```
+ */
 export function paramsL5<TShape extends object = Record<string, unknown>>(
   arg: TParams<TShape> = {},
 ) {

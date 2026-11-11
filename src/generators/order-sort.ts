@@ -44,6 +44,22 @@ const EMPTY_RESULT = {
 const MIN_TUPLE_SIZE = 1;
 const MAX_TUPLE_SIZE = 2;
 
+/**
+ * Formats sorting columns and directions into paired `orderBy` and `sortedBy` parameters.
+ *
+ * @remarks
+ * Fields are validated: `null`, `undefined`, and invalid shapes (such as malformed tuples or invalid sort directions) are filtered out safely.
+ *
+ * @param arg - Array of tuples in `[field, 'asc' | 'desc']` format.
+ * @param options - Optional settings such as `defaultSortBy` and custom logger.
+ * @returns An object `{ orderBy, sortedBy }` with semicolon-separated values, or `undefined` values if no valid entries remain.
+ *
+ * @example
+ * ```typescript
+ * orderBySortBy([['created_at', 'desc'], ['name', 'asc']]);
+ * // => { orderBy: "created_at;name", sortedBy: "desc;asc" }
+ * ```
+ */
 export function orderBySortBy<TShape extends object = Record<string, unknown>>(
   arg: TOrderBySortBy<TShape> = [],
   options: TOrderBySortByOptions = {},

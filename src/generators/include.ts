@@ -15,6 +15,21 @@ export interface TIncludeOptions {
   logger?: TLogger;
 }
 
+/**
+ * Formats related models to eager load into a comma-separated string (`include=profile,posts`).
+ *
+ * @remarks
+ * Fields are validated: `null`, `undefined`, and invalid shapes (such as empty strings or non-string values) are filtered out safely.
+ *
+ * @param arg - Array of relation names.
+ * @param options - Optional settings including custom logger.
+ * @returns Comma-separated string of unique relation names, or `undefined` if none remain.
+ *
+ * @example
+ * ```typescript
+ * include(['profile', 'posts']); // => "profile,posts"
+ * ```
+ */
 export function include<TShape extends object = Record<string, unknown>>(
   arg: TInclude<TShape> = [],
   options: TIncludeOptions = {},
