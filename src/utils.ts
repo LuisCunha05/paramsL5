@@ -72,25 +72,27 @@ export function isArray(value: unknown): value is readonly unknown[] {
 
 export type TQueryKeys = ToEnum<typeof QUERY_NAMES>;
 export type TParamsStrings = Record<TQueryKeys, string | undefined>;
-export function assertQueryKey(val: unknown): val is TQueryKeys {
+export function assertQueryKey(val: string): val is TQueryKeys {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-  return Object.values(QUERY_NAMES).includes(val as TQueryKeys);
-}
+  const kind = val as TQueryKeys;
+  switch (kind) {
+    case QUERY_NAMES.FLT:
+    case QUERY_NAMES.INC:
+    case QUERY_NAMES.LMT:
+    case QUERY_NAMES.OBY:
+    case QUERY_NAMES.PAG:
+    case QUERY_NAMES.SBY:
+    case QUERY_NAMES.SFI:
+    case QUERY_NAMES.SJO:
+    case QUERY_NAMES.SRC:
+    case QUERY_NAMES.WTC:
+    case QUERY_NAMES.WTH: {
+      return true;
+    }
 
-export function toParams(arg: Partial<TParamsStrings>): string {
-  const params = new URLSearchParams();
-
-  Object.keys(arg)
-    .toSorted()
-    .forEach((key) => {
-      if (!assertQueryKey(key)) {
-        return;
-      }
-      const val = arg[key];
-      if (val) {
-        params.append(key, val);
-      }
-    });
-
-  return params.toString();
+    default: {
+      kind satisfies never;
+      return false;
+    }
+  }
 }

@@ -22,7 +22,7 @@ export { createClient } from '#/client';
 
 export { CONDITIONS, SEARCH_JOIN, SORT_BY } from '#/constants';
 
-export type { TFilter } from '#gen//filter';
+export type { TFilter } from '#gen/filter';
 
 /**
  * Formats database columns to retrieve into a semicolon-separated string (`filter=id;name`).
@@ -39,9 +39,9 @@ export type { TFilter } from '#gen//filter';
  * filter(['id', 'name', 'email']); // => "id;name;email"
  * ```
  */
-export { filter } from '#gen//filter';
+export { filter } from '#gen/filter';
 
-export type { TInclude } from '#gen//include';
+export type { TInclude } from '#gen/include';
 
 /**
  * Formats related models to eager load into a comma-separated string (`include=profile,posts`).
@@ -58,9 +58,9 @@ export type { TInclude } from '#gen//include';
  * include(['profile', 'posts']); // => "profile,posts"
  * ```
  */
-export { include } from '#gen//include';
+export { include } from '#gen/include';
 
-export type { TLimit } from '#gen//limit';
+export type { TLimit } from '#gen/limit';
 
 /**
  * Formats the pagination limit (records per page) into a query parameter string.
@@ -77,9 +77,9 @@ export type { TLimit } from '#gen//limit';
  * limit(15); // => "15"
  * ```
  */
-export { limit } from '#gen//limit';
+export { limit } from '#gen/limit';
 
-export type { TOrderBySortBy } from '#gen//order-sort';
+export type { TOrderBySortBy } from '#gen/order-sort';
 
 /**
  * Formats sorting columns and directions into paired `orderBy` and `sortedBy` parameters.
@@ -97,9 +97,9 @@ export type { TOrderBySortBy } from '#gen//order-sort';
  * // => { orderBy: "created_at;name", sortedBy: "desc;asc" }
  * ```
  */
-export { orderBySortBy } from '#gen//order-sort';
+export { orderBySortBy } from '#gen/order-sort';
 
-export type { TPage } from '#gen//page';
+export type { TPage } from '#gen/page';
 
 /**
  * Formats the pagination page number into a query parameter string.
@@ -116,14 +116,14 @@ export type { TPage } from '#gen//page';
  * page(2); // => "2"
  * ```
  */
-export { page } from '#gen//page';
+export { page } from '#gen/page';
 
 export type {
   TCondition,
   TSearch,
   TSearchOptions,
   TSearchResult,
-} from '#gen//search';
+} from '#gen/search';
 
 /**
  * Formats search criteria into `search` and optional `searchFields` parameter strings.
@@ -144,9 +144,9 @@ export type {
  * // => { search: "name:John;age:18", searchFields: "name:like;age:>=" }
  * ```
  */
-export { search } from '#gen//search';
+export { search } from '#gen/search';
 
-export type { TSearchJoin } from '#gen//search-join';
+export type { TSearchJoin } from '#gen/search-join';
 
 /**
  * Formats the logical operator (`and` | `or`) that connects multiple search conditions.
@@ -163,9 +163,9 @@ export type { TSearchJoin } from '#gen//search-join';
  * searchJoin('and'); // => "and"
  * ```
  */
-export { searchJoin } from '#gen//search-join';
+export { searchJoin } from '#gen/search-join';
 
-export type { TWith } from '#gen//with';
+export type { TWith } from '#gen/with';
 
 /**
  * Formats relations to eager load via repository `with` into a semicolon-separated string.
@@ -182,9 +182,9 @@ export type { TWith } from '#gen//with';
  * withRel(['author', 'comments.author']); // => "author;comments.author"
  * ```
  */
-export { withRel } from '#gen//with';
+export { withRel } from '#gen/with';
 
-export type { TWithCount } from '#gen//with-count';
+export type { TWithCount } from '#gen/with-count';
 
 /**
  * Formats relations whose count should be loaded (`withCount`) into a semicolon-separated string.
@@ -201,7 +201,29 @@ export type { TWithCount } from '#gen//with-count';
  * withCount(['comments', 'likes']); // => "comments;likes"
  * ```
  */
-export { withCount } from '#gen//with-count';
+export { withCount } from '#gen/with-count';
+
+/**
+ * Compiles an object of repository query parameters into a URL-encoded query string (`URLSearchParams`).
+ *
+ * @remarks
+ * Parameter keys are validated against permitted `l5-repository` keys and sorted alphabetically.
+ * Parameters with empty, `undefined`, or `null` values are omitted.
+ *
+ * @param arg - Object mapping query parameter keys (e.g. `search`, `filter`, `limit`) to their string values.
+ * @returns A sorted, URL-encoded query parameter string (e.g. `filter=id%3Bname&limit=10`), or an empty string if no valid parameters exist.
+ *
+ * @example
+ * ```typescript
+ * query({
+ *   filter: 'id;name',
+ *   limit: '15',
+ *   search: 'status:active',
+ * });
+ * // => "filter=id%3Bname&limit=15&search=status%3Aactive"
+ * ```
+ */
+export { query } from '#gen/query';
 
 export type { TParams, TResultParams } from '#/params-l5';
 

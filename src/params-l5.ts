@@ -1,14 +1,15 @@
 import { QUERY_NAMES } from '#/constants';
-import { toParams, type TParamsStrings } from '#/utils';
-import { type TFilter, filter } from '#gen//filter';
-import { type TInclude, include } from '#gen//include';
-import { type TLimit, limit } from '#gen//limit';
-import { type TOrderBySortBy, orderBySortBy } from '#gen//order-sort';
-import { type TPage, page } from '#gen//page';
-import { type TSearch, search } from '#gen//search';
-import { type TSearchJoin, searchJoin } from '#gen//search-join';
-import { type TWith, withRel } from '#gen//with';
-import { type TWithCount, withCount } from '#gen//with-count';
+import { type TParamsStrings } from '#/utils';
+import { type TFilter, filter } from '#gen/filter';
+import { type TInclude, include } from '#gen/include';
+import { type TLimit, limit } from '#gen/limit';
+import { type TOrderBySortBy, orderBySortBy } from '#gen/order-sort';
+import { type TPage, page } from '#gen/page';
+import { query } from '#gen/query';
+import { type TSearch, search } from '#gen/search';
+import { type TSearchJoin, searchJoin } from '#gen/search-join';
+import { type TWith, withRel } from '#gen/with';
+import { type TWithCount, withCount } from '#gen/with-count';
 
 export interface TParams<TShape extends object = Record<string, unknown>> {
   readonly filter?: TFilter<TShape>;
@@ -70,6 +71,6 @@ export function paramsL5<TShape extends object = Record<string, unknown>>(
     [QUERY_NAMES.WTC]: withCount(arg.withCount),
   };
 
-  result.toParams = () => toParams(result);
+  result.toParams = () => query(result);
   return result;
 }

@@ -6,16 +6,16 @@ import type {
   TValidateFlatArray,
   TValidateKeyTupleArray,
 } from '#/types';
-import { toParams } from '#/utils';
-import { filter } from '#gen//filter';
-import { include } from '#gen//include';
-import { type TLimit, limit } from '#gen//limit';
-import { type TSortBy, orderBySortBy } from '#gen//order-sort';
-import { type TPage, page } from '#gen//page';
-import { type TCondition, search } from '#gen//search';
-import { type TSearchJoin, searchJoin } from '#gen//search-join';
-import { withRel } from '#gen//with';
-import { withCount } from '#gen//with-count';
+import { filter } from '#gen/filter';
+import { include } from '#gen/include';
+import { type TLimit, limit } from '#gen/limit';
+import { type TSortBy, orderBySortBy } from '#gen/order-sort';
+import { type TPage, page } from '#gen/page';
+import { query } from '#gen/query';
+import { type TCondition, search } from '#gen/search';
+import { type TSearchJoin, searchJoin } from '#gen/search-join';
+import { withRel } from '#gen/with';
+import { withCount } from '#gen/with-count';
 
 interface DefaultOptions {
   sortBy?: TSortBy;
@@ -114,7 +114,7 @@ export function createClient(options: ClientOptions = {}): ClientRunner {
       [QUERY_NAMES.WTC]: withCount(params.withCount, { logger }),
     };
 
-    result.toParams = () => toParams(result);
+    result.toParams = () => query(result);
     return result;
   }
 
