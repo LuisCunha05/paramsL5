@@ -6,13 +6,13 @@ import {
   msgNoValues,
   msgNotArray,
 } from '#s/messages';
-import type { ILogger, Path } from '#s/types';
+import type { TLogger, TPath } from '#s/types';
 import { isArray, isNonEmptyString, typeName } from '#s/utils';
 
-export type TFilter<TTShape> = readonly NoInfer<Path<TTShape>>[];
+export type TFilter<TTShape> = readonly NoInfer<TPath<TTShape>>[];
 
 export interface TFilterOptions {
-  readonly logger?: ILogger;
+  readonly logger?: TLogger;
 }
 
 export function filter<TShape extends object = Record<string, unknown>>(

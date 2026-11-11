@@ -29,12 +29,12 @@ export { withCount } from '#s/generators/with-count';
 export type { TParams, TResultParams } from '#s/params-l5';
 export { paramsL5 } from '#s/params-l5';
 export type {
-  BaseValue,
-  ILogger,
-  NoDuplicates,
-  NoDuplicateKeys,
-  Path,
-  PathPipe,
+  TBaseValue,
+  TLogger,
+  TNoDuplicates,
+  TNoDuplicateKeys,
+  TPath,
+  TPathPipe,
 } from '#s/types';
 
 export default paramsL5;

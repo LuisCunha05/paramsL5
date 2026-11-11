@@ -6,12 +6,12 @@ import {
   msgNoValues,
   msgNotArray,
 } from '#s/messages';
-import type { ILogger, PathPipe } from '#s/types';
+import type { TLogger, TPathPipe } from '#s/types';
 import { isArray, isNonEmptyString, typeName } from '#s/utils';
 
-export type TWith<TTShape> = readonly NoInfer<PathPipe<TTShape>>[];
+export type TWith<TTShape> = readonly NoInfer<TPathPipe<TTShape>>[];
 export interface TWithOptions {
-  logger?: ILogger;
+  logger?: TLogger;
 }
 
 export function withRel<TShape extends object = Record<string, unknown>>(

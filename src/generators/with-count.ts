@@ -6,12 +6,12 @@ import {
   msgNoValues,
   msgNotArray,
 } from '#s/messages';
-import type { ILogger, Path } from '#s/types';
+import type { TLogger, TPath } from '#s/types';
 import { isArray, isNonEmptyString, typeName } from '#s/utils';
 
-export type TWithCount<TTShape> = readonly NoInfer<Path<TTShape>>[];
+export type TWithCount<TTShape> = readonly NoInfer<TPath<TTShape>>[];
 export interface TWithCountOptions {
-  readonly logger?: ILogger;
+  readonly logger?: TLogger;
 }
 
 export function withCount<TShape extends object = Record<string, unknown>>(

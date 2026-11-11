@@ -1,13 +1,13 @@
 import { QUERY_LABELS } from '#s/constants';
 import { defaultLogger } from '#s/logger';
 import { msgMustBePositiveInteger, msgNoValue } from '#s/messages';
-import type { ILogger } from '#s/types';
+import type { TLogger } from '#s/types';
 import { isNumber, typeName } from '#s/utils';
 
 export type TPage = number;
 
 export interface TPageOptions {
-  logger?: ILogger;
+  logger?: TLogger;
 }
 
 const MIN_PAGE = 0;

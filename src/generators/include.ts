@@ -6,13 +6,13 @@ import {
   msgNoValues,
   msgNotArray,
 } from '#s/messages';
-import type { ILogger, Path } from '#s/types';
+import type { TLogger, TPath } from '#s/types';
 import { isArray, isNonEmptyString, typeName } from '#s/utils';
 
-export type TInclude<TTShape> = readonly NoInfer<Path<TTShape>>[];
+export type TInclude<TTShape> = readonly NoInfer<TPath<TTShape>>[];
 
 export interface TIncludeOptions {
-  logger?: ILogger;
+  logger?: TLogger;
 }
 
 export function include<TShape extends object = Record<string, unknown>>(
@@ -30,7 +30,7 @@ export function include<TShape extends object = Record<string, unknown>>(
     return undefined;
   }
 
-  const filteredValues = arg.reduce<Path<TShape>[]>((result, item) => {
+  const filteredValues = arg.reduce<TPath<TShape>[]>((result, item) => {
     if (!isNonEmptyString(item)) {
       log?.info(msgMustBeString(QUERY_LABELS.INC, typeName(item)));
       return result;

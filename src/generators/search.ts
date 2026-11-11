@@ -13,33 +13,33 @@ import {
   msgNoValues,
   msgNotArray,
 } from '#s/messages';
-import type { BaseValue, ILogger, Path, ToEnum } from '#s/types';
+import type { TBaseValue, TLogger, TPath, ToEnum } from '#s/types';
 import { isArray, isBaseValue, isNonEmptyString, typeName } from '#s/utils';
 
 export type TCondition = ToEnum<typeof CONDITIONS>;
 
-export type TSearchValue = BaseValue | null | undefined;
+export type TSearchValue = TBaseValue | null | undefined;
 type BetweenTuple<TValue> = [TValue, TValue];
 
 export type TSearchIn<TTShape> = readonly [
-  NoInfer<Path<TTShape>>,
+  NoInfer<TPath<TTShape>>,
   (string | number)[],
   Extract<TCondition, 'in'>,
 ];
 
 export type TSearchBetween<TTShape> = readonly [
-  NoInfer<Path<TTShape>>,
+  NoInfer<TPath<TTShape>>,
   BetweenTuple<string> | BetweenTuple<number>,
   Extract<TCondition, 'between'>,
 ];
 
 export type TSearchEqual<TTShape> = readonly [
-  NoInfer<Path<TTShape>>,
+  NoInfer<TPath<TTShape>>,
   TSearchValue,
 ];
 
 export type TSearchRegular<TTShape> = readonly [
-  NoInfer<Path<TTShape>>,
+  NoInfer<TPath<TTShape>>,
   TSearchValue,
   Exclude<TCondition, 'in' | 'between'> | undefined,
 ];
@@ -55,7 +55,7 @@ export type TSearch<TTShape> = readonly TSearchItem<TTShape>[];
 export interface TSearchOptions {
   defaultCondition?: TCondition;
   includeSearchFields?: boolean;
-  logger?: ILogger;
+  logger?: TLogger;
 }
 
 export interface TSearchResult {
@@ -81,84 +81,83 @@ export function search<TShape extends object = Record<string, unknown>>(
     return EMPTY_RESULT;
   }
 
-  const filteredValues = arg.reduce<[Path<TShape>, [BaseValue, TCondition]][]>(
-    (result, item, index) => {
-      if (!isArray(item)) {
-        log?.warn(msgItemNotArray(QUERY_LABELS.SRC, typeName(item)));
-        return result;
-      }
-
-      if (item.length < TUPLE_SIZE) {
-        log?.warn(msgItemNotKeyValue(QUERY_LABELS.SRC, item.length, index));
-        return result;
-      }
-
-      const [key, value, condition] = item;
-      if (!isNonEmptyString(key)) {
-        log?.warn(msgInvalidKey(QUERY_LABELS.SRC, typeName(key), index));
-        return result;
-      }
-
-      if (value === null || value === undefined) {
-        return result;
-      }
-
-      let finalValue: BaseValue;
-
-      if (isArray(value)) {
-        if (!value.length) {
-          return result;
-        }
-        if (!condition) {
-          log?.warn(msgMissingConditionArray(QUERY_LABELS.SRC));
-          return result;
-        }
-
-        if (condition !== CONDITIONS.BTW && condition !== CONDITIONS.IN) {
-          log?.warn(msgInvalidConditionArray(QUERY_LABELS.SRC, index));
-          return result;
-        }
-
-        if (condition === CONDITIONS.BTW && value.length !== TUPLE_SIZE) {
-          log?.warn(
-            msgInvalidBetweenSize(
-              QUERY_LABELS.SRC,
-              (value as unknown[]).length,
-              index,
-            ),
-          );
-          return result;
-        }
-        if (!value.every((val) => isBaseValue(val))) {
-          return result;
-        }
-
-        finalValue = value.join(',');
-      } else {
-        if (!isBaseValue(value)) {
-          log?.info(msgInvalidBaseValue(QUERY_LABELS.SRC, typeName(value)));
-          return result;
-        }
-        finalValue = value;
-      }
-
-      if (
-        condition !== undefined &&
-        !Object.values(CONDITIONS).includes(condition)
-      ) {
-        log?.warn(msgInvalidCondition(QUERY_LABELS.SRC, value));
-        return result;
-      }
-
-      result.push([
-        key,
-        [finalValue, condition ?? options.defaultCondition ?? CONDITIONS.EQ],
-      ]);
-
+  const filteredValues = arg.reduce<
+    [TPath<TShape>, [TBaseValue, TCondition]][]
+  >((result, item, index) => {
+    if (!isArray(item)) {
+      log?.warn(msgItemNotArray(QUERY_LABELS.SRC, typeName(item)));
       return result;
-    },
-    [],
-  );
+    }
+
+    if (item.length < TUPLE_SIZE) {
+      log?.warn(msgItemNotKeyValue(QUERY_LABELS.SRC, item.length, index));
+      return result;
+    }
+
+    const [key, value, condition] = item;
+    if (!isNonEmptyString(key)) {
+      log?.warn(msgInvalidKey(QUERY_LABELS.SRC, typeName(key), index));
+      return result;
+    }
+
+    if (value === null || value === undefined) {
+      return result;
+    }
+
+    let finalValue: TBaseValue;
+
+    if (isArray(value)) {
+      if (!value.length) {
+        return result;
+      }
+      if (!condition) {
+        log?.warn(msgMissingConditionArray(QUERY_LABELS.SRC));
+        return result;
+      }
+
+      if (condition !== CONDITIONS.BTW && condition !== CONDITIONS.IN) {
+        log?.warn(msgInvalidConditionArray(QUERY_LABELS.SRC, index));
+        return result;
+      }
+
+      if (condition === CONDITIONS.BTW && value.length !== TUPLE_SIZE) {
+        log?.warn(
+          msgInvalidBetweenSize(
+            QUERY_LABELS.SRC,
+            (value as unknown[]).length,
+            index,
+          ),
+        );
+        return result;
+      }
+      if (!value.every((val) => isBaseValue(val))) {
+        return result;
+      }
+
+      finalValue = value.join(',');
+    } else {
+      if (!isBaseValue(value)) {
+        log?.info(msgInvalidBaseValue(QUERY_LABELS.SRC, typeName(value)));
+        return result;
+      }
+      finalValue = value;
+    }
+
+    if (
+      condition !== undefined &&
+      !Object.values(CONDITIONS).includes(condition)
+    ) {
+      log?.warn(msgInvalidCondition(QUERY_LABELS.SRC, value));
+      return result;
+    }
+
+    result.push([
+      key,
+      [finalValue, condition ?? options.defaultCondition ?? CONDITIONS.EQ],
+    ]);
+
+    return result;
+  }, []);
 
   if (!filteredValues.length) {
     log?.info(msgNoRemaining(QUERY_LABELS.SRC));

@@ -9,23 +9,23 @@ import {
   msgNoValues,
   msgNotArray,
 } from '#s/messages';
-import type { ILogger, Path, ToEnum } from '#s/types';
+import type { TLogger, TPath, ToEnum } from '#s/types';
 import { isArray, isNonEmptyString, typeName } from '#s/utils';
 
 export type TSortBy = ToEnum<typeof SORT_BY>;
 
 export type TOrderBySortByValue<TTShape> = readonly [
-  NoInfer<Path<TTShape>>,
+  NoInfer<TPath<TTShape>>,
   TSortBy?,
 ];
-export type TOrderBySortByDefault<TTShape> = readonly [NoInfer<Path<TTShape>>];
+export type TOrderBySortByDefault<TTShape> = readonly [NoInfer<TPath<TTShape>>];
 export type TOrderBySortByArguments<TTShape> =
   | TOrderBySortByValue<TTShape>
   | TOrderBySortByDefault<TTShape>;
 
 interface TOrderBySortByOptions {
   defaultSortBy?: TSortBy;
-  logger?: ILogger;
+  logger?: TLogger;
 }
 
 export type TOrderBySortBy<TTShape> =
@@ -85,7 +85,7 @@ export function orderBySortBy<TShape extends object = Record<string, unknown>>(
     result.set(key, sortBy ?? options?.defaultSortBy ?? SORT_BY.ASC);
 
     return result;
-  }, new Map<Path<TShape>, TSortBy>());
+  }, new Map<TPath<TShape>, TSortBy>());
 
   if (!filteredValues.size) {
     log?.info(msgNoRemaining(QUERY_LABELS.OBY));
@@ -100,7 +100,7 @@ export function orderBySortBy<TShape extends object = Record<string, unknown>>(
       result.sortedBy.push(value);
       return result;
     },
-    { orderBy: [] as Path<TShape>[], sortedBy: [] as TSortBy[] },
+    { orderBy: [] as TPath<TShape>[], sortedBy: [] as TSortBy[] },
   );
 
   const orderResult = orderBySortedBy.orderBy.join(';');

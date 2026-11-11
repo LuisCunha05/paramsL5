@@ -1,5 +1,5 @@
 import { QUERY_NAMES } from '#s/constants';
-import type { BaseValue, ToEnum } from '#s/types';
+import type { TBaseValue, ToEnum } from '#s/types';
 
 const NON_EMPTY_STRING_LEN = 0;
 const HEX_ENCODING = 16;
@@ -21,7 +21,7 @@ export function isNumber(
   return predicate ? predicate(arg) : true;
 }
 
-export function isBaseValue(arg: unknown): arg is BaseValue {
+export function isBaseValue(arg: unknown): arg is TBaseValue {
   return !(
     typeof arg !== 'boolean' &&
     !isNumber(arg) &&

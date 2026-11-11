@@ -11,9 +11,9 @@ import { withCount } from '#s/generators/with-count';
 import { logger as loggerFn, type LogLevel } from '#s/logger';
 import type { TParams, TResultParams } from '#s/params-l5';
 import type {
-  ILogger,
-  ValidateFlatArray,
-  ValidateKeyTupleArray,
+  TLogger,
+  TValidateFlatArray,
+  TValidateKeyTupleArray,
 } from '#s/types';
 import { toParams } from '#s/utils';
 
@@ -28,14 +28,14 @@ interface DefaultOptions {
 
 export interface ClientOptions {
   defaultOptions?: DefaultOptions;
-  logging?: { logger?: ILogger; logLevel: LogLevel };
+  logging?: { logger?: TLogger; logLevel: LogLevel };
 }
 
 export type ValidateParams<TInput> = {
   [KFn in keyof TInput]: KFn extends 'include' | 'with' | 'withCount' | 'filter'
-    ? ValidateFlatArray<TInput[KFn]>
+    ? TValidateFlatArray<TInput[KFn]>
     : KFn extends 'orderBySortBy' | 'search'
-      ? ValidateKeyTupleArray<TInput[KFn]>
+      ? TValidateKeyTupleArray<TInput[KFn]>
       : TInput[KFn];
 };
 

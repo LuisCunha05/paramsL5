@@ -1,13 +1,13 @@
 import { QUERY_LABELS } from '#s/constants';
 import { defaultLogger } from '#s/logger';
 import { msgMustBePositiveInteger, msgNoValue } from '#s/messages';
-import type { ILogger } from '#s/types';
+import type { TLogger } from '#s/types';
 import { isNumber, typeName } from '#s/utils';
 
 export type TLimit = number;
 
 export interface TLimitOptions {
-  logger?: ILogger;
+  logger?: TLogger;
   defaultValue?: TLimit;
 }
 

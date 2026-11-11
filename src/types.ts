@@ -1,8 +1,8 @@
-export type BaseValue = string | number | boolean;
+export type TBaseValue = string | number | boolean;
 
 export type ToEnum<TObj> = TObj[keyof TObj];
 
-export interface ILogger {
+export interface TLogger {
   info: (...args: readonly unknown[]) => void;
   warn: (...args: readonly unknown[]) => void;
   error: (...args: readonly unknown[]) => void;
@@ -18,7 +18,7 @@ export type NonObject =
   | FormData
   | File;
 
-export type Path<
+export type TPath<
   TSource,
   TKeys extends Keys<TSource> = Keys<TSource>,
 > = TSource extends object
@@ -26,42 +26,42 @@ export type Path<
     ? TSource[TKeys] extends NonObject
       ? TKeys
       : TSource[TKeys] extends object
-        ? TKeys | `${TKeys}.${Path<TSource[TKeys]>}`
+        ? TKeys | `${TKeys}.${TPath<TSource[TKeys]>}`
         : TKeys
     : never
   : never;
 
-type ElementType<TType> = TType extends readonly (infer TInt)[]
-  ? ElementType<TInt>
+type TElementType<TType> = TType extends readonly (infer TInt)[]
+  ? TElementType<TInt>
   : TType;
 
-export type PathPipe<
+export type TPathPipe<
   TSource,
   TKeys extends Keys<TSource> = Keys<TSource>,
 > = TSource extends object
   ? TKeys extends string
-    ? ElementType<TSource[TKeys]> extends object
+    ? TElementType<TSource[TKeys]> extends object
       ?
           | TKeys
-          | `${TKeys}|${Keys<ElementType<TSource[TKeys]>>}`
-          | `${TKeys}:${string}|${Keys<ElementType<TSource[TKeys]>>}`
+          | `${TKeys}|${Keys<TElementType<TSource[TKeys]>>}`
+          | `${TKeys}:${string}|${Keys<TElementType<TSource[TKeys]>>}`
       : TKeys
     : never
   : never;
 
-export type NoDuplicates<
+export type TNoDuplicates<
   TTuple extends readonly unknown[],
   TSeen = never,
 > = TTuple extends readonly [infer THead, ...infer TTail]
   ? THead extends TSeen
     ? [
         `Error: Duplicate path '${Extract<THead, string | number>}'`,
-        ...NoDuplicates<TTail, TSeen>,
+        ...TNoDuplicates<TTail, TSeen>,
       ]
-    : [THead, ...NoDuplicates<TTail, TSeen | THead>]
+    : [THead, ...TNoDuplicates<TTail, TSeen | THead>]
   : [];
 
-export type NoDuplicateKeys<
+export type TNoDuplicateKeys<
   TTuple extends readonly unknown[],
   TSeen = never,
 > = TTuple extends readonly [infer THead, ...infer TTail]
@@ -69,20 +69,20 @@ export type NoDuplicateKeys<
     ? TKey extends TSeen
       ? [
           `Error: Duplicate key '${Extract<TKey, string | number>}'`,
-          ...NoDuplicateKeys<TTail, TSeen>,
+          ...TNoDuplicateKeys<TTail, TSeen>,
         ]
-      : [THead, ...NoDuplicateKeys<TTail, TSeen | TKey>]
-    : [THead, ...NoDuplicateKeys<TTail, TSeen>]
+      : [THead, ...TNoDuplicateKeys<TTail, TSeen | TKey>]
+    : [THead, ...TNoDuplicateKeys<TTail, TSeen>]
   : [];
 
-export type ValidateFlatArray<TArray> = TArray extends readonly unknown[]
-  ? readonly [...NoDuplicates<TArray>] extends TArray
+export type TValidateFlatArray<TArray> = TArray extends readonly unknown[]
+  ? readonly [...TNoDuplicates<TArray>] extends TArray
     ? TArray
-    : NoDuplicates<TArray>
+    : TNoDuplicates<TArray>
   : TArray;
 
-export type ValidateKeyTupleArray<TArray> = TArray extends readonly unknown[]
-  ? readonly [...NoDuplicateKeys<TArray>] extends TArray
+export type TValidateKeyTupleArray<TArray> = TArray extends readonly unknown[]
+  ? readonly [...TNoDuplicateKeys<TArray>] extends TArray
     ? TArray
-    : NoDuplicateKeys<TArray>
+    : TNoDuplicateKeys<TArray>
   : TArray;

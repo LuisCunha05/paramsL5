@@ -1,4 +1,4 @@
-import type { ILogger } from '#s/types';
+import type { TLogger } from '#s/types';
 
 export interface LogLevel {
   error?: boolean;
@@ -9,12 +9,12 @@ export interface LogLevel {
 export const LOGGER_PREFIX = '[ParamsL5]';
 
 interface LoggerArgs {
-  readonly logger?: ILogger;
+  readonly logger?: TLogger;
   readonly logLevel?: LogLevel;
 }
 
-export function logger({ logger, logLevel }: LoggerArgs = {}): ILogger {
-  const log: ILogger = logger ?? {
+export function logger({ logger, logLevel }: LoggerArgs = {}): TLogger {
+  const log: TLogger = logger ?? {
     error: console.error,
     info: console.info,
     warn: console.warn,
