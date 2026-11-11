@@ -23,13 +23,18 @@ type BetweenTuple<TValue> = [TValue, TValue];
 
 export type TSearchIn<TTShape> = readonly [
   NoInfer<TPath<TTShape>>,
-  (string | number)[],
+  (string | number | null | undefined)[] | null | undefined,
   Extract<TCondition, 'in'>,
 ];
 
 export type TSearchBetween<TTShape> = readonly [
   NoInfer<TPath<TTShape>>,
-  BetweenTuple<string> | BetweenTuple<number>,
+  (
+    | BetweenTuple<string | null | undefined>
+    | BetweenTuple<number | null | undefined>
+    | null
+    | undefined
+  ),
   Extract<TCondition, 'between'>,
 ];
 
