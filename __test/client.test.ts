@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { createClient } from '#s/client';
-import { CONDITIONS } from '#s/constants';
+import { createClient } from '#/client';
+import { CONDITIONS } from '#/constants';
 
 import { URL_ENCODED_CHARS as URC } from './constants';
 

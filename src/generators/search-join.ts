@@ -1,8 +1,8 @@
-import { QUERY_LABELS, SEARCH_JOIN } from '#s/constants';
-import { defaultLogger } from '#s/logger';
-import { msgMustBeEither, msgMustBeString, msgNoValue } from '#s/messages';
-import type { TLogger, ToEnum } from '#s/types';
-import { isNonEmptyString, typeName } from '#s/utils';
+import { QUERY_LABELS, SEARCH_JOIN } from '#/constants';
+import { defaultLogger } from '#/logger';
+import { msgMustBeEither, msgMustBeString, msgNoValue } from '#/messages';
+import type { TLogger, ToEnum } from '#/types';
+import { isNonEmptyString, typeName } from '#/utils';
 
 export type TSearchJoin = ToEnum<typeof SEARCH_JOIN>;
 export interface TSearchJoinOptions {

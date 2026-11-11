@@ -23,7 +23,8 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "imports": {
-    "#s/*": "./src/*.ts"
+    "#/*": "./src/*.ts",
+    "#gen/*": "./src/generators/*.ts"
   },
   "exports": {
     ".": {

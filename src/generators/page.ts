@@ -1,8 +1,8 @@
-import { QUERY_LABELS } from '#s/constants';
-import { defaultLogger } from '#s/logger';
-import { msgMustBePositiveInteger, msgNoValue } from '#s/messages';
-import type { TLogger } from '#s/types';
-import { isNumber, typeName } from '#s/utils';
+import { QUERY_LABELS } from '#/constants';
+import { defaultLogger } from '#/logger';
+import { msgMustBePositiveInteger, msgNoValue } from '#/messages';
+import type { TLogger } from '#/types';
+import { isNumber, typeName } from '#/utils';
 
 export type TPage = number;
 

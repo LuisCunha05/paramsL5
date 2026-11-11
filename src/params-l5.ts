@@ -1,14 +1,14 @@
-import { QUERY_NAMES } from '#s/constants';
-import { type TFilter, filter } from '#s/generators/filter';
-import { type TInclude, include } from '#s/generators/include';
-import { type TLimit, limit } from '#s/generators/limit';
-import { type TOrderBySortBy, orderBySortBy } from '#s/generators/order-sort';
-import { type TPage, page } from '#s/generators/page';
-import { type TSearch, search } from '#s/generators/search';
-import { type TSearchJoin, searchJoin } from '#s/generators/search-join';
-import { type TWith, withRel } from '#s/generators/with';
-import { type TWithCount, withCount } from '#s/generators/with-count';
-import { toParams, type TParamsStrings } from '#s/utils';
+import { QUERY_NAMES } from '#/constants';
+import { toParams, type TParamsStrings } from '#/utils';
+import { type TFilter, filter } from '#gen//filter';
+import { type TInclude, include } from '#gen//include';
+import { type TLimit, limit } from '#gen//limit';
+import { type TOrderBySortBy, orderBySortBy } from '#gen//order-sort';
+import { type TPage, page } from '#gen//page';
+import { type TSearch, search } from '#gen//search';
+import { type TSearchJoin, searchJoin } from '#gen//search-join';
+import { type TWith, withRel } from '#gen//with';
+import { type TWithCount, withCount } from '#gen//with-count';
 
 export interface TParams<TShape extends object = Record<string, unknown>> {
   readonly filter?: TFilter<TShape>;

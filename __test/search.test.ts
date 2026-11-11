@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { CONDITIONS } from '#s/constants';
-import { search } from '#s/generators/search';
-import { logger as loggerFn } from '#s/logger';
+import { CONDITIONS } from '#/constants';
+import { logger as loggerFn } from '#/logger';
+import { search } from '#gen//search';
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any;

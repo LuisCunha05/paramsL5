@@ -1,21 +1,21 @@
-import { QUERY_NAMES } from '#s/constants';
-import { filter } from '#s/generators/filter';
-import { include } from '#s/generators/include';
-import { type TLimit, limit } from '#s/generators/limit';
-import { type TSortBy, orderBySortBy } from '#s/generators/order-sort';
-import { type TPage, page } from '#s/generators/page';
-import { type TCondition, search } from '#s/generators/search';
-import { type TSearchJoin, searchJoin } from '#s/generators/search-join';
-import { withRel } from '#s/generators/with';
-import { withCount } from '#s/generators/with-count';
-import { logger as loggerFn, type LogLevel } from '#s/logger';
-import type { TParams, TResultParams } from '#s/params-l5';
+import { QUERY_NAMES } from '#/constants';
+import { logger as loggerFn, type LogLevel } from '#/logger';
+import type { TParams, TResultParams } from '#/params-l5';
 import type {
   TLogger,
   TValidateFlatArray,
   TValidateKeyTupleArray,
-} from '#s/types';
-import { toParams } from '#s/utils';
+} from '#/types';
+import { toParams } from '#/utils';
+import { filter } from '#gen//filter';
+import { include } from '#gen//include';
+import { type TLimit, limit } from '#gen//limit';
+import { type TSortBy, orderBySortBy } from '#gen//order-sort';
+import { type TPage, page } from '#gen//page';
+import { type TCondition, search } from '#gen//search';
+import { type TSearchJoin, searchJoin } from '#gen//search-join';
+import { withRel } from '#gen//with';
+import { withCount } from '#gen//with-count';
 
 interface DefaultOptions {
   sortBy?: TSortBy;

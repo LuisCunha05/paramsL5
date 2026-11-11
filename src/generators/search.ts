@@ -1,5 +1,5 @@
-import { CONDITIONS, QUERY_LABELS } from '#s/constants';
-import { defaultLogger } from '#s/logger';
+import { CONDITIONS, QUERY_LABELS } from '#/constants';
+import { defaultLogger } from '#/logger';
 import {
   msgInvalidBaseValue,
   msgInvalidBetweenSize,
@@ -12,9 +12,9 @@ import {
   msgNoRemaining,
   msgNoValues,
   msgNotArray,
-} from '#s/messages';
-import type { TBaseValue, TLogger, TPath, ToEnum } from '#s/types';
-import { isArray, isBaseValue, isNonEmptyString, typeName } from '#s/utils';
+} from '#/messages';
+import type { TBaseValue, TLogger, TPath, ToEnum } from '#/types';
+import { isArray, isBaseValue, isNonEmptyString, typeName } from '#/utils';
 
 export type TCondition = ToEnum<typeof CONDITIONS>;
 

@@ -1,5 +1,5 @@
-import { QUERY_LABELS, SORT_BY } from '#s/constants';
-import { defaultLogger } from '#s/logger';
+import { QUERY_LABELS, SORT_BY } from '#/constants';
+import { defaultLogger } from '#/logger';
 import {
   msgInvalidKey,
   msgInvalidSortBy,
@@ -8,9 +8,9 @@ import {
   msgNoRemaining,
   msgNoValues,
   msgNotArray,
-} from '#s/messages';
-import type { TLogger, TPath, ToEnum } from '#s/types';
-import { isArray, isNonEmptyString, typeName } from '#s/utils';
+} from '#/messages';
+import type { TLogger, TPath, ToEnum } from '#/types';
+import { isArray, isNonEmptyString, typeName } from '#/utils';
 
 export type TSortBy = ToEnum<typeof SORT_BY>;
 

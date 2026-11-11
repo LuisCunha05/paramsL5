@@ -1,13 +1,13 @@
-import { QUERY_LABELS } from '#s/constants';
-import { defaultLogger } from '#s/logger';
+import { QUERY_LABELS } from '#/constants';
+import { defaultLogger } from '#/logger';
 import {
   msgMustBeString,
   msgNoRemaining,
   msgNoValues,
   msgNotArray,
-} from '#s/messages';
-import type { TLogger, TPath } from '#s/types';
-import { isArray, isNonEmptyString, typeName } from '#s/utils';
+} from '#/messages';
+import type { TLogger, TPath } from '#/types';
+import { isArray, isNonEmptyString, typeName } from '#/utils';
 
 export type TWithCount<TTShape> = readonly NoInfer<TPath<TTShape>>[];
 export interface TWithCountOptions {

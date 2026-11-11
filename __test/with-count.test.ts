@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { withCount } from '#s/generators/with-count';
-import { logger as loggerFn } from '#s/logger';
+import { logger as loggerFn } from '#/logger';
+import { withCount } from '#gen//with-count';
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any;

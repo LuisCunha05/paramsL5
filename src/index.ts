@@ -1,33 +1,33 @@
-import { paramsL5 } from '#s/params-l5';
+import { paramsL5 } from '#/params-l5';
 
-export type { ClientOptions, ClientRunner } from '#s/client';
-export { createClient } from '#s/client';
-export { CONDITIONS, SEARCH_JOIN, SORT_BY } from '#s/constants';
-export type { TFilter } from '#s/generators/filter';
-export { filter } from '#s/generators/filter';
-export type { TInclude } from '#s/generators/include';
-export { include } from '#s/generators/include';
-export type { TLimit } from '#s/generators/limit';
-export { limit } from '#s/generators/limit';
-export type { TOrderBySortBy } from '#s/generators/order-sort';
-export { orderBySortBy } from '#s/generators/order-sort';
-export type { TPage } from '#s/generators/page';
-export { page } from '#s/generators/page';
+export type { ClientOptions, ClientRunner } from '#/client';
+export { createClient } from '#/client';
+export { CONDITIONS, SEARCH_JOIN, SORT_BY } from '#/constants';
+export type { TFilter } from '#gen//filter';
+export { filter } from '#gen//filter';
+export type { TInclude } from '#gen//include';
+export { include } from '#gen//include';
+export type { TLimit } from '#gen//limit';
+export { limit } from '#gen//limit';
+export type { TOrderBySortBy } from '#gen//order-sort';
+export { orderBySortBy } from '#gen//order-sort';
+export type { TPage } from '#gen//page';
+export { page } from '#gen//page';
 export type {
   TCondition,
   TSearch,
   TSearchOptions,
   TSearchResult,
-} from '#s/generators/search';
-export { search } from '#s/generators/search';
-export type { TSearchJoin } from '#s/generators/search-join';
-export { searchJoin } from '#s/generators/search-join';
-export type { TWith } from '#s/generators/with';
-export { withRel } from '#s/generators/with';
-export type { TWithCount } from '#s/generators/with-count';
-export { withCount } from '#s/generators/with-count';
-export type { TParams, TResultParams } from '#s/params-l5';
-export { paramsL5 } from '#s/params-l5';
+} from '#gen//search';
+export { search } from '#gen//search';
+export type { TSearchJoin } from '#gen//search-join';
+export { searchJoin } from '#gen//search-join';
+export type { TWith } from '#gen//with';
+export { withRel } from '#gen//with';
+export type { TWithCount } from '#gen//with-count';
+export { withCount } from '#gen//with-count';
+export type { TParams, TResultParams } from '#/params-l5';
+export { paramsL5 } from '#/params-l5';
 export type {
   TBaseValue,
   TLogger,
@@ -35,6 +35,6 @@ export type {
   TNoDuplicateKeys,
   TPath,
   TPathPipe,
-} from '#s/types';
+} from '#/types';
 
 export default paramsL5;

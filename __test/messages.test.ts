@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { QUERY_LABELS } from '#s/constants';
+import { QUERY_LABELS } from '#/constants';
 import {
   msgInvalidBaseValue,
   msgInvalidBetweenSize,
@@ -19,7 +19,7 @@ import {
   msgNotArray,
   msgNoValue,
   msgNoValues,
-} from '#s/messages';
+} from '#/messages';
 
 describe('Message functions', () => {
   describe('lifecycle and argument checks', () => {
