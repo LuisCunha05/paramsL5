@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { CONDITIONS } from '#/constants';
+import { CONDITIONS, QUERY_NAMES } from '#/constants';
 import { logger as loggerFn } from '#/logger';
 import { search } from '#gen/search';
 
@@ -32,8 +32,8 @@ describe('search function', () => {
     test('should format a single search param without searchFields by default', () => {
       input = [['name', 'John']];
       expected = {
-        search: 'name:John',
-        searchFields: undefined,
+        [QUERY_NAMES.SRC]: 'name:John',
+        [QUERY_NAMES.SFI]: undefined,
       };
 
       result = search(input);
@@ -44,8 +44,8 @@ describe('search function', () => {
     test('should include searchFields when includeSearchFields is true', () => {
       input = [['name', 'John', CONDITIONS.EQ]];
       expected = {
-        search: 'name:John',
-        searchFields: 'name:=',
+        [QUERY_NAMES.SRC]: 'name:John',
+        [QUERY_NAMES.SFI]: 'name:=',
       };
 
       result = search(input, { includeSearchFields: true });
@@ -56,8 +56,8 @@ describe('search function', () => {
     test('should change default condition when options is provided with includeSearchFields', () => {
       input = [['name', 'John']];
       expected = {
-        search: 'name:John',
-        searchFields: 'name:>',
+        [QUERY_NAMES.SRC]: 'name:John',
+        [QUERY_NAMES.SFI]: 'name:>',
       };
 
       result = search(input, {
@@ -71,8 +71,8 @@ describe('search function', () => {
     test('should format a valid key-value pair with a specific condition when includeSearchFields is true', () => {
       input = [['age', 18, CONDITIONS.GTE]];
       expected = {
-        search: 'age:18',
-        searchFields: 'age:>=',
+        [QUERY_NAMES.SRC]: 'age:18',
+        [QUERY_NAMES.SFI]: 'age:>=',
       };
 
       result = search(input, { includeSearchFields: true });
@@ -83,8 +83,8 @@ describe('search function', () => {
     test('should handle "in" condition with array of values when includeSearchFields is true', () => {
       input = [['status', ['active', 'pending'], CONDITIONS.IN]];
       expected = {
-        search: 'status:active,pending',
-        searchFields: 'status:in',
+        [QUERY_NAMES.SRC]: 'status:active,pending',
+        [QUERY_NAMES.SFI]: 'status:in',
       };
 
       result = search(input, { includeSearchFields: true });
@@ -95,8 +95,8 @@ describe('search function', () => {
     test('should handle "in" condition with array of length 1 when includeSearchFields is true', () => {
       input = [['status', ['active'], CONDITIONS.IN]];
       expected = {
-        search: 'status:active',
-        searchFields: 'status:in',
+        [QUERY_NAMES.SRC]: 'status:active',
+        [QUERY_NAMES.SFI]: 'status:in',
       };
 
       result = search(input, { includeSearchFields: true });
@@ -107,8 +107,8 @@ describe('search function', () => {
     test('should handle "between" condition with tuple of values when includeSearchFields is true', () => {
       input = [['date', ['2023-01-01', '2023-12-31'], CONDITIONS.BTW]];
       expected = {
-        search: 'date:2023-01-01,2023-12-31',
-        searchFields: `date:${CONDITIONS.BTW}`,
+        [QUERY_NAMES.SRC]: 'date:2023-01-01,2023-12-31',
+        [QUERY_NAMES.SFI]: `date:${CONDITIONS.BTW}`,
       };
 
       result = search(input, { includeSearchFields: true });
@@ -122,8 +122,8 @@ describe('search function', () => {
         ['name', 'Doe', CONDITIONS.LIKE],
       ];
       expected = {
-        search: 'name:Doe',
-        searchFields: 'name:like',
+        [QUERY_NAMES.SRC]: 'name:Doe',
+        [QUERY_NAMES.SFI]: 'name:like',
       };
 
       result = search(input, { includeSearchFields: true });
@@ -137,8 +137,8 @@ describe('search function', () => {
         ['email', 'gmail', CONDITIONS.ILIKE],
       ];
       expected = {
-        search: 'name:John;email:gmail',
-        searchFields: 'name:like;email:ilike',
+        [QUERY_NAMES.SRC]: 'name:John;email:gmail',
+        [QUERY_NAMES.SFI]: 'name:like;email:ilike',
       };
 
       result = search(input, { includeSearchFields: true });
@@ -152,8 +152,8 @@ describe('search function', () => {
         ['age', 18, CONDITIONS.GTE],
       ];
       expected = {
-        search: 'name:John;age:18',
-        searchFields: undefined,
+        [QUERY_NAMES.SRC]: 'name:John;age:18',
+        [QUERY_NAMES.SFI]: undefined,
       };
 
       result = search(input);
@@ -164,8 +164,8 @@ describe('search function', () => {
     test('should omit searchFields when includeSearchFields option is false', () => {
       input = [['age', 18, CONDITIONS.GTE]];
       expected = {
-        search: 'age:18',
-        searchFields: undefined,
+        [QUERY_NAMES.SRC]: 'age:18',
+        [QUERY_NAMES.SFI]: undefined,
       };
 
       result = search(input, { includeSearchFields: false });
@@ -176,7 +176,7 @@ describe('search function', () => {
 
   describe('validations and edge cases', () => {
     test('should return empty result if called with no arguments', () => {
-      expected = { search: undefined, searchFields: undefined };
+      expected = { [QUERY_NAMES.SRC]: undefined, [QUERY_NAMES.SFI]: undefined };
 
       result = search(undefined, { logger: noOpLogger });
 
@@ -185,7 +185,7 @@ describe('search function', () => {
 
     test('should return empty result if called with an empty array', () => {
       input = [];
-      expected = { search: undefined, searchFields: undefined };
+      expected = { [QUERY_NAMES.SRC]: undefined, [QUERY_NAMES.SFI]: undefined };
 
       result = search(input, { logger: noOpLogger });
 
@@ -194,7 +194,7 @@ describe('search function', () => {
 
     test('should return empty result if argument is not an array', () => {
       input = 'invalid';
-      expected = { search: undefined, searchFields: undefined };
+      expected = { [QUERY_NAMES.SRC]: undefined, [QUERY_NAMES.SFI]: undefined };
 
       result = search(input, { logger: noOpLogger });
 
@@ -204,8 +204,8 @@ describe('search function', () => {
     test('should ignore item if it is not an array', () => {
       input = [['name', 'John'], 'invalid'];
       expected = {
-        search: 'name:John',
-        searchFields: undefined,
+        [QUERY_NAMES.SRC]: 'name:John',
+        [QUERY_NAMES.SFI]: undefined,
       };
 
       result = search(input, { logger: noOpLogger });
@@ -215,7 +215,7 @@ describe('search function', () => {
 
     test('should return empty result if key is not a non-empty string', () => {
       input = [['', 'value']];
-      expected = { search: undefined, searchFields: undefined };
+      expected = { [QUERY_NAMES.SRC]: undefined, [QUERY_NAMES.SFI]: undefined };
 
       result = search(input, { logger: noOpLogger });
 
@@ -229,8 +229,8 @@ describe('search function', () => {
         ['alsoIgnored', undefined],
       ];
       expected = {
-        search: 'status:active',
-        searchFields: undefined,
+        [QUERY_NAMES.SRC]: 'status:active',
+        [QUERY_NAMES.SFI]: undefined,
       };
 
       result = search(input, { logger: noOpLogger });
@@ -244,8 +244,8 @@ describe('search function', () => {
         ['status', 'active'],
       ];
       expected = {
-        search: 'status:active',
-        searchFields: undefined,
+        [QUERY_NAMES.SRC]: 'status:active',
+        [QUERY_NAMES.SFI]: undefined,
       };
 
       result = search(input, { logger: noOpLogger });
@@ -260,8 +260,8 @@ describe('search function', () => {
         ['invalidArray', [{}], CONDITIONS.IN],
       ];
       expected = {
-        search: 'status:active',
-        searchFields: undefined,
+        [QUERY_NAMES.SRC]: 'status:active',
+        [QUERY_NAMES.SFI]: undefined,
       };
 
       result = search(input, { logger: noOpLogger });
@@ -271,7 +271,7 @@ describe('search function', () => {
 
     test("shouldn't handle array value for non 'in' condition", () => {
       input = [['status', [1, 2, 3], CONDITIONS.DIFF]];
-      expected = { search: undefined, searchFields: undefined };
+      expected = { [QUERY_NAMES.SRC]: undefined, [QUERY_NAMES.SFI]: undefined };
 
       result = search(input, { logger: noOpLogger });
 
@@ -280,7 +280,7 @@ describe('search function', () => {
 
     test("shouldn't handle array value for non 'between' condition", () => {
       input = [['status', ['active', 'pending'], CONDITIONS.GT]];
-      expected = { search: undefined, searchFields: undefined };
+      expected = { [QUERY_NAMES.SRC]: undefined, [QUERY_NAMES.SFI]: undefined };
 
       result = search(input, { logger: noOpLogger });
 
@@ -289,7 +289,7 @@ describe('search function', () => {
 
     test("shouldn't handle array with length less than 2 for 'between' condition", () => {
       input = [['status', ['active'], CONDITIONS.BTW]];
-      expected = { search: undefined, searchFields: undefined };
+      expected = { [QUERY_NAMES.SRC]: undefined, [QUERY_NAMES.SFI]: undefined };
 
       result = search(input, { logger: noOpLogger });
 
@@ -298,7 +298,7 @@ describe('search function', () => {
 
     test("shouldn't handle array with length more than 2 for 'between' condition", () => {
       input = [['status', [1, 2, 3], CONDITIONS.BTW]];
-      expected = { search: undefined, searchFields: undefined };
+      expected = { [QUERY_NAMES.SRC]: undefined, [QUERY_NAMES.SFI]: undefined };
 
       result = search(input, { logger: noOpLogger });
 

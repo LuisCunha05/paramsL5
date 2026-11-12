@@ -1,4 +1,3 @@
-import { QUERY_NAMES } from '#/constants';
 import { logger as loggerFn, type LogLevel } from '#/logger';
 import type { TParams, TResultParams } from '#/params-l5';
 import type {
@@ -78,40 +77,33 @@ export function createClient(options: ClientOptions = {}): ClientRunner {
       logger: logging?.logger,
     });
 
-    const searchObj = search(params.search, {
-      defaultCondition: options?.defaultOptions?.searchCondition,
-      includeSearchFields:
-        params.includeSearchFields ??
-        options?.defaultOptions?.includeSearchFields,
-      logger,
-    });
-
-    const orderBySortByObj = orderBySortBy(params.orderBySortBy, {
-      defaultSortBy: options?.defaultOptions?.sortBy,
-      logger,
-    });
-
     const result: TResultParams = {
-      [QUERY_NAMES.FLT]: filter(params.filter, { logger }),
-      [QUERY_NAMES.INC]: include(params.include, { logger }),
-      [QUERY_NAMES.LMT]: limit(params.limit, {
+      ...filter(params.filter, { logger }),
+      ...include(params.include, { logger }),
+      ...limit(params.limit, {
         defaultValue: options?.defaultOptions?.limit,
         logger,
       }),
-      [QUERY_NAMES.OBY]: orderBySortByObj.orderBy,
-      [QUERY_NAMES.PAG]: page(params.page ?? options?.defaultOptions?.page, {
+      ...orderBySortBy(params.orderBySortBy, {
+        defaultSortBy: options?.defaultOptions?.sortBy,
         logger,
       }),
-      [QUERY_NAMES.SRC]: searchObj?.search,
-      [QUERY_NAMES.SFI]: searchObj?.searchFields,
-      [QUERY_NAMES.SJO]: searchJoin(
-        params.searchJoin ?? options?.defaultOptions?.searchJoin,
-        { logger },
-      ),
-      [QUERY_NAMES.SBY]: orderBySortByObj.sortedBy,
+      ...page(params.page ?? options?.defaultOptions?.page, {
+        logger,
+      }),
+      ...search(params.search, {
+        defaultCondition: options?.defaultOptions?.searchCondition,
+        includeSearchFields:
+          params.includeSearchFields ??
+          options?.defaultOptions?.includeSearchFields,
+        logger,
+      }),
+      ...searchJoin(params.searchJoin ?? options?.defaultOptions?.searchJoin, {
+        logger,
+      }),
+      ...withRel(params.with, { logger }),
+      ...withCount(params.withCount, { logger }),
       toParams: () => {},
-      [QUERY_NAMES.WTH]: withRel(params.with, { logger }),
-      [QUERY_NAMES.WTC]: withCount(params.withCount, { logger }),
     };
 
     result.toParams = () => query(result);

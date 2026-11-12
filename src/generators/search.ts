@@ -1,4 +1,4 @@
-import { CONDITIONS, QUERY_LABELS } from '#/constants';
+import { CONDITIONS, QUERY_LABELS, QUERY_NAMES } from '#/constants';
 import { defaultLogger } from '#/logger';
 import {
   msgInvalidBaseValue,
@@ -64,11 +64,14 @@ export interface TSearchOptions {
 }
 
 export interface TSearchResult {
-  search: string | undefined;
-  searchFields: string | undefined;
+  [QUERY_NAMES.SRC]: string | undefined;
+  [QUERY_NAMES.SFI]: string | undefined;
 }
 
-const EMPTY_RESULT = { search: undefined, searchFields: undefined } as const;
+const EMPTY_RESULT = {
+  [QUERY_NAMES.SRC]: undefined,
+  [QUERY_NAMES.SFI]: undefined,
+} as const;
 const TUPLE_SIZE = 2;
 
 /**
@@ -209,8 +212,8 @@ export function search<TShape extends object = Record<string, unknown>>(
   }
 
   return {
-    search: searchAndFields.search.join(';'),
-    searchFields: searchAndFields.fields.length
+    [QUERY_NAMES.SRC]: searchAndFields.search.join(';'),
+    [QUERY_NAMES.SFI]: searchAndFields.fields.length
       ? searchAndFields.fields.join(';')
       : undefined,
   };

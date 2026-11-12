@@ -1,4 +1,3 @@
-import { QUERY_NAMES } from '#/constants';
 import { type TParamsStrings } from '#/utils';
 import { type TFilter, filter } from '#gen/filter';
 import { type TInclude, include } from '#gen/include';
@@ -51,24 +50,19 @@ export type TResultParams = TParamsStrings & {
 export function paramsL5<TShape extends object = Record<string, unknown>>(
   arg: TParams<TShape> = {},
 ) {
-  const searchObj = search(arg.search, {
-    includeSearchFields: arg.includeSearchFields,
-  });
-  const orderBySortByObj = orderBySortBy(arg.orderBySortBy);
-
   const result: TResultParams = {
-    [QUERY_NAMES.FLT]: filter(arg.filter),
-    [QUERY_NAMES.INC]: include(arg.include),
-    [QUERY_NAMES.LMT]: limit(arg.limit),
-    [QUERY_NAMES.OBY]: orderBySortByObj.orderBy,
-    [QUERY_NAMES.PAG]: page(arg.page),
-    [QUERY_NAMES.SRC]: searchObj.search,
-    [QUERY_NAMES.SFI]: searchObj.searchFields,
-    [QUERY_NAMES.SJO]: searchJoin(arg.searchJoin),
-    [QUERY_NAMES.SBY]: orderBySortByObj.sortedBy,
+    ...filter(arg.filter),
+    ...include(arg.include),
+    ...limit(arg.limit),
+    ...orderBySortBy(arg.orderBySortBy),
+    ...page(arg.page),
+    ...search(arg.search, {
+      includeSearchFields: arg.includeSearchFields,
+    }),
+    ...searchJoin(arg.searchJoin),
+    ...withRel(arg.with),
+    ...withCount(arg.withCount),
     toParams: () => {},
-    [QUERY_NAMES.WTH]: withRel(arg.with),
-    [QUERY_NAMES.WTC]: withCount(arg.withCount),
   };
 
   result.toParams = () => query(result);

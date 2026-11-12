@@ -1,12 +1,13 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { QUERY_NAMES } from '#/constants';
 import { limit } from '#gen/limit';
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any;
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
-let result: string | undefined;
-let expected: string | undefined;
+let result: any;
+let expected: any;
 
 beforeEach(() => {
   input = undefined;
@@ -27,40 +28,44 @@ describe('limit function', () => {
   describe('formatting', () => {
     test('should set limit to a parameter', () => {
       input = 7;
-      expected = '7';
+      expected = { [QUERY_NAMES.LMT]: '7' };
 
       result = limit(input);
 
-      expect(result).toBe(expected);
+      expect(result).toEqual(expected);
     });
 
-    test('should return undefined with no input', () => {
+    test('should return empty result with no input', () => {
+      expected = { [QUERY_NAMES.LMT]: undefined };
       result = limit(undefined);
 
-      expect(result).toBeUndefined();
+      expect(result).toEqual(expected);
     });
 
     test('should return defaultValue with no input', () => {
       input = 6;
+      expected = { [QUERY_NAMES.LMT]: `${input}` };
       result = limit(undefined, { defaultValue: input });
 
-      expect(result).toBe(`${input}`);
+      expect(result).toEqual(expected);
     });
   });
 
   describe('validations and edge cases', () => {
-    test('should return undefined if called with a negative number', () => {
+    test('should return empty result if called with a negative number', () => {
       input = -10;
+      expected = { [QUERY_NAMES.LMT]: undefined };
       result = limit(input);
 
-      expect(result).toBeUndefined();
+      expect(result).toEqual(expected);
     });
 
-    test('should return undefined if called with a non-number', () => {
+    test('should return empty result if called with a non-number', () => {
       input = null;
+      expected = { [QUERY_NAMES.LMT]: undefined };
       result = limit(input);
 
-      expect(result).toBeUndefined();
+      expect(result).toEqual(expected);
     });
   });
 

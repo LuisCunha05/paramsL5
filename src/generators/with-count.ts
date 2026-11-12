@@ -1,4 +1,4 @@
-import { QUERY_LABELS } from '#/constants';
+import { QUERY_LABELS, QUERY_NAMES } from '#/constants';
 import { defaultLogger } from '#/logger';
 import {
   msgMustBeString,
@@ -14,6 +14,14 @@ export interface TWithCountOptions {
   readonly logger?: TLogger;
 }
 
+export interface TWithCountResult {
+  [QUERY_NAMES.WTC]: string | undefined;
+}
+
+const EMPTY_RESULT = {
+  [QUERY_NAMES.WTC]: undefined,
+} as const;
+
 /**
  * Formats relations whose count should be loaded (`withCount`) into a semicolon-separated string.
  *
@@ -22,26 +30,26 @@ export interface TWithCountOptions {
  *
  * @param arg - Array of relation names to count.
  * @param options - Optional settings including custom logger.
- * @returns Semicolon-separated string of unique relation names, or `undefined` if none remain.
+ * @returns An object `{ withCount }` containing a semicolon-separated string of unique relation names, or `undefined`.
  *
  * @example
  * ```typescript
- * withCount(['comments', 'likes']); // => "comments;likes"
+ * withCount(['comments', 'likes']); // => { withCount: "comments;likes" }
  * ```
  */
 export function withCount<TShape extends object = Record<string, unknown>>(
   arg: TWithCount<TShape> = [],
   options: TWithCountOptions = {},
-): string | undefined {
+): TWithCountResult {
   const log = options.logger ?? defaultLogger;
   if (!isArray(arg)) {
     log?.error(msgNotArray(QUERY_LABELS.WTC, typeName(arg)));
-    return undefined;
+    return EMPTY_RESULT;
   }
 
   if (!arg.length) {
     log?.info(msgNoValues(QUERY_LABELS.WTC));
-    return undefined;
+    return EMPTY_RESULT;
   }
 
   const filteredValues = arg.filter((item) => {
@@ -54,15 +62,17 @@ export function withCount<TShape extends object = Record<string, unknown>>(
 
   if (!filteredValues.length) {
     log?.info(msgNoRemaining(QUERY_LABELS.WTC));
-    return undefined;
+    return EMPTY_RESULT;
   }
 
   const uniqueValues = [...new Set(filteredValues)];
 
   if (!uniqueValues.length) {
     log?.info(msgNoRemaining(QUERY_LABELS.WTC));
-    return undefined;
+    return EMPTY_RESULT;
   }
 
-  return uniqueValues.join(';');
+  return {
+    [QUERY_NAMES.WTC]: uniqueValues.join(';'),
+  };
 }

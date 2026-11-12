@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { SORT_BY } from '#/constants';
+import { QUERY_NAMES, SORT_BY } from '#/constants';
 import { logger as loggerFn } from '#/logger';
 import { orderBySortBy } from '#gen/order-sort';
 
@@ -32,8 +32,8 @@ describe('orderBySortBy function', () => {
     test('should generate correct URL params for a single order/sort pair', () => {
       input = [['name', SORT_BY.ASC]];
       expected = {
-        orderBy: 'name',
-        sortedBy: 'asc',
+        [QUERY_NAMES.OBY]: 'name',
+        [QUERY_NAMES.SBY]: 'asc',
       };
 
       result = orderBySortBy(input);
@@ -48,8 +48,8 @@ describe('orderBySortBy function', () => {
         ['created_at', SORT_BY.ASC],
       ];
       expected = {
-        orderBy: 'name;age;created_at',
-        sortedBy: 'asc;desc;asc',
+        [QUERY_NAMES.OBY]: 'name;age;created_at',
+        [QUERY_NAMES.SBY]: 'asc;desc;asc',
       };
 
       result = orderBySortBy(input);
@@ -63,8 +63,8 @@ describe('orderBySortBy function', () => {
         ['name', SORT_BY.DESC],
       ];
       expected = {
-        orderBy: 'name',
-        sortedBy: 'desc',
+        [QUERY_NAMES.OBY]: 'name',
+        [QUERY_NAMES.SBY]: 'desc',
       };
 
       result = orderBySortBy(input);
@@ -75,8 +75,8 @@ describe('orderBySortBy function', () => {
     test('should allow multiple single value arrays', () => {
       input = [['key1'], ['key2']];
       expected = {
-        orderBy: 'key1;key2',
-        sortedBy: 'asc;asc',
+        [QUERY_NAMES.OBY]: 'key1;key2',
+        [QUERY_NAMES.SBY]: 'asc;asc',
       };
 
       result = orderBySortBy(input);
@@ -89,8 +89,8 @@ describe('orderBySortBy function', () => {
     test('should allow key-only value with default ASC sortBy', () => {
       input = [['key']];
       expected = {
-        orderBy: 'key',
-        sortedBy: 'asc',
+        [QUERY_NAMES.OBY]: 'key',
+        [QUERY_NAMES.SBY]: 'asc',
       };
 
       result = orderBySortBy(input);
@@ -101,8 +101,8 @@ describe('orderBySortBy function', () => {
     test('should change the default sortBy', () => {
       input = [['key']];
       expected = {
-        orderBy: 'key',
-        sortedBy: 'desc',
+        [QUERY_NAMES.OBY]: 'key',
+        [QUERY_NAMES.SBY]: 'desc',
       };
 
       result = orderBySortBy(input, { defaultSortBy: SORT_BY.DESC });
@@ -113,8 +113,8 @@ describe('orderBySortBy function', () => {
     test('should allow multiple single value arrays with the default sortBy', () => {
       input = [['key1'], ['key2']];
       expected = {
-        orderBy: 'key1;key2',
-        sortedBy: 'desc;desc',
+        [QUERY_NAMES.OBY]: 'key1;key2',
+        [QUERY_NAMES.SBY]: 'desc;desc',
       };
 
       result = orderBySortBy(input, { defaultSortBy: SORT_BY.DESC });
@@ -126,8 +126,8 @@ describe('orderBySortBy function', () => {
   describe('validations and edge cases', () => {
     test('should return empty result with empty input', () => {
       expected = {
-        orderBy: undefined,
-        sortedBy: undefined,
+        [QUERY_NAMES.OBY]: undefined,
+        [QUERY_NAMES.SBY]: undefined,
       };
 
       result = orderBySortBy(undefined, { logger: noOpLogger });
@@ -138,8 +138,8 @@ describe('orderBySortBy function', () => {
     test('should return empty result if called with a non-array', () => {
       input = {};
       expected = {
-        orderBy: undefined,
-        sortedBy: undefined,
+        [QUERY_NAMES.OBY]: undefined,
+        [QUERY_NAMES.SBY]: undefined,
       };
 
       result = orderBySortBy(input, { logger: noOpLogger });
@@ -150,8 +150,8 @@ describe('orderBySortBy function', () => {
     test('should return empty result if all items are invalid', () => {
       input = ['invalid'];
       expected = {
-        orderBy: undefined,
-        sortedBy: undefined,
+        [QUERY_NAMES.OBY]: undefined,
+        [QUERY_NAMES.SBY]: undefined,
       };
 
       result = orderBySortBy(input, { logger: noOpLogger });

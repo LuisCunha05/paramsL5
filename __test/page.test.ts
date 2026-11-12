@@ -1,12 +1,13 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { QUERY_NAMES } from '#/constants';
 import { logger as loggerFn } from '#/logger';
 import { page } from '#gen/page';
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any;
-let result: string | undefined;
-let expected: string | undefined;
+let result: any;
+let expected: any;
 
 beforeEach(() => {
   input = undefined;
@@ -28,7 +29,7 @@ describe('page function', () => {
   describe('formatting', () => {
     test('should format page correctly', () => {
       input = 3;
-      expected = '3';
+      expected = { [QUERY_NAMES.PAG]: '3' };
 
       result = page(input, { logger: noOpLogger });
 
@@ -37,34 +38,38 @@ describe('page function', () => {
   });
 
   describe('validations and edge cases', () => {
-    test('should return undefined if called with a negative number', () => {
+    test('should return empty result if called with a negative number', () => {
       input = -5;
+      expected = { [QUERY_NAMES.PAG]: undefined };
 
       result = page(input, { logger: noOpLogger });
 
-      expect(result).toBeUndefined();
+      expect(result).toEqual(expected);
     });
 
-    test('should return undefined if called with 0', () => {
+    test('should return empty result if called with 0', () => {
       input = 0;
+      expected = { [QUERY_NAMES.PAG]: undefined };
 
       result = page(input, { logger: noOpLogger });
 
-      expect(result).toBeUndefined();
+      expect(result).toEqual(expected);
     });
 
-    test('should return undefined if called with a non-number', () => {
+    test('should return empty result if called with a non-number', () => {
       input = 'invalid';
+      expected = { [QUERY_NAMES.PAG]: undefined };
 
       result = page(input, { logger: noOpLogger });
 
-      expect(result).toBeUndefined();
+      expect(result).toEqual(expected);
     });
 
-    test('should return undefined if argument is undefined', () => {
+    test('should return empty result if argument is undefined', () => {
+      expected = { [QUERY_NAMES.PAG]: undefined };
       result = page(undefined, { logger: noOpLogger });
 
-      expect(result).toBeUndefined();
+      expect(result).toEqual(expected);
     });
   });
 

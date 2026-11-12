@@ -22,7 +22,7 @@ export { createClient } from '#/client';
 
 export { CONDITIONS, SEARCH_JOIN, SORT_BY } from '#/constants';
 
-export type { TFilter } from '#gen/filter';
+export type { TFilter, TFilterResult } from '#gen/filter';
 
 /**
  * Formats database columns to retrieve into a semicolon-separated string (`filter=id;name`).
@@ -32,16 +32,16 @@ export type { TFilter } from '#gen/filter';
  *
  * @param arg - Array of column field names.
  * @param options - Optional settings including custom logger.
- * @returns Semicolon-separated string of unique column names, or `undefined` if none remain.
+ * @returns An object `{ filter }` containing a semicolon-separated string of unique column names, or `undefined`.
  *
  * @example
  * ```typescript
- * filter(['id', 'name', 'email']); // => "id;name;email"
+ * filter(['id', 'name', 'email']); // => { filter: "id;name;email" }
  * ```
  */
 export { filter } from '#gen/filter';
 
-export type { TInclude } from '#gen/include';
+export type { TInclude, TIncludeResult } from '#gen/include';
 
 /**
  * Formats related models to eager load into a comma-separated string (`include=profile,posts`).
@@ -51,16 +51,16 @@ export type { TInclude } from '#gen/include';
  *
  * @param arg - Array of relation names.
  * @param options - Optional settings including custom logger.
- * @returns Comma-separated string of unique relation names, or `undefined` if none remain.
+ * @returns An object `{ include }` containing a comma-separated string of unique relation names, or `undefined`.
  *
  * @example
  * ```typescript
- * include(['profile', 'posts']); // => "profile,posts"
+ * include(['profile', 'posts']); // => { include: "profile,posts" }
  * ```
  */
 export { include } from '#gen/include';
 
-export type { TLimit } from '#gen/limit';
+export type { TLimit, TLimitResult } from '#gen/limit';
 
 /**
  * Formats the pagination limit (records per page) into a query parameter string.
@@ -70,16 +70,16 @@ export type { TLimit } from '#gen/limit';
  *
  * @param arg - Number of records to return (integer >= 0).
  * @param options - Optional settings including `defaultValue` and custom logger.
- * @returns String representation of the limit, or `undefined` if invalid.
+ * @returns An object `{ limit }` containing the string representation of the limit, or `undefined` if invalid.
  *
  * @example
  * ```typescript
- * limit(15); // => "15"
+ * limit(15); // => { limit: "15" }
  * ```
  */
 export { limit } from '#gen/limit';
 
-export type { TOrderBySortBy } from '#gen/order-sort';
+export type { TOrderBySortBy, TOrderBySortByResult } from '#gen/order-sort';
 
 /**
  * Formats sorting columns and directions into paired `orderBy` and `sortedBy` parameters.
@@ -99,7 +99,7 @@ export type { TOrderBySortBy } from '#gen/order-sort';
  */
 export { orderBySortBy } from '#gen/order-sort';
 
-export type { TPage } from '#gen/page';
+export type { TPage, TPageResult } from '#gen/page';
 
 /**
  * Formats the pagination page number into a query parameter string.
@@ -109,11 +109,11 @@ export type { TPage } from '#gen/page';
  *
  * @param arg - Page number to retrieve (integer >= 1).
  * @param options - Optional settings including custom logger.
- * @returns String representation of the page number, or `undefined` if invalid.
+ * @returns An object `{ page }` containing the string representation of the page number, or `undefined` if invalid.
  *
  * @example
  * ```typescript
- * page(2); // => "2"
+ * page(2); // => { page: "2" }
  * ```
  */
 export { page } from '#gen/page';
@@ -146,7 +146,7 @@ export type {
  */
 export { search } from '#gen/search';
 
-export type { TSearchJoin } from '#gen/search-join';
+export type { TSearchJoin, TSearchJoinResult } from '#gen/search-join';
 
 /**
  * Formats the logical operator (`and` | `or`) that connects multiple search conditions.
@@ -156,16 +156,16 @@ export type { TSearchJoin } from '#gen/search-join';
  *
  * @param arg - The join strategy (`'and'` or `'or'`).
  * @param options - Optional settings including custom logger.
- * @returns The validated join string (`'and'` | `'or'`), or `undefined` if invalid.
+ * @returns An object `{ searchJoin }` containing the validated join string (`'and'` | `'or'`), or `undefined` if invalid.
  *
  * @example
  * ```typescript
- * searchJoin('and'); // => "and"
+ * searchJoin('and'); // => { searchJoin: "and" }
  * ```
  */
 export { searchJoin } from '#gen/search-join';
 
-export type { TWith } from '#gen/with';
+export type { TWith, TWithResult } from '#gen/with';
 
 /**
  * Formats relations to eager load via repository `with` into a semicolon-separated string.
@@ -175,16 +175,16 @@ export type { TWith } from '#gen/with';
  *
  * @param arg - Array of relation paths (supports dot and pipe notation).
  * @param options - Optional settings including custom logger.
- * @returns Semicolon-separated string of unique relation paths, or `undefined` if none remain.
+ * @returns An object `{ with }` containing a semicolon-separated string of unique relation paths, or `undefined`.
  *
  * @example
  * ```typescript
- * withRel(['author', 'comments.author']); // => "author;comments.author"
+ * withRel(['author', 'comments.author']); // => { with: "author;comments.author" }
  * ```
  */
 export { withRel } from '#gen/with';
 
-export type { TWithCount } from '#gen/with-count';
+export type { TWithCount, TWithCountResult } from '#gen/with-count';
 
 /**
  * Formats relations whose count should be loaded (`withCount`) into a semicolon-separated string.
@@ -194,11 +194,11 @@ export type { TWithCount } from '#gen/with-count';
  *
  * @param arg - Array of relation names to count.
  * @param options - Optional settings including custom logger.
- * @returns Semicolon-separated string of unique relation names, or `undefined` if none remain.
+ * @returns An object `{ withCount }` containing a semicolon-separated string of unique relation names, or `undefined`.
  *
  * @example
  * ```typescript
- * withCount(['comments', 'likes']); // => "comments;likes"
+ * withCount(['comments', 'likes']); // => { withCount: "comments;likes" }
  * ```
  */
 export { withCount } from '#gen/with-count';

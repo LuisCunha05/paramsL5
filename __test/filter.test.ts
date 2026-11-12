@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { QUERY_NAMES } from '#/constants';
 import { logger as loggerFn } from '#/logger';
 import { filter } from '#gen/filter';
 
@@ -30,7 +31,7 @@ describe('filter function', () => {
   describe('formatting', () => {
     test('should format a valid array of strings', () => {
       input = ['a', 'b', 'c'];
-      expected = 'a;b;c';
+      expected = { [QUERY_NAMES.FLT]: 'a;b;c' };
 
       result = filter(input, { logger: noOpLogger });
 
@@ -39,7 +40,7 @@ describe('filter function', () => {
 
     test('should return unique values if there are duplicates', () => {
       input = ['a', 'b', 'a', 'c', 'b'];
-      expected = 'a;b;c';
+      expected = { [QUERY_NAMES.FLT]: 'a;b;c' };
 
       result = filter(input, { logger: noOpLogger });
 
@@ -48,17 +49,18 @@ describe('filter function', () => {
   });
 
   describe('validations and edge cases', () => {
-    test('should return undefined if called with a non-array', () => {
+    test('should return empty result if called with a non-array', () => {
       input = 'not an array';
+      expected = { [QUERY_NAMES.FLT]: undefined };
 
       result = filter(input, { logger: noOpLogger });
 
-      expect(result).toBeUndefined();
+      expect(result).toEqual(expected);
     });
 
     test('should filter out non-string items', () => {
       input = ['a', 123, 'b'];
-      expected = 'a;b';
+      expected = { [QUERY_NAMES.FLT]: 'a;b' };
 
       result = filter(input, { logger: noOpLogger });
 
@@ -67,7 +69,7 @@ describe('filter function', () => {
 
     test('should filter out empty strings', () => {
       input = ['a', '', 'b', '   '];
-      expected = 'a;b';
+      expected = { [QUERY_NAMES.FLT]: 'a;b' };
 
       result = filter(input, { logger: noOpLogger });
 

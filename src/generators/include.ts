@@ -1,4 +1,4 @@
-import { QUERY_LABELS } from '#/constants';
+import { QUERY_LABELS, QUERY_NAMES } from '#/constants';
 import { defaultLogger } from '#/logger';
 import {
   msgMustBeString,
@@ -15,6 +15,14 @@ export interface TIncludeOptions {
   logger?: TLogger;
 }
 
+export interface TIncludeResult {
+  [QUERY_NAMES.INC]: string | undefined;
+}
+
+const EMPTY_RESULT = {
+  [QUERY_NAMES.INC]: undefined,
+} as const;
+
 /**
  * Formats related models to eager load into a comma-separated string (`include=profile,posts`).
  *
@@ -23,26 +31,26 @@ export interface TIncludeOptions {
  *
  * @param arg - Array of relation names.
  * @param options - Optional settings including custom logger.
- * @returns Comma-separated string of unique relation names, or `undefined` if none remain.
+ * @returns An object `{ include }` containing a comma-separated string of unique relation names, or `undefined`.
  *
  * @example
  * ```typescript
- * include(['profile', 'posts']); // => "profile,posts"
+ * include(['profile', 'posts']); // => { include: "profile,posts" }
  * ```
  */
 export function include<TShape extends object = Record<string, unknown>>(
   arg: TInclude<TShape> = [],
   options: TIncludeOptions = {},
-): string | undefined {
+): TIncludeResult {
   const log = options.logger ?? defaultLogger;
   if (!isArray(arg)) {
     log?.error(msgNotArray(QUERY_LABELS.INC, typeName(arg)));
-    return undefined;
+    return EMPTY_RESULT;
   }
 
   if (!arg.length) {
     log?.info(msgNoValues(QUERY_LABELS.INC));
-    return undefined;
+    return EMPTY_RESULT;
   }
 
   const filteredValues = arg.reduce<TPath<TShape>[]>((result, item) => {
@@ -57,10 +65,12 @@ export function include<TShape extends object = Record<string, unknown>>(
 
   if (!filteredValues.length) {
     log?.info(msgNoRemaining(QUERY_LABELS.INC));
-    return undefined;
+    return EMPTY_RESULT;
   }
 
   const uniqueValues = [...new Set(filteredValues)];
 
-  return uniqueValues.join(',');
+  return {
+    [QUERY_NAMES.INC]: uniqueValues.join(','),
+  };
 }

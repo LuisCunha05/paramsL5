@@ -1,4 +1,4 @@
-import { QUERY_LABELS } from '#/constants';
+import { QUERY_LABELS, QUERY_NAMES } from '#/constants';
 import { defaultLogger } from '#/logger';
 import { msgMustBePositiveInteger, msgNoValue } from '#/messages';
 import type { TLogger } from '#/types';
@@ -11,6 +11,14 @@ export interface TLimitOptions {
   defaultValue?: TLimit;
 }
 
+export interface TLimitResult {
+  [QUERY_NAMES.LMT]: string | undefined;
+}
+
+const EMPTY_RESULT = {
+  [QUERY_NAMES.LMT]: undefined,
+} as const;
+
 const MIN_LIMIT = 0;
 
 /**
@@ -21,30 +29,29 @@ const MIN_LIMIT = 0;
  *
  * @param arg - Number of records to return (integer >= 0).
  * @param options - Optional settings including `defaultValue` and custom logger.
- * @returns String representation of the limit, or `undefined` if invalid.
+ * @returns An object `{ limit }` containing the string representation of the limit, or `undefined` if invalid.
  *
  * @example
  * ```typescript
- * limit(15); // => "15"
+ * limit(15); // => { limit: "15" }
  * ```
  */
-export function limit(
-  arg?: TLimit,
-  options: TLimitOptions = {},
-): string | undefined {
+export function limit(arg?: TLimit, options: TLimitOptions = {}): TLimitResult {
   const log = options.logger ?? defaultLogger;
   const val = arg ?? options.defaultValue;
   if (val === undefined) {
     log?.info(msgNoValue(QUERY_LABELS.LMT));
-    return undefined;
+    return EMPTY_RESULT;
   }
 
   if (!isInputValid(val)) {
     log?.error(msgMustBePositiveInteger(QUERY_LABELS.LMT, typeName(val), true));
-    return undefined;
+    return EMPTY_RESULT;
   }
 
-  return String(val);
+  return {
+    [QUERY_NAMES.LMT]: String(val),
+  };
 }
 
 function predicate(value: number) {

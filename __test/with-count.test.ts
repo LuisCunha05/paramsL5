@@ -1,12 +1,13 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { QUERY_NAMES } from '#/constants';
 import { logger as loggerFn } from '#/logger';
 import { withCount } from '#gen/with-count';
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any;
-let result: string | undefined;
-let expected: string | undefined;
+let result: any;
+let expected: any;
 
 beforeEach(() => {
   input = undefined;
@@ -28,7 +29,7 @@ describe('withCount function', () => {
   describe('formatting', () => {
     test('should format relations correctly', () => {
       input = ['posts', 'comments'];
-      expected = 'posts;comments';
+      expected = { [QUERY_NAMES.WTC]: 'posts;comments' };
 
       result = withCount(input, { logger: noOpLogger });
 
@@ -37,7 +38,7 @@ describe('withCount function', () => {
 
     test('should return unique values if there are duplicates', () => {
       input = ['posts', 'comments', 'posts'];
-      expected = 'posts;comments';
+      expected = { [QUERY_NAMES.WTC]: 'posts;comments' };
 
       result = withCount(input, { logger: noOpLogger });
 
@@ -46,28 +47,31 @@ describe('withCount function', () => {
   });
 
   describe('validations and edge cases', () => {
-    test('should return undefined if called with a non-array', () => {
+    test('should return empty result if called with a non-array', () => {
       input = 'not an array';
+      expected = { [QUERY_NAMES.WTC]: undefined };
 
       result = withCount(input, { logger: noOpLogger });
 
-      expect(result).toBeUndefined();
+      expect(result).toEqual(expected);
     });
 
-    test('should return undefined if called with an empty array', () => {
+    test('should return empty result if called with an empty array', () => {
       input = [];
+      expected = { [QUERY_NAMES.WTC]: undefined };
 
       result = withCount(input, { logger: noOpLogger });
 
-      expect(result).toBeUndefined();
+      expect(result).toEqual(expected);
     });
 
-    test('should return undefined if no values remain after filtering', () => {
+    test('should return empty result if no values remain after filtering', () => {
       input = [123];
+      expected = { [QUERY_NAMES.WTC]: undefined };
 
       result = withCount(input, { logger: noOpLogger });
 
-      expect(result).toBeUndefined();
+      expect(result).toEqual(expected);
     });
   });
 

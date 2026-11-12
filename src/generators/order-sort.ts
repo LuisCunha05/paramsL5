@@ -1,4 +1,4 @@
-import { QUERY_LABELS, SORT_BY } from '#/constants';
+import { QUERY_LABELS, QUERY_NAMES, SORT_BY } from '#/constants';
 import { defaultLogger } from '#/logger';
 import {
   msgInvalidKey,
@@ -31,14 +31,14 @@ interface TOrderBySortByOptions {
 export type TOrderBySortBy<TTShape> =
   readonly TOrderBySortByArguments<TTShape>[];
 
-interface TOrderBySortByResult {
-  orderBy: string | undefined;
-  sortedBy: string | undefined;
+export interface TOrderBySortByResult {
+  [QUERY_NAMES.OBY]: string | undefined;
+  [QUERY_NAMES.SBY]: string | undefined;
 }
 
 const EMPTY_RESULT = {
-  orderBy: undefined,
-  sortedBy: undefined,
+  [QUERY_NAMES.OBY]: undefined,
+  [QUERY_NAMES.SBY]: undefined,
 } as const;
 
 const MIN_TUPLE_SIZE = 1;
@@ -123,7 +123,7 @@ export function orderBySortBy<TShape extends object = Record<string, unknown>>(
   const sortedResult = orderBySortedBy.sortedBy.join(';');
 
   return {
-    orderBy: orderResult,
-    sortedBy: sortedResult,
+    [QUERY_NAMES.OBY]: orderResult,
+    [QUERY_NAMES.SBY]: sortedResult,
   };
 }

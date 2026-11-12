@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { SEARCH_JOIN } from '#/constants';
+import { QUERY_NAMES, SEARCH_JOIN } from '#/constants';
 import { logger as loggerFn } from '#/logger';
 import { searchJoin } from '#gen/search-join';
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any;
-let result: string | undefined;
-let expected: string | undefined;
+let result: any;
+let expected: any;
 
 beforeEach(() => {
   input = undefined;
@@ -29,7 +29,7 @@ describe('searchJoin function', () => {
   describe('formatting', () => {
     test('should format searchJoin correctly', () => {
       input = SEARCH_JOIN.AND;
-      expected = SEARCH_JOIN.AND;
+      expected = { [QUERY_NAMES.SJO]: SEARCH_JOIN.AND };
 
       result = searchJoin(input, { logger: noOpLogger });
 
@@ -38,26 +38,29 @@ describe('searchJoin function', () => {
   });
 
   describe('validations and edge cases', () => {
-    test('should return undefined if called with a non-string', () => {
+    test('should return empty result if called with a non-string', () => {
       input = 123;
+      expected = { [QUERY_NAMES.SJO]: undefined };
 
       result = searchJoin(input, { logger: noOpLogger });
 
-      expect(result).toBeUndefined();
+      expect(result).toEqual(expected);
     });
 
-    test('should return undefined if called with an invalid join string', () => {
+    test('should return empty result if called with an invalid join string', () => {
       input = 'invalid';
+      expected = { [QUERY_NAMES.SJO]: undefined };
 
       result = searchJoin(input, { logger: noOpLogger });
 
-      expect(result).toBeUndefined();
+      expect(result).toEqual(expected);
     });
 
-    test('should return undefined if argument is undefined', () => {
+    test('should return empty result if argument is undefined', () => {
+      expected = { [QUERY_NAMES.SJO]: undefined };
       result = searchJoin(undefined, { logger: noOpLogger });
 
-      expect(result).toBeUndefined();
+      expect(result).toEqual(expected);
     });
   });
 
