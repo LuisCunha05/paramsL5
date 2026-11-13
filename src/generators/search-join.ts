@@ -1,5 +1,4 @@
 import { QUERY_LABELS, QUERY_NAMES, SEARCH_JOIN } from '#/constants';
-import { defaultLogger } from '#/logger';
 import { msgMustBeEither, msgMustBeString, msgNoValue } from '#/messages';
 import type { TLogger, ToEnum } from '#/types';
 import { isNonEmptyString, typeName } from '#/utils';
@@ -36,7 +35,7 @@ export function searchJoin(
   arg?: TSearchJoin,
   options: TSearchJoinOptions = {},
 ): TSearchJoinResult {
-  const log = options.logger ?? defaultLogger;
+  const log = options.logger;
   if (arg === undefined) {
     log?.info(msgNoValue(QUERY_LABELS.SJO));
     return EMPTY_RESULT;

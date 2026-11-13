@@ -1,5 +1,4 @@
 import { CONDITIONS, QUERY_LABELS, QUERY_NAMES } from '#/constants';
-import { defaultLogger } from '#/logger';
 import {
   msgInvalidBaseValue,
   msgInvalidBetweenSize,
@@ -97,7 +96,7 @@ export function search<TShape extends object = Record<string, unknown>>(
   arg: TSearch<TShape> = [],
   options: TSearchOptions = {},
 ): TSearchResult {
-  const log = options.logger ?? defaultLogger;
+  const log = options.logger;
   if (!isArray(arg)) {
     log?.error(msgNotArray(QUERY_LABELS.SRC, typeName(arg)));
     return EMPTY_RESULT;

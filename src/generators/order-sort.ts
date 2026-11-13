@@ -1,5 +1,4 @@
 import { QUERY_LABELS, QUERY_NAMES, SORT_BY } from '#/constants';
-import { defaultLogger } from '#/logger';
 import {
   msgInvalidKey,
   msgInvalidSortBy,
@@ -64,7 +63,7 @@ export function orderBySortBy<TShape extends object = Record<string, unknown>>(
   arg: TOrderBySortBy<TShape> = [],
   options: TOrderBySortByOptions = {},
 ): TOrderBySortByResult {
-  const log = options.logger ?? defaultLogger;
+  const log = options.logger;
   if (!isArray(arg)) {
     log?.error(msgNotArray(QUERY_LABELS.OBY, typeName(arg)));
     return EMPTY_RESULT;

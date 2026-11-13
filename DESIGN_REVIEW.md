@@ -21,7 +21,7 @@ This document details the architectural evaluation, technical critiques, and an 
 
 ### Priority 0: Critical Runtime & Error Handling (Safety)
 
-- [ ] **Purge Default `console.error`**
+- [x] **Purge Default `console.error`** (Completed)
   - **Issue**: `defaultLogger` logs directly to `console.error`, polluting server logs and unit test outputs.
   - **Action**: Make logging strictly opt-in (`{ logging: false }` or no-op by default). A library should never write to standard error without explicit user request.
   - **File**: `src/logger.ts`, `src/generators/*.ts`

@@ -1,5 +1,4 @@
 import { QUERY_LABELS, QUERY_NAMES } from '#/constants';
-import { defaultLogger } from '#/logger';
 import {
   msgMustBeString,
   msgNoRemaining,
@@ -42,7 +41,7 @@ export function include<TShape extends object = Record<string, unknown>>(
   arg: TInclude<TShape> = [],
   options: TIncludeOptions = {},
 ): TIncludeResult {
-  const log = options.logger ?? defaultLogger;
+  const log = options.logger;
   if (!isArray(arg)) {
     log?.error(msgNotArray(QUERY_LABELS.INC, typeName(arg)));
     return EMPTY_RESULT;

@@ -1,5 +1,4 @@
 import { QUERY_LABELS, QUERY_NAMES } from '#/constants';
-import { defaultLogger } from '#/logger';
 import { msgMustBePositiveInteger, msgNoValue } from '#/messages';
 import type { TLogger } from '#/types';
 import { isNumber, typeName } from '#/utils';
@@ -35,7 +34,7 @@ const MIN_PAGE = 0;
  * ```
  */
 export function page(arg?: TPage, options: TPageOptions = {}): TPageResult {
-  const log = options.logger ?? defaultLogger;
+  const log = options.logger;
 
   if (arg === undefined) {
     log?.info(msgNoValue(QUERY_LABELS.PAG));

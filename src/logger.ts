@@ -6,7 +6,7 @@ export interface LogLevel {
   warn?: boolean;
 }
 
-export const LOGGER_PREFIX = '[ParamsL5]';
+export const LOGGER_PREFIX = '[ParamsL5]:';
 
 interface LoggerArgs {
   readonly logger?: TLogger;
@@ -40,5 +40,3 @@ export function logger({ logger, logLevel }: LoggerArgs = {}): TLogger {
     },
   };
 }
-
-export const defaultLogger = logger({ logLevel: { error: true } });

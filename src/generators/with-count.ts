@@ -1,5 +1,4 @@
 import { QUERY_LABELS, QUERY_NAMES } from '#/constants';
-import { defaultLogger } from '#/logger';
 import {
   msgMustBeString,
   msgNoRemaining,
@@ -41,7 +40,7 @@ export function withCount<TShape extends object = Record<string, unknown>>(
   arg: TWithCount<TShape> = [],
   options: TWithCountOptions = {},
 ): TWithCountResult {
-  const log = options.logger ?? defaultLogger;
+  const log = options.logger;
   if (!isArray(arg)) {
     log?.error(msgNotArray(QUERY_LABELS.WTC, typeName(arg)));
     return EMPTY_RESULT;

@@ -1,5 +1,4 @@
 import { QUERY_LABELS, QUERY_NAMES } from '#/constants';
-import { defaultLogger } from '#/logger';
 import { msgMustBePositiveInteger, msgNoValue } from '#/messages';
 import type { TLogger } from '#/types';
 import { isNumber, typeName } from '#/utils';
@@ -37,7 +36,7 @@ const MIN_LIMIT = 0;
  * ```
  */
 export function limit(arg?: TLimit, options: TLimitOptions = {}): TLimitResult {
-  const log = options.logger ?? defaultLogger;
+  const log = options.logger;
   const val = arg ?? options.defaultValue;
   if (val === undefined) {
     log?.info(msgNoValue(QUERY_LABELS.LMT));
