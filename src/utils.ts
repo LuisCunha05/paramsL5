@@ -1,5 +1,13 @@
 import { QUERY_NAMES } from '#/constants';
-import type { TBaseValue, ToEnum } from '#/types';
+import type { TBaseValue, TLogger, ToEnum, TResult } from '#/types';
+
+import { ParamsL5ValidationError } from './errors/ParamsL5ValidationError';
+import {
+  msgMustBeString,
+  msgNoRemaining,
+  msgNotArray,
+  msgNoValues,
+} from './messages';
 
 const NON_EMPTY_STRING_LEN = 0;
 const HEX_ENCODING = 16;
@@ -95,4 +103,74 @@ export function assertQueryKey(val: string): val is TQueryKeys {
       return false;
     }
   }
+}
+
+export function unwrap<TType>(result: TResult<TType>): TType {
+  if (!result.success) {
+    throw result.error;
+  }
+  return result.data;
+}
+
+export function filterWithDelimeter<TLabel extends TQueryKeys>(
+  label: TLabel,
+  delimiter: ':' | ';' | ',',
+  value?: unknown,
+  logger?: TLogger,
+): TResult<Record<TLabel, string | undefined>> {
+  const log = logger;
+  if (!isArray(value)) {
+    const message = msgNotArray(label, typeName(value));
+    log?.error(message);
+    return {
+      error: ParamsL5ValidationError.fromField(label, message, value),
+      success: false,
+    };
+  }
+
+  if (!value.length) {
+    const message = msgNoValues(label);
+    log?.info(message);
+    return {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+      data: { [label]: undefined } as Record<TLabel, undefined>,
+      success: true,
+    };
+  }
+
+  const filteredValues = value.filter((item) => {
+    if (!isNonEmptyString(item)) {
+      log?.info(msgMustBeString(label, typeName(item)));
+      return false;
+    }
+    return true;
+  });
+
+  if (!filteredValues.length) {
+    const message = msgNoRemaining(label);
+    log?.info(message);
+    return {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+      data: { [label]: undefined } as Record<TLabel, undefined>,
+      success: true,
+    };
+  }
+
+  const uniqueValues = [...new Set(filteredValues)];
+
+  if (!uniqueValues.length) {
+    return {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+      data: { [label]: undefined } as Record<TLabel, undefined>,
+      success: true,
+    };
+  }
+
+  return {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+    data: {
+      [label]: uniqueValues.join(delimiter),
+    } as Record<TLabel, string>,
+    success: true,
+  };
 }

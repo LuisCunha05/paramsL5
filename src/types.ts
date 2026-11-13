@@ -1,6 +1,17 @@
+import type { ParamsL5ValidationError } from '#/errors/ParamsL5ValidationError';
+
 export type TBaseValue = string | number | boolean;
 
 export type ToEnum<TObj> = TObj[keyof TObj];
+
+export type TResult<TReturn, TError = ParamsL5ValidationError> =
+  | { readonly success: true; readonly data: TReturn }
+  | { readonly success: false; readonly error: TError };
+
+export interface TGenerator<TValue, TOptions, TReturn> {
+  safe: (value?: TValue, options?: TOptions) => TResult<TReturn>;
+  build: (value?: TValue, options?: TOptions) => TReturn;
+}
 
 export interface TLogger {
   info: (...args: readonly unknown[]) => void;

@@ -31,8 +31,10 @@ export default defineConfig({
     'typescript/explicit-member-accessibility': 'off',
     'typescript/no-empty-interface': 'off',
     'typescript/no-explicit-any': 'warn',
+    'typescript/no-extraneous-class': 'off',
     'typescript/restrict-template-expressions': 'off',
     'typescript/strict-boolean-expressions': 'off',
     'unicorn/explicit-length-check': 'off',
+    'unicorn/no-static-only-class': 'off',
   },
 });
