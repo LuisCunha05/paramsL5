@@ -1,12 +1,6 @@
-import { QUERY_LABELS, QUERY_NAMES } from '#/constants';
-import {
-  msgMustBeString,
-  msgNoRemaining,
-  msgNoValues,
-  msgNotArray,
-} from '#/messages';
-import type { TLogger, TPath } from '#/types';
-import { isArray, isNonEmptyString, typeName } from '#/utils';
+import { QUERY_NAMES } from '#/constants';
+import type { TLogger, TPath, TResult, TGenerator } from '#/types';
+import { filterWithDelimeter, unwrap } from '#/utils';
 
 export type TFilter<TTShape> = readonly NoInfer<TPath<TTShape>>[];
 
@@ -17,10 +11,6 @@ export interface TFilterOptions {
 export interface TFilterResult {
   [QUERY_NAMES.FLT]: string | undefined;
 }
-
-const EMPTY_RESULT = {
-  [QUERY_NAMES.FLT]: undefined,
-} as const;
 
 /**
  * Formats database columns to retrieve into a semicolon-separated string (`filter=id;name`).
@@ -37,41 +27,21 @@ const EMPTY_RESULT = {
  * filter(['id', 'name', 'email']); // => { filter: "id;name;email" }
  * ```
  */
-export function filter<TShape extends object = Record<string, unknown>>(
-  arg: TFilter<TShape> = [],
-  options: TFilterOptions = {},
-): TFilterResult {
-  const log = options.logger;
-  if (!isArray(arg)) {
-    log?.error(msgNotArray(QUERY_LABELS.FLT, typeName(arg)));
-    return EMPTY_RESULT;
+
+export class Filter {
+  static safe<TShape extends object = Record<string, unknown>>(
+    value?: TFilter<TShape>,
+    options?: TFilterOptions,
+  ): TResult<TFilterResult> {
+    return filterWithDelimeter(QUERY_NAMES.FLT, ';', value, options?.logger);
   }
 
-  if (!arg.length) {
-    log?.info(msgNoValues(QUERY_LABELS.FLT));
-    return EMPTY_RESULT;
+  static build<TShape extends object = Record<string, unknown>>(
+    value?: TFilter<TShape>,
+    options?: TFilterOptions,
+  ): TFilterResult {
+    return unwrap(Filter.safe(value, options));
   }
-
-  const filteredValues = arg.filter((item) => {
-    if (!isNonEmptyString(item)) {
-      log?.info(msgMustBeString(QUERY_LABELS.FLT, typeName(item)));
-      return false;
-    }
-    return true;
-  });
-
-  if (!filteredValues.length) {
-    log?.info(msgNoRemaining(QUERY_LABELS.FLT));
-    return EMPTY_RESULT;
-  }
-
-  const uniqueValues = [...new Set(filteredValues)];
-
-  if (!uniqueValues.length) {
-    return EMPTY_RESULT;
-  }
-
-  return {
-    [QUERY_NAMES.FLT]: uniqueValues.join(';'),
-  };
 }
+
+Filter satisfies TGenerator<TFilter<unknown>, TFilterOptions, TFilterResult>;
