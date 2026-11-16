@@ -77,7 +77,7 @@ export type { TLimit, TLimitResult } from '#gen/limit';
  * limit(15); // => { limit: "15" }
  * ```
  */
-export { limit } from '#gen/limit';
+export { Limit } from '#gen/limit';
 
 export type { TOrderBySortBy, TOrderBySortByResult } from '#gen/order-sort';
 
@@ -116,7 +116,7 @@ export type { TPage, TPageResult } from '#gen/page';
  * page(2); // => { page: "2" }
  * ```
  */
-export { page } from '#gen/page';
+export { Page } from '#gen/page';
 
 export type {
   TCondition,
@@ -163,7 +163,7 @@ export type { TSearchJoin, TSearchJoinResult } from '#gen/search-join';
  * searchJoin('and'); // => { searchJoin: "and" }
  * ```
  */
-export { searchJoin } from '#gen/search-join';
+export { SearchJoin } from '#gen/search-join';
 
 export type { TWith, TWithResult } from '#gen/with';
 

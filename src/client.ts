@@ -7,12 +7,12 @@ import type {
 } from '#/types';
 import { Filter } from '#gen/filter';
 import { Include } from '#gen/include';
-import { type TLimit, limit } from '#gen/limit';
+import { type TLimit, Limit } from '#gen/limit';
 import { type TSortBy, orderBySortBy } from '#gen/order-sort';
-import { type TPage, page } from '#gen/page';
+import { type TPage, Page } from '#gen/page';
 import { query } from '#gen/query';
 import { type TCondition, search } from '#gen/search';
-import { type TSearchJoin, searchJoin } from '#gen/search-join';
+import { type TSearchJoin, SearchJoin } from '#gen/search-join';
 import { With } from '#gen/with';
 import { WithCount } from '#gen/with-count';
 
@@ -80,7 +80,7 @@ export function createClient(options: ClientOptions = {}): ClientRunner {
     const result: TResultParams = {
       ...Filter.build(params.filter, { logger }),
       ...Include.build(params.include, { logger }),
-      ...limit(params.limit, {
+      ...Limit.build(params.limit, {
         defaultValue: options?.defaultOptions?.limit,
         logger,
       }),
@@ -88,7 +88,7 @@ export function createClient(options: ClientOptions = {}): ClientRunner {
         defaultSortBy: options?.defaultOptions?.sortBy,
         logger,
       }),
-      ...page(params.page ?? options?.defaultOptions?.page, {
+      ...Page.build(params.page ?? options?.defaultOptions?.page, {
         logger,
       }),
       ...search(params.search, {
@@ -98,9 +98,12 @@ export function createClient(options: ClientOptions = {}): ClientRunner {
           options?.defaultOptions?.includeSearchFields,
         logger,
       }),
-      ...searchJoin(params.searchJoin ?? options?.defaultOptions?.searchJoin, {
-        logger,
-      }),
+      ...SearchJoin.build(
+        params.searchJoin ?? options?.defaultOptions?.searchJoin,
+        {
+          logger,
+        },
+      ),
       ...With.build(params.with, { logger }),
       ...WithCount.build(params.withCount, { logger }),
       toParams: () => {},

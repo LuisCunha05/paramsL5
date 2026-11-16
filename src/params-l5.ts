@@ -1,12 +1,12 @@
 import { type TParamsStrings } from '#/utils';
 import { type TFilter, Filter } from '#gen/filter';
 import { type TInclude, Include } from '#gen/include';
-import { type TLimit, limit } from '#gen/limit';
+import { type TLimit, Limit } from '#gen/limit';
 import { type TOrderBySortBy, orderBySortBy } from '#gen/order-sort';
-import { type TPage, page } from '#gen/page';
+import { type TPage, Page } from '#gen/page';
 import { query } from '#gen/query';
 import { type TSearch, search } from '#gen/search';
-import { type TSearchJoin, searchJoin } from '#gen/search-join';
+import { type TSearchJoin, SearchJoin } from '#gen/search-join';
 import { type TWith, With } from '#gen/with';
 import { type TWithCount, WithCount } from '#gen/with-count';
 
@@ -53,13 +53,13 @@ export function paramsL5<TShape extends object = Record<string, unknown>>(
   const result: TResultParams = {
     ...Filter.build(arg.filter),
     ...Include.build(arg.include),
-    ...limit(arg.limit),
+    ...Limit.build(arg.limit),
     ...orderBySortBy(arg.orderBySortBy),
-    ...page(arg.page),
+    ...Page.build(arg.page),
     ...search(arg.search, {
       includeSearchFields: arg.includeSearchFields,
     }),
-    ...searchJoin(arg.searchJoin),
+    ...SearchJoin.build(arg.searchJoin),
     ...With.build(arg.with),
     ...WithCount.build(arg.withCount),
     toParams: () => {},

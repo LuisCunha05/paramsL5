@@ -1,7 +1,8 @@
 import { QUERY_LABELS, QUERY_NAMES } from '#/constants';
+import { ParamsL5ValidationError } from '#/errors/ParamsL5ValidationError';
 import { msgMustBePositiveInteger, msgNoValue } from '#/messages';
-import type { TLogger } from '#/types';
-import { isNumber, typeName } from '#/utils';
+import type { TGenerator, TLogger, TResult } from '#/types';
+import { isNumber, typeName, unwrap } from '#/utils';
 
 export type TLimit = number;
 
@@ -14,49 +15,69 @@ export interface TLimitResult {
   [QUERY_NAMES.LMT]: string | undefined;
 }
 
-const EMPTY_RESULT = {
-  [QUERY_NAMES.LMT]: undefined,
-} as const;
-
 const MIN_LIMIT = 0;
+const DEFAULT_VALUE = '1';
 
 /**
  * Formats the pagination limit (records per page) into a query parameter string.
  *
  * @remarks
- * Fields are validated: `null`, `undefined`, and invalid shapes/types (negative numbers, decimals, non-numeric values) are filtered out safely.
- *
- * @param arg - Number of records to return (integer >= 0).
- * @param options - Optional settings including `defaultValue` and custom logger.
- * @returns An object `{ limit }` containing the string representation of the limit, or `undefined` if invalid.
+ * Fields are validated: `null`, `undefined`, and invalid shapes/types (negative numbers, decimals, non-numeric values) are handled safely.
+ * Falls back to `options.defaultValue` or `'1'` when no limit is given.
  *
  * @example
  * ```typescript
- * limit(15); // => { limit: "15" }
+ * Limit.build(15); // => { limit: "15" }
  * ```
  */
-export function limit(arg?: TLimit, options: TLimitOptions = {}): TLimitResult {
-  const log = options.logger;
-  const val = arg ?? options.defaultValue;
-  if (val === undefined) {
-    log?.info(msgNoValue(QUERY_LABELS.LMT));
-    return EMPTY_RESULT;
+export class Limit {
+  static safe(
+    value?: TLimit | null,
+    options?: TLimitOptions,
+  ): TResult<TLimitResult> {
+    const log = options?.logger;
+    const val = value ?? options?.defaultValue;
+    if (val === undefined) {
+      log?.info(msgNoValue(QUERY_LABELS.LMT));
+      return {
+        data: { [QUERY_NAMES.LMT]: DEFAULT_VALUE },
+        success: true,
+      };
+    }
+
+    if (!Limit.#isInputValid(val)) {
+      const message = msgMustBePositiveInteger(
+        QUERY_LABELS.LMT,
+        typeName(val),
+        true,
+      );
+      log?.error(message);
+      return {
+        error: ParamsL5ValidationError.fromField(QUERY_NAMES.LMT, message, val),
+        success: false,
+      };
+    }
+
+    return {
+      data: { [QUERY_NAMES.LMT]: String(val) },
+      success: true,
+    };
   }
 
-  if (!isInputValid(val)) {
-    log?.error(msgMustBePositiveInteger(QUERY_LABELS.LMT, typeName(val), true));
-    return EMPTY_RESULT;
+  static build(value?: TLimit | null, options?: TLimitOptions): TLimitResult {
+    return unwrap(Limit.safe(value, options));
   }
 
-  return {
-    [QUERY_NAMES.LMT]: String(val),
-  };
+  static #isInputValid(arg?: number): arg is number {
+    return isNumber(
+      arg,
+      (value) => Number.isInteger(value) && value >= MIN_LIMIT,
+    );
+  }
 }
 
-function predicate(value: number) {
-  return Number.isInteger(value) && value >= MIN_LIMIT;
-}
-
-function isInputValid(arg?: number): arg is number {
-  return isNumber(arg, predicate);
-}
+Limit satisfies TGenerator<
+  TLimit | null | undefined,
+  TLimitOptions,
+  TLimitResult
+>;

@@ -169,7 +169,7 @@ describe('createClient function', () => {
   describe('searchCondition', () => {
     test('should change the default searchCondition when defaultOptions is provided', () => {
       input = { search: [['age', 18]] };
-      expected = `search=age${URC.COLON}18&searchFields=age${URC.COLON}${URC.GREATER_THAN}${URC.EQUALS}`;
+      expected = `limit=1&page=1&search=age${URC.COLON}18&searchFields=age${URC.COLON}${URC.GREATER_THAN}${URC.EQUALS}`;
 
       const paramsL5 = createClient({
         defaultOptions: {
@@ -186,7 +186,7 @@ describe('createClient function', () => {
 
     test('should prioritize searchCondition from params over defaultOptions', () => {
       input = { search: [['age', 18, CONDITIONS.LTE]] };
-      expected = `search=age${URC.COLON}18&searchFields=age${URC.COLON}${URC.LESS_THAN}${URC.EQUALS}`;
+      expected = `limit=1&page=1&search=age${URC.COLON}18&searchFields=age${URC.COLON}${URC.LESS_THAN}${URC.EQUALS}`;
 
       const paramsL5 = createClient({
         defaultOptions: {
@@ -204,7 +204,7 @@ describe('createClient function', () => {
   describe('includeSearchFields', () => {
     test('should omit searchFields by default when includeSearchFields is not set', () => {
       input = { search: [['age', 18, CONDITIONS.GTE]] };
-      expected = `search=age${URC.COLON}18`;
+      expected = `limit=1&page=1&search=age${URC.COLON}18`;
 
       const paramsL5 = createClient({
         logging: { logLevel: { error: false } },
@@ -217,7 +217,7 @@ describe('createClient function', () => {
 
     test('should include searchFields when defaultOptions has includeSearchFields true', () => {
       input = { search: [['age', 18, CONDITIONS.GTE]] };
-      expected = `search=age${URC.COLON}18&searchFields=age${URC.COLON}${URC.GREATER_THAN}${URC.EQUALS}`;
+      expected = `limit=1&page=1&search=age${URC.COLON}18&searchFields=age${URC.COLON}${URC.GREATER_THAN}${URC.EQUALS}`;
 
       const paramsL5 = createClient({
         defaultOptions: { includeSearchFields: true },
@@ -234,7 +234,7 @@ describe('createClient function', () => {
         search: [['age', 18, CONDITIONS.GTE]],
         includeSearchFields: false,
       };
-      expected = `search=age${URC.COLON}18`;
+      expected = `limit=1&page=1&search=age${URC.COLON}18`;
 
       const paramsL5 = createClient({
         defaultOptions: { includeSearchFields: true },
@@ -250,7 +250,7 @@ describe('createClient function', () => {
   describe('withCount', () => {
     test('should generate withCount query param correctly', () => {
       input = { withCount: ['comments', 'likes'] };
-      expected = `withCount=comments${URC.SEMICOLON}likes`;
+      expected = `limit=1&page=1&withCount=comments${URC.SEMICOLON}likes`;
 
       const paramsL5 = createClient({
         logging: { logLevel: { error: false } },

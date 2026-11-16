@@ -1,59 +1,83 @@
 import { QUERY_LABELS, QUERY_NAMES, SEARCH_JOIN } from '#/constants';
+import { ParamsL5ValidationError } from '#/errors/ParamsL5ValidationError';
 import { msgMustBeEither, msgMustBeString, msgNoValue } from '#/messages';
-import type { TLogger, ToEnum } from '#/types';
-import { isNonEmptyString, typeName } from '#/utils';
+import type { TGenerator, TLogger, ToEnum, TResult } from '#/types';
+import { isNonEmptyString, typeName, unwrap } from '#/utils';
 
 export type TSearchJoin = ToEnum<typeof SEARCH_JOIN>;
 export interface TSearchJoinOptions {
   logger?: TLogger;
+  defaultSearchJoin?: TSearchJoin;
 }
 
 export interface TSearchJoinResult {
   [QUERY_NAMES.SJO]: string | undefined;
 }
 
-const EMPTY_RESULT = {
-  [QUERY_NAMES.SJO]: undefined,
-} as const;
-
 /**
  * Formats the logical operator (`and` | `or`) that connects multiple search conditions.
  *
  * @remarks
- * Fields are validated: `null`, `undefined`, and values other than `'and'` or `'or'` are filtered out safely.
- *
- * @param arg - The join strategy (`'and'` or `'or'`).
- * @param options - Optional settings including custom logger.
- * @returns An object `{ searchJoin }` containing the validated join string (`'and'` | `'or'`), or `undefined` if invalid.
+ * Fields are validated: `null`, `undefined`, and values other than `'and'` or `'or'` are handled safely.
  *
  * @example
  * ```typescript
- * searchJoin('and'); // => { searchJoin: "and" }
+ * SearchJoin.build('and'); // => { searchJoin: "and" }
  * ```
  */
-export function searchJoin(
-  arg?: TSearchJoin,
-  options: TSearchJoinOptions = {},
-): TSearchJoinResult {
-  const log = options.logger;
-  if (arg === undefined) {
-    log?.info(msgNoValue(QUERY_LABELS.SJO));
-    return EMPTY_RESULT;
+export class SearchJoin {
+  static safe(
+    value?: TSearchJoin | null,
+    options?: TSearchJoinOptions,
+  ): TResult<TSearchJoinResult> {
+    const log = options?.logger;
+    const val = value ?? options?.defaultSearchJoin;
+    if (val === undefined) {
+      log?.info(msgNoValue(QUERY_LABELS.SJO));
+      return {
+        data: { [QUERY_NAMES.SJO]: undefined },
+        success: true,
+      };
+    }
+
+    if (!isNonEmptyString(val)) {
+      const message = msgMustBeString(QUERY_LABELS.SJO, typeName(val));
+      log?.error(message);
+      return {
+        error: ParamsL5ValidationError.fromField(QUERY_NAMES.SJO, message, val),
+        success: false,
+      };
+    }
+
+    if (!(val === SEARCH_JOIN.AND || val === SEARCH_JOIN.OR)) {
+      const message = msgMustBeEither(
+        QUERY_LABELS.SJO,
+        SEARCH_JOIN.AND,
+        SEARCH_JOIN.OR,
+        val,
+      );
+      log?.error(message);
+      return {
+        error: ParamsL5ValidationError.fromField(QUERY_NAMES.SJO, message, val),
+        success: false,
+      };
+    }
+    return {
+      data: { [QUERY_NAMES.SJO]: val },
+      success: true,
+    };
   }
 
-  if (!isNonEmptyString(arg)) {
-    log?.error(msgMustBeString(QUERY_LABELS.SJO, typeName(arg)));
-    return EMPTY_RESULT;
+  static build(
+    value?: TSearchJoin | null,
+    options?: TSearchJoinOptions,
+  ): TSearchJoinResult {
+    return unwrap(SearchJoin.safe(value, options));
   }
-
-  if (!(arg === SEARCH_JOIN.AND || arg === SEARCH_JOIN.OR)) {
-    log?.error(
-      msgMustBeEither(QUERY_LABELS.SJO, SEARCH_JOIN.AND, SEARCH_JOIN.OR, arg),
-    );
-    return EMPTY_RESULT;
-  }
-
-  return {
-    [QUERY_NAMES.SJO]: arg,
-  };
 }
+
+SearchJoin satisfies TGenerator<
+  TSearchJoin | null | undefined,
+  TSearchJoinOptions,
+  TSearchJoinResult
+>;
