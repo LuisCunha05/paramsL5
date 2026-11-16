@@ -48,17 +48,83 @@ describe('Include class', () => {
 
         expect(result).toEqual(expected);
       });
+
+      test('should format include relations without options', () => {
+        input = ['author', 'comments'];
+        expected = { [QUERY_NAMES.INC]: 'author,comments' };
+
+        result = Include.build(input);
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should format a single relation without trailing delimiter', () => {
+        input = ['author'];
+        expected = { [QUERY_NAMES.INC]: 'author' };
+
+        result = Include.build(input);
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should format nested dot-notation relations with generic shape', () => {
+        interface Post {
+          author: { profile: { avatar: string } };
+          comments: { id: string };
+        }
+
+        result = Include.build<Post>(['author.profile', 'comments']);
+
+        expect(result).toEqual({
+          [QUERY_NAMES.INC]: 'author.profile,comments',
+        });
+      });
     });
 
     describe('validations and edge cases', () => {
       test('should throw error if called with a non-array', () => {
         input = 'not an array';
+        let caught: unknown;
 
-        expect(() => Include.build(input, { logger: noOpLogger })).toThrow(
-          ParamsL5ValidationError,
-        );
-        expect(() => Include.build(input, { logger: noOpLogger })).toThrow(
-          'include: argument must be an array, got string instead',
+        try {
+          Include.build(input, { logger: noOpLogger });
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).toBeInstanceOf(ParamsL5ValidationError);
+        if (caught instanceof ParamsL5ValidationError) {
+          expect(caught.field).toBe(QUERY_NAMES.INC);
+          expect(caught.value).toBe(input);
+          expect(caught.message).toBe(
+            'include: argument must be an array, got string instead',
+          );
+          expect(caught.issues).toEqual([
+            {
+              field: QUERY_NAMES.INC,
+              message: 'include: argument must be an array, got string instead',
+              value: input,
+            },
+          ]);
+        }
+      });
+
+      test.each([
+        { label: 'null', value: null, type: 'null' },
+        { label: 'number', value: 123, type: 'number' },
+        { label: 'object', value: {}, type: 'object' },
+      ])('should throw error if called with $label', ({ value, type }) => {
+        expect(() =>
+          Include.build(value as never, { logger: noOpLogger }),
+        ).toThrow(`include: argument must be an array, got ${type} instead`);
+      });
+
+      test('should return empty result if called with undefined or no arguments', () => {
+        expected = { [QUERY_NAMES.INC]: undefined };
+
+        expect(Include.build()).toEqual(expected);
+        expect(Include.build(undefined, { logger: noOpLogger })).toEqual(
+          expected,
         );
       });
 
@@ -72,7 +138,7 @@ describe('Include class', () => {
       });
 
       test('should filter out non-string items', () => {
-        input = ['author', 123, 'comments'];
+        input = ['author', 123, null, undefined, {}, 'comments'];
         expected = { [QUERY_NAMES.INC]: 'author,comments' };
 
         result = Include.build(input, { logger: noOpLogger });
@@ -80,8 +146,8 @@ describe('Include class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should filter out empty strings', () => {
-        input = ['author', '', 'comments', '   '];
+      test('should filter out empty and whitespace-only strings', () => {
+        input = ['author', '', 'comments', '   ', '\t\n'];
         expected = { [QUERY_NAMES.INC]: 'author,comments' };
 
         result = Include.build(input, { logger: noOpLogger });
@@ -90,7 +156,7 @@ describe('Include class', () => {
       });
 
       test('should return empty result if no values remain after filtering', () => {
-        input = [123];
+        input = [123, '', '   ', null];
         expected = { [QUERY_NAMES.INC]: undefined };
 
         result = Include.build(input, { logger: noOpLogger });
@@ -100,13 +166,35 @@ describe('Include class', () => {
     });
 
     describe('include logging', () => {
+      test('should not log anything for valid values', () => {
+        Include.build(['author', 'comments'], { logger });
+
+        expect(info).not.toHaveBeenCalled();
+        expect(warn).not.toHaveBeenCalled();
+        expect(error).not.toHaveBeenCalled();
+      });
+
       test('should log error if argument is not an array', () => {
         input = 'not an array';
 
-        expect(() => Include.build(input, { logger })).toThrow();
+        expect(() => Include.build(input, { logger })).toThrow(
+          ParamsL5ValidationError,
+        );
 
         expect(error).toHaveBeenCalledExactlyOnceWith(
           'include: argument must be an array, got string instead',
+        );
+        expect(info).not.toHaveBeenCalled();
+        expect(warn).not.toHaveBeenCalled();
+      });
+
+      test('should log error if argument is null', () => {
+        expect(() => Include.build(null as never, { logger })).toThrow(
+          ParamsL5ValidationError,
+        );
+
+        expect(error).toHaveBeenCalledExactlyOnceWith(
+          'include: argument must be an array, got null instead',
         );
       });
 
@@ -117,6 +205,24 @@ describe('Include class', () => {
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'include: value must be a string, got number instead',
+        );
+      });
+
+      test('should log info if an item is an empty or whitespace-only string', () => {
+        input = ['author', '   '];
+
+        Include.build(input, { logger });
+
+        expect(info).toHaveBeenCalledExactlyOnceWith(
+          'include: value must be a string, got string instead',
+        );
+      });
+
+      test('should log info when called with undefined or no arguments', () => {
+        Include.build(undefined, { logger });
+
+        expect(info).toHaveBeenCalledExactlyOnceWith(
+          'include: no values given',
         );
       });
 
@@ -173,6 +279,32 @@ describe('Include class', () => {
 
         expect(result).toEqual(expected);
       });
+
+      test('should format include relations without options', () => {
+        input = ['author', 'comments'];
+        expected = {
+          data: { [QUERY_NAMES.INC]: 'author,comments' },
+          success: true,
+        };
+
+        result = Include.safe(input);
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should format nested dot-notation relations with generic shape', () => {
+        interface Post {
+          author: { profile: { avatar: string } };
+          comments: { id: string };
+        }
+
+        result = Include.safe<Post>(['author.profile', 'comments']);
+
+        expect(result).toEqual({
+          data: { [QUERY_NAMES.INC]: 'author.profile,comments' },
+          success: true,
+        });
+      });
     });
 
     describe('validations and edge cases', () => {
@@ -189,7 +321,47 @@ describe('Include class', () => {
           expect(result.error.message).toBe(
             'include: argument must be an array, got string instead',
           );
+          expect(result.error.issues).toEqual([
+            {
+              field: QUERY_NAMES.INC,
+              message: 'include: argument must be an array, got string instead',
+              value: input,
+            },
+          ]);
         }
+      });
+
+      test.each([
+        { label: 'null', value: null, type: 'null' },
+        { label: 'number', value: 123, type: 'number' },
+        { label: 'object', value: {}, type: 'object' },
+      ])(
+        'should return failure result if called with $label',
+        ({ value, type }) => {
+          result = Include.safe(value as never, { logger: noOpLogger });
+
+          expect(result.success).toBe(false);
+          if (!result.success) {
+            expect(result.error).toBeInstanceOf(ParamsL5ValidationError);
+            expect(result.error.field).toBe(QUERY_NAMES.INC);
+            expect(result.error.value).toBe(value);
+            expect(result.error.message).toBe(
+              `include: argument must be an array, got ${type} instead`,
+            );
+          }
+        },
+      );
+
+      test('should return success result with undefined if called with undefined or no arguments', () => {
+        expected = {
+          data: { [QUERY_NAMES.INC]: undefined },
+          success: true,
+        };
+
+        expect(Include.safe()).toEqual(expected);
+        expect(Include.safe(undefined, { logger: noOpLogger })).toEqual(
+          expected,
+        );
       });
 
       test('should return success result with undefined if called with an empty array', () => {
@@ -205,7 +377,7 @@ describe('Include class', () => {
       });
 
       test('should filter out non-string items', () => {
-        input = ['author', 123, 'comments'];
+        input = ['author', 123, null, undefined, {}, 'comments'];
         expected = {
           data: { [QUERY_NAMES.INC]: 'author,comments' },
           success: true,
@@ -216,8 +388,8 @@ describe('Include class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should filter out empty strings', () => {
-        input = ['author', '', 'comments', '   '];
+      test('should filter out empty and whitespace-only strings', () => {
+        input = ['author', '', 'comments', '   ', '\t\n'];
         expected = {
           data: { [QUERY_NAMES.INC]: 'author,comments' },
           success: true,
@@ -229,7 +401,7 @@ describe('Include class', () => {
       });
 
       test('should return success result with undefined if no values remain after filtering', () => {
-        input = [123];
+        input = [123, '', '   ', null];
         expected = {
           data: { [QUERY_NAMES.INC]: undefined },
           success: true,
@@ -242,6 +414,14 @@ describe('Include class', () => {
     });
 
     describe('include logging', () => {
+      test('should not log anything for valid values', () => {
+        Include.safe(['author', 'comments'], { logger });
+
+        expect(info).not.toHaveBeenCalled();
+        expect(warn).not.toHaveBeenCalled();
+        expect(error).not.toHaveBeenCalled();
+      });
+
       test('should log error if argument is not an array', () => {
         input = 'not an array';
 
@@ -252,6 +432,14 @@ describe('Include class', () => {
         );
       });
 
+      test('should log error if argument is null', () => {
+        Include.safe(null as never, { logger });
+
+        expect(error).toHaveBeenCalledExactlyOnceWith(
+          'include: argument must be an array, got null instead',
+        );
+      });
+
       test('should log info if an item is not a string', () => {
         input = ['author', 123];
 
@@ -259,6 +447,24 @@ describe('Include class', () => {
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'include: value must be a string, got number instead',
+        );
+      });
+
+      test('should log info if an item is an empty or whitespace-only string', () => {
+        input = ['author', '   '];
+
+        Include.safe(input, { logger });
+
+        expect(info).toHaveBeenCalledExactlyOnceWith(
+          'include: value must be a string, got string instead',
+        );
+      });
+
+      test('should log info when called with undefined or no arguments', () => {
+        Include.safe(undefined, { logger });
+
+        expect(info).toHaveBeenCalledExactlyOnceWith(
+          'include: no values given',
         );
       });
 

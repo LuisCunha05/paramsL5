@@ -48,17 +48,81 @@ describe('Filter class', () => {
 
         expect(result).toEqual(expected);
       });
+
+      test('should format a valid array without options', () => {
+        input = ['id', 'name'];
+        expected = { [QUERY_NAMES.FLT]: 'id;name' };
+
+        result = Filter.build(input);
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should format a single valid value without trailing delimiter', () => {
+        input = ['id'];
+        expected = { [QUERY_NAMES.FLT]: 'id' };
+
+        result = Filter.build(input);
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should format nested dot-notation paths with generic shape', () => {
+        interface User {
+          id: string;
+          profile: { avatar: string };
+        }
+
+        result = Filter.build<User>(['id', 'profile.avatar']);
+
+        expect(result).toEqual({ [QUERY_NAMES.FLT]: 'id;profile.avatar' });
+      });
     });
 
     describe('validations and edge cases', () => {
       test('should throw error if called with a non-array', () => {
         input = 'not an array';
+        let caught: unknown;
 
-        expect(() => Filter.build(input, { logger: noOpLogger })).toThrow(
-          ParamsL5ValidationError,
-        );
-        expect(() => Filter.build(input, { logger: noOpLogger })).toThrow(
-          'filter: argument must be an array, got string instead',
+        try {
+          Filter.build(input, { logger: noOpLogger });
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).toBeInstanceOf(ParamsL5ValidationError);
+        if (caught instanceof ParamsL5ValidationError) {
+          expect(caught.field).toBe(QUERY_NAMES.FLT);
+          expect(caught.value).toBe(input);
+          expect(caught.message).toBe(
+            'filter: argument must be an array, got string instead',
+          );
+          expect(caught.issues).toEqual([
+            {
+              field: QUERY_NAMES.FLT,
+              message: 'filter: argument must be an array, got string instead',
+              value: input,
+            },
+          ]);
+        }
+      });
+
+      test.each([
+        { label: 'null', value: null, type: 'null' },
+        { label: 'number', value: 123, type: 'number' },
+        { label: 'object', value: {}, type: 'object' },
+      ])('should throw error if called with $label', ({ value, type }) => {
+        expect(() =>
+          Filter.build(value as never, { logger: noOpLogger }),
+        ).toThrow(`filter: argument must be an array, got ${type} instead`);
+      });
+
+      test('should return empty result if called with undefined or no arguments', () => {
+        expected = { [QUERY_NAMES.FLT]: undefined };
+
+        expect(Filter.build()).toEqual(expected);
+        expect(Filter.build(undefined, { logger: noOpLogger })).toEqual(
+          expected,
         );
       });
 
@@ -72,7 +136,7 @@ describe('Filter class', () => {
       });
 
       test('should filter out non-string items', () => {
-        input = ['a', 123, 'b'];
+        input = ['a', 123, null, undefined, {}, 'b'];
         expected = { [QUERY_NAMES.FLT]: 'a;b' };
 
         result = Filter.build(input, { logger: noOpLogger });
@@ -80,8 +144,8 @@ describe('Filter class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should filter out empty strings', () => {
-        input = ['a', '', 'b', '   '];
+      test('should filter out empty and whitespace-only strings', () => {
+        input = ['a', '', 'b', '   ', '\t\n'];
         expected = { [QUERY_NAMES.FLT]: 'a;b' };
 
         result = Filter.build(input, { logger: noOpLogger });
@@ -90,7 +154,7 @@ describe('Filter class', () => {
       });
 
       test('should return empty result if no values remain after filtering', () => {
-        input = [123];
+        input = [123, '', '   ', null];
         expected = { [QUERY_NAMES.FLT]: undefined };
 
         result = Filter.build(input, { logger: noOpLogger });
@@ -100,13 +164,35 @@ describe('Filter class', () => {
     });
 
     describe('filter logging', () => {
+      test('should not log anything for valid values', () => {
+        Filter.build(['a', 'b'], { logger });
+
+        expect(info).not.toHaveBeenCalled();
+        expect(warn).not.toHaveBeenCalled();
+        expect(error).not.toHaveBeenCalled();
+      });
+
       test('should log error if argument is not an array', () => {
         input = 'not an array';
 
-        expect(() => Filter.build(input, { logger })).toThrow();
+        expect(() => Filter.build(input, { logger })).toThrow(
+          ParamsL5ValidationError,
+        );
 
         expect(error).toHaveBeenCalledExactlyOnceWith(
           'filter: argument must be an array, got string instead',
+        );
+        expect(info).not.toHaveBeenCalled();
+        expect(warn).not.toHaveBeenCalled();
+      });
+
+      test('should log error if argument is null', () => {
+        expect(() => Filter.build(null as never, { logger })).toThrow(
+          ParamsL5ValidationError,
+        );
+
+        expect(error).toHaveBeenCalledExactlyOnceWith(
+          'filter: argument must be an array, got null instead',
         );
       });
 
@@ -118,6 +204,22 @@ describe('Filter class', () => {
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'filter: value must be a string, got number instead',
         );
+      });
+
+      test('should log info if an item is an empty or whitespace-only string', () => {
+        input = ['a', '   '];
+
+        Filter.build(input, { logger });
+
+        expect(info).toHaveBeenCalledExactlyOnceWith(
+          'filter: value must be a string, got string instead',
+        );
+      });
+
+      test('should log info when called with undefined or no arguments', () => {
+        Filter.build(undefined, { logger });
+
+        expect(info).toHaveBeenCalledExactlyOnceWith('filter: no values given');
       });
 
       test('should log info with empty array', () => {
@@ -171,6 +273,32 @@ describe('Filter class', () => {
 
         expect(result).toEqual(expected);
       });
+
+      test('should format a valid array without options', () => {
+        input = ['id', 'name'];
+        expected = {
+          data: { [QUERY_NAMES.FLT]: 'id;name' },
+          success: true,
+        };
+
+        result = Filter.safe(input);
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should format nested dot-notation paths with generic shape', () => {
+        interface User {
+          id: string;
+          profile: { avatar: string };
+        }
+
+        result = Filter.safe<User>(['id', 'profile.avatar']);
+
+        expect(result).toEqual({
+          data: { [QUERY_NAMES.FLT]: 'id;profile.avatar' },
+          success: true,
+        });
+      });
     });
 
     describe('validations and edge cases', () => {
@@ -187,7 +315,47 @@ describe('Filter class', () => {
           expect(result.error.message).toBe(
             'filter: argument must be an array, got string instead',
           );
+          expect(result.error.issues).toEqual([
+            {
+              field: QUERY_NAMES.FLT,
+              message: 'filter: argument must be an array, got string instead',
+              value: input,
+            },
+          ]);
         }
+      });
+
+      test.each([
+        { label: 'null', value: null, type: 'null' },
+        { label: 'number', value: 123, type: 'number' },
+        { label: 'object', value: {}, type: 'object' },
+      ])(
+        'should return failure result if called with $label',
+        ({ value, type }) => {
+          result = Filter.safe(value as never, { logger: noOpLogger });
+
+          expect(result.success).toBe(false);
+          if (!result.success) {
+            expect(result.error).toBeInstanceOf(ParamsL5ValidationError);
+            expect(result.error.field).toBe(QUERY_NAMES.FLT);
+            expect(result.error.value).toBe(value);
+            expect(result.error.message).toBe(
+              `filter: argument must be an array, got ${type} instead`,
+            );
+          }
+        },
+      );
+
+      test('should return success result with undefined if called with undefined or no arguments', () => {
+        expected = {
+          data: { [QUERY_NAMES.FLT]: undefined },
+          success: true,
+        };
+
+        expect(Filter.safe()).toEqual(expected);
+        expect(Filter.safe(undefined, { logger: noOpLogger })).toEqual(
+          expected,
+        );
       });
 
       test('should return success result with undefined if called with an empty array', () => {
@@ -203,7 +371,7 @@ describe('Filter class', () => {
       });
 
       test('should filter out non-string items', () => {
-        input = ['a', 123, 'b'];
+        input = ['a', 123, null, undefined, {}, 'b'];
         expected = {
           data: { [QUERY_NAMES.FLT]: 'a;b' },
           success: true,
@@ -214,8 +382,8 @@ describe('Filter class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should filter out empty strings', () => {
-        input = ['a', '', 'b', '   '];
+      test('should filter out empty and whitespace-only strings', () => {
+        input = ['a', '', 'b', '   ', '\t\n'];
         expected = {
           data: { [QUERY_NAMES.FLT]: 'a;b' },
           success: true,
@@ -227,7 +395,7 @@ describe('Filter class', () => {
       });
 
       test('should return success result with undefined if no values remain after filtering', () => {
-        input = [123];
+        input = [123, '', '   ', null];
         expected = {
           data: { [QUERY_NAMES.FLT]: undefined },
           success: true,
@@ -240,6 +408,14 @@ describe('Filter class', () => {
     });
 
     describe('filter logging', () => {
+      test('should not log anything for valid values', () => {
+        Filter.safe(['a', 'b'], { logger });
+
+        expect(info).not.toHaveBeenCalled();
+        expect(warn).not.toHaveBeenCalled();
+        expect(error).not.toHaveBeenCalled();
+      });
+
       test('should log error if argument is not an array', () => {
         input = 'not an array';
 
@@ -247,6 +423,14 @@ describe('Filter class', () => {
 
         expect(error).toHaveBeenCalledExactlyOnceWith(
           'filter: argument must be an array, got string instead',
+        );
+      });
+
+      test('should log error if argument is null', () => {
+        Filter.safe(null as never, { logger });
+
+        expect(error).toHaveBeenCalledExactlyOnceWith(
+          'filter: argument must be an array, got null instead',
         );
       });
 
@@ -258,6 +442,22 @@ describe('Filter class', () => {
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'filter: value must be a string, got number instead',
         );
+      });
+
+      test('should log info if an item is an empty or whitespace-only string', () => {
+        input = ['a', '   '];
+
+        Filter.safe(input, { logger });
+
+        expect(info).toHaveBeenCalledExactlyOnceWith(
+          'filter: value must be a string, got string instead',
+        );
+      });
+
+      test('should log info when called with undefined or no arguments', () => {
+        Filter.safe(undefined, { logger });
+
+        expect(info).toHaveBeenCalledExactlyOnceWith('filter: no values given');
       });
 
       test('should log info with empty array', () => {

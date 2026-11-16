@@ -22,7 +22,7 @@ export class ParamsL5ValidationError extends Error {
     this.field = options.field;
     this.value = options.value;
 
-    if (options.issues && !options.issues.length) {
+    if (options.issues && options.issues.length > 0) {
       this.issues = options.issues;
     } else if (options.field) {
       this.issues = [{ field: options.field, message, value: options.value }];

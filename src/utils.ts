@@ -119,6 +119,16 @@ export function filterWithDelimeter<TLabel extends TQueryKeys>(
   logger?: TLogger,
 ): TResult<Record<TLabel, string | undefined>> {
   const log = logger;
+  if (value === undefined) {
+    const message = msgNoValues(label);
+    log?.info(message);
+    return {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+      data: { [label]: undefined } as Record<TLabel, undefined>,
+      success: true,
+    };
+  }
+
   if (!isArray(value)) {
     const message = msgNotArray(label, typeName(value));
     log?.error(message);

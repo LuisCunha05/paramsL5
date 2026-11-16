@@ -24,7 +24,7 @@ export interface TFilterResult {
  *
  * @example
  * ```typescript
- * filter(['id', 'name', 'email']); // => { filter: "id;name;email" }
+ * Filter.build(['id', 'name', 'email']); // => { filter: "id;name;email" }
  * ```
  */
 

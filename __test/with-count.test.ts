@@ -46,17 +46,84 @@ describe('WithCount class', () => {
 
         expect(result).toEqual(expected);
       });
+
+      test('should format relations without options', () => {
+        input = ['comments', 'likes'];
+        expected = { [QUERY_NAMES.WTC]: 'comments;likes' };
+
+        result = WithCount.build(input);
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should format a single relation without trailing delimiter', () => {
+        input = ['comments'];
+        expected = { [QUERY_NAMES.WTC]: 'comments' };
+
+        result = WithCount.build(input);
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should format nested dot-notation relations with generic shape', () => {
+        interface Post {
+          comments: { replies: { id: string }[] }[];
+          likes: { id: string }[];
+        }
+
+        result = WithCount.build<Post>(['comments', 'likes']);
+
+        expect(result).toEqual({
+          [QUERY_NAMES.WTC]: 'comments;likes',
+        });
+      });
     });
 
     describe('validations and edge cases', () => {
       test('should throw error if called with a non-array', () => {
         input = 'not an array';
+        let caught: unknown;
 
-        expect(() => WithCount.build(input, { logger: noOpLogger })).toThrow(
-          ParamsL5ValidationError,
-        );
-        expect(() => WithCount.build(input, { logger: noOpLogger })).toThrow(
-          'withCount: argument must be an array, got string instead',
+        try {
+          WithCount.build(input, { logger: noOpLogger });
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).toBeInstanceOf(ParamsL5ValidationError);
+        if (caught instanceof ParamsL5ValidationError) {
+          expect(caught.field).toBe(QUERY_NAMES.WTC);
+          expect(caught.value).toBe(input);
+          expect(caught.message).toBe(
+            'withCount: argument must be an array, got string instead',
+          );
+          expect(caught.issues).toEqual([
+            {
+              field: QUERY_NAMES.WTC,
+              message:
+                'withCount: argument must be an array, got string instead',
+              value: input,
+            },
+          ]);
+        }
+      });
+
+      test.each([
+        { label: 'null', value: null, type: 'null' },
+        { label: 'number', value: 123, type: 'number' },
+        { label: 'object', value: {}, type: 'object' },
+      ])('should throw error if called with $label', ({ value, type }) => {
+        expect(() =>
+          WithCount.build(value as never, { logger: noOpLogger }),
+        ).toThrow(`withCount: argument must be an array, got ${type} instead`);
+      });
+
+      test('should return empty result if called with undefined or no arguments', () => {
+        expected = { [QUERY_NAMES.WTC]: undefined };
+
+        expect(WithCount.build()).toEqual(expected);
+        expect(WithCount.build(undefined, { logger: noOpLogger })).toEqual(
+          expected,
         );
       });
 
@@ -70,7 +137,7 @@ describe('WithCount class', () => {
       });
 
       test('should filter out non-string items', () => {
-        input = ['comments', 123, 'likes'];
+        input = ['comments', 123, null, undefined, {}, 'likes'];
         expected = { [QUERY_NAMES.WTC]: 'comments;likes' };
 
         result = WithCount.build(input, { logger: noOpLogger });
@@ -78,8 +145,8 @@ describe('WithCount class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should filter out empty strings', () => {
-        input = ['comments', '', 'likes', '   '];
+      test('should filter out empty and whitespace-only strings', () => {
+        input = ['comments', '', 'likes', '   ', '\t\n'];
         expected = { [QUERY_NAMES.WTC]: 'comments;likes' };
 
         result = WithCount.build(input, { logger: noOpLogger });
@@ -88,7 +155,7 @@ describe('WithCount class', () => {
       });
 
       test('should return empty result if no values remain after filtering', () => {
-        input = [123];
+        input = [123, '', '   ', null];
         expected = { [QUERY_NAMES.WTC]: undefined };
 
         result = WithCount.build(input, { logger: noOpLogger });
@@ -98,13 +165,35 @@ describe('WithCount class', () => {
     });
 
     describe('withCount logging', () => {
+      test('should not log anything for valid values', () => {
+        WithCount.build(['comments', 'likes'], { logger });
+
+        expect(info).not.toHaveBeenCalled();
+        expect(warn).not.toHaveBeenCalled();
+        expect(error).not.toHaveBeenCalled();
+      });
+
       test('should log error if argument is not an array', () => {
         input = 'not an array';
 
-        expect(() => WithCount.build(input, { logger })).toThrow();
+        expect(() => WithCount.build(input, { logger })).toThrow(
+          ParamsL5ValidationError,
+        );
 
         expect(error).toHaveBeenCalledExactlyOnceWith(
           'withCount: argument must be an array, got string instead',
+        );
+        expect(info).not.toHaveBeenCalled();
+        expect(warn).not.toHaveBeenCalled();
+      });
+
+      test('should log error if argument is null', () => {
+        expect(() => WithCount.build(null as never, { logger })).toThrow(
+          ParamsL5ValidationError,
+        );
+
+        expect(error).toHaveBeenCalledExactlyOnceWith(
+          'withCount: argument must be an array, got null instead',
         );
       });
 
@@ -115,6 +204,24 @@ describe('WithCount class', () => {
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'withCount: value must be a string, got number instead',
+        );
+      });
+
+      test('should log info if an item is an empty or whitespace-only string', () => {
+        input = ['comments', '   '];
+
+        WithCount.build(input, { logger });
+
+        expect(info).toHaveBeenCalledExactlyOnceWith(
+          'withCount: value must be a string, got string instead',
+        );
+      });
+
+      test('should log info when called with undefined or no arguments', () => {
+        WithCount.build(undefined, { logger });
+
+        expect(info).toHaveBeenCalledExactlyOnceWith(
+          'withCount: no values given',
         );
       });
 
@@ -171,6 +278,32 @@ describe('WithCount class', () => {
 
         expect(result).toEqual(expected);
       });
+
+      test('should format relations without options', () => {
+        input = ['comments', 'likes'];
+        expected = {
+          data: { [QUERY_NAMES.WTC]: 'comments;likes' },
+          success: true,
+        };
+
+        result = WithCount.safe(input);
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should format nested dot-notation relations with generic shape', () => {
+        interface Post {
+          comments: { replies: { id: string }[] }[];
+          likes: { id: string }[];
+        }
+
+        result = WithCount.safe<Post>(['comments', 'likes']);
+
+        expect(result).toEqual({
+          data: { [QUERY_NAMES.WTC]: 'comments;likes' },
+          success: true,
+        });
+      });
     });
 
     describe('validations and edge cases', () => {
@@ -187,7 +320,48 @@ describe('WithCount class', () => {
           expect(result.error.message).toBe(
             'withCount: argument must be an array, got string instead',
           );
+          expect(result.error.issues).toEqual([
+            {
+              field: QUERY_NAMES.WTC,
+              message:
+                'withCount: argument must be an array, got string instead',
+              value: input,
+            },
+          ]);
         }
+      });
+
+      test.each([
+        { label: 'null', value: null, type: 'null' },
+        { label: 'number', value: 123, type: 'number' },
+        { label: 'object', value: {}, type: 'object' },
+      ])(
+        'should return failure result if called with $label',
+        ({ value, type }) => {
+          result = WithCount.safe(value as never, { logger: noOpLogger });
+
+          expect(result.success).toBe(false);
+          if (!result.success) {
+            expect(result.error).toBeInstanceOf(ParamsL5ValidationError);
+            expect(result.error.field).toBe(QUERY_NAMES.WTC);
+            expect(result.error.value).toBe(value);
+            expect(result.error.message).toBe(
+              `withCount: argument must be an array, got ${type} instead`,
+            );
+          }
+        },
+      );
+
+      test('should return success result with undefined if called with undefined or no arguments', () => {
+        expected = {
+          data: { [QUERY_NAMES.WTC]: undefined },
+          success: true,
+        };
+
+        expect(WithCount.safe()).toEqual(expected);
+        expect(WithCount.safe(undefined, { logger: noOpLogger })).toEqual(
+          expected,
+        );
       });
 
       test('should return success result with undefined if called with an empty array', () => {
@@ -203,7 +377,7 @@ describe('WithCount class', () => {
       });
 
       test('should filter out non-string items', () => {
-        input = ['comments', 123, 'likes'];
+        input = ['comments', 123, null, undefined, {}, 'likes'];
         expected = {
           data: { [QUERY_NAMES.WTC]: 'comments;likes' },
           success: true,
@@ -214,8 +388,8 @@ describe('WithCount class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should filter out empty strings', () => {
-        input = ['comments', '', 'likes', '   '];
+      test('should filter out empty and whitespace-only strings', () => {
+        input = ['comments', '', 'likes', '   ', '\t\n'];
         expected = {
           data: { [QUERY_NAMES.WTC]: 'comments;likes' },
           success: true,
@@ -227,7 +401,7 @@ describe('WithCount class', () => {
       });
 
       test('should return success result with undefined if no values remain after filtering', () => {
-        input = [123];
+        input = [123, '', '   ', null];
         expected = {
           data: { [QUERY_NAMES.WTC]: undefined },
           success: true,
@@ -240,6 +414,14 @@ describe('WithCount class', () => {
     });
 
     describe('withCount logging', () => {
+      test('should not log anything for valid values', () => {
+        WithCount.safe(['comments', 'likes'], { logger });
+
+        expect(info).not.toHaveBeenCalled();
+        expect(warn).not.toHaveBeenCalled();
+        expect(error).not.toHaveBeenCalled();
+      });
+
       test('should log error if argument is not an array', () => {
         input = 'not an array';
 
@@ -250,6 +432,14 @@ describe('WithCount class', () => {
         );
       });
 
+      test('should log error if argument is null', () => {
+        WithCount.safe(null as never, { logger });
+
+        expect(error).toHaveBeenCalledExactlyOnceWith(
+          'withCount: argument must be an array, got null instead',
+        );
+      });
+
       test('should log info if an item is not a string', () => {
         input = ['comments', 123];
 
@@ -257,6 +447,24 @@ describe('WithCount class', () => {
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'withCount: value must be a string, got number instead',
+        );
+      });
+
+      test('should log info if an item is an empty or whitespace-only string', () => {
+        input = ['comments', '   '];
+
+        WithCount.safe(input, { logger });
+
+        expect(info).toHaveBeenCalledExactlyOnceWith(
+          'withCount: value must be a string, got string instead',
+        );
+      });
+
+      test('should log info when called with undefined or no arguments', () => {
+        WithCount.safe(undefined, { logger });
+
+        expect(info).toHaveBeenCalledExactlyOnceWith(
+          'withCount: no values given',
         );
       });
 

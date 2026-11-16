@@ -46,18 +46,86 @@ describe('With class', () => {
 
         expect(result).toEqual(expected);
       });
+
+      test('should format relations without options', () => {
+        input = ['posts', 'comments'];
+        expected = { [QUERY_NAMES.WTH]: 'posts;comments' };
+
+        result = With.build(input);
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should format a single relation without trailing delimiter', () => {
+        input = ['posts'];
+        expected = { [QUERY_NAMES.WTH]: 'posts' };
+
+        result = With.build(input);
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should format pipe and dot notation relation paths with generic shape', () => {
+        interface User {
+          posts: { id: string; title: string }[];
+          comments: { body: string }[];
+        }
+
+        result = With.build<User>([
+          'posts|title',
+          'posts:id|title',
+          'comments',
+        ]);
+
+        expect(result).toEqual({
+          [QUERY_NAMES.WTH]: 'posts|title;posts:id|title;comments',
+        });
+      });
     });
 
     describe('validations and edge cases', () => {
       test('should throw error if called with a non-array', () => {
         input = 'not an array';
+        let caught: unknown;
 
-        expect(() => With.build(input, { logger: noOpLogger })).toThrow(
-          ParamsL5ValidationError,
-        );
-        expect(() => With.build(input, { logger: noOpLogger })).toThrow(
-          'with: argument must be an array, got string instead',
-        );
+        try {
+          With.build(input, { logger: noOpLogger });
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).toBeInstanceOf(ParamsL5ValidationError);
+        if (caught instanceof ParamsL5ValidationError) {
+          expect(caught.field).toBe(QUERY_NAMES.WTH);
+          expect(caught.value).toBe(input);
+          expect(caught.message).toBe(
+            'with: argument must be an array, got string instead',
+          );
+          expect(caught.issues).toEqual([
+            {
+              field: QUERY_NAMES.WTH,
+              message: 'with: argument must be an array, got string instead',
+              value: input,
+            },
+          ]);
+        }
+      });
+
+      test.each([
+        { label: 'null', value: null, type: 'null' },
+        { label: 'number', value: 123, type: 'number' },
+        { label: 'object', value: {}, type: 'object' },
+      ])('should throw error if called with $label', ({ value, type }) => {
+        expect(() =>
+          With.build(value as never, { logger: noOpLogger }),
+        ).toThrow(`with: argument must be an array, got ${type} instead`);
+      });
+
+      test('should return empty result if called with undefined or no arguments', () => {
+        expected = { [QUERY_NAMES.WTH]: undefined };
+
+        expect(With.build()).toEqual(expected);
+        expect(With.build(undefined, { logger: noOpLogger })).toEqual(expected);
       });
 
       test('should return empty result if called with an empty array', () => {
@@ -70,7 +138,7 @@ describe('With class', () => {
       });
 
       test('should filter out non-string items', () => {
-        input = ['posts', 123, 'comments'];
+        input = ['posts', 123, null, undefined, {}, 'comments'];
         expected = { [QUERY_NAMES.WTH]: 'posts;comments' };
 
         result = With.build(input, { logger: noOpLogger });
@@ -78,8 +146,8 @@ describe('With class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should filter out empty strings', () => {
-        input = ['posts', '', 'comments', '   '];
+      test('should filter out empty and whitespace-only strings', () => {
+        input = ['posts', '', 'comments', '   ', '\t\n'];
         expected = { [QUERY_NAMES.WTH]: 'posts;comments' };
 
         result = With.build(input, { logger: noOpLogger });
@@ -88,7 +156,7 @@ describe('With class', () => {
       });
 
       test('should return empty result if no values remain after filtering', () => {
-        input = [123];
+        input = [123, '', '   ', null];
         expected = { [QUERY_NAMES.WTH]: undefined };
 
         result = With.build(input, { logger: noOpLogger });
@@ -98,13 +166,35 @@ describe('With class', () => {
     });
 
     describe('with logging', () => {
+      test('should not log anything for valid values', () => {
+        With.build(['posts', 'comments'], { logger });
+
+        expect(info).not.toHaveBeenCalled();
+        expect(warn).not.toHaveBeenCalled();
+        expect(error).not.toHaveBeenCalled();
+      });
+
       test('should log error if argument is not an array', () => {
         input = 'not an array';
 
-        expect(() => With.build(input, { logger })).toThrow();
+        expect(() => With.build(input, { logger })).toThrow(
+          ParamsL5ValidationError,
+        );
 
         expect(error).toHaveBeenCalledExactlyOnceWith(
           'with: argument must be an array, got string instead',
+        );
+        expect(info).not.toHaveBeenCalled();
+        expect(warn).not.toHaveBeenCalled();
+      });
+
+      test('should log error if argument is null', () => {
+        expect(() => With.build(null as never, { logger })).toThrow(
+          ParamsL5ValidationError,
+        );
+
+        expect(error).toHaveBeenCalledExactlyOnceWith(
+          'with: argument must be an array, got null instead',
         );
       });
 
@@ -116,6 +206,22 @@ describe('With class', () => {
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'with: value must be a string, got number instead',
         );
+      });
+
+      test('should log info if value is an empty or whitespace-only string', () => {
+        input = ['posts', '   '];
+
+        With.build(input, { logger });
+
+        expect(info).toHaveBeenCalledExactlyOnceWith(
+          'with: value must be a string, got string instead',
+        );
+      });
+
+      test('should log info when called with undefined or no arguments', () => {
+        With.build(undefined, { logger });
+
+        expect(info).toHaveBeenCalledExactlyOnceWith('with: no values given');
       });
 
       test('should log info with empty array', () => {
@@ -169,6 +275,32 @@ describe('With class', () => {
 
         expect(result).toEqual(expected);
       });
+
+      test('should format relations without options', () => {
+        input = ['posts', 'comments'];
+        expected = {
+          data: { [QUERY_NAMES.WTH]: 'posts;comments' },
+          success: true,
+        };
+
+        result = With.safe(input);
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should format pipe and dot notation relation paths with generic shape', () => {
+        interface User {
+          posts: { id: string; title: string }[];
+          comments: { body: string }[];
+        }
+
+        result = With.safe<User>(['posts|title', 'posts:id|title', 'comments']);
+
+        expect(result).toEqual({
+          data: { [QUERY_NAMES.WTH]: 'posts|title;posts:id|title;comments' },
+          success: true,
+        });
+      });
     });
 
     describe('validations and edge cases', () => {
@@ -185,7 +317,45 @@ describe('With class', () => {
           expect(result.error.message).toBe(
             'with: argument must be an array, got string instead',
           );
+          expect(result.error.issues).toEqual([
+            {
+              field: QUERY_NAMES.WTH,
+              message: 'with: argument must be an array, got string instead',
+              value: input,
+            },
+          ]);
         }
+      });
+
+      test.each([
+        { label: 'null', value: null, type: 'null' },
+        { label: 'number', value: 123, type: 'number' },
+        { label: 'object', value: {}, type: 'object' },
+      ])(
+        'should return failure result if called with $label',
+        ({ value, type }) => {
+          result = With.safe(value as never, { logger: noOpLogger });
+
+          expect(result.success).toBe(false);
+          if (!result.success) {
+            expect(result.error).toBeInstanceOf(ParamsL5ValidationError);
+            expect(result.error.field).toBe(QUERY_NAMES.WTH);
+            expect(result.error.value).toBe(value);
+            expect(result.error.message).toBe(
+              `with: argument must be an array, got ${type} instead`,
+            );
+          }
+        },
+      );
+
+      test('should return success result with undefined if called with undefined or no arguments', () => {
+        expected = {
+          data: { [QUERY_NAMES.WTH]: undefined },
+          success: true,
+        };
+
+        expect(With.safe()).toEqual(expected);
+        expect(With.safe(undefined, { logger: noOpLogger })).toEqual(expected);
       });
 
       test('should return success result with undefined if called with an empty array', () => {
@@ -201,7 +371,7 @@ describe('With class', () => {
       });
 
       test('should filter out non-string items', () => {
-        input = ['posts', 123, 'comments'];
+        input = ['posts', 123, null, undefined, {}, 'comments'];
         expected = {
           data: { [QUERY_NAMES.WTH]: 'posts;comments' },
           success: true,
@@ -212,8 +382,8 @@ describe('With class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should filter out empty strings', () => {
-        input = ['posts', '', 'comments', '   '];
+      test('should filter out empty and whitespace-only strings', () => {
+        input = ['posts', '', 'comments', '   ', '\t\n'];
         expected = {
           data: { [QUERY_NAMES.WTH]: 'posts;comments' },
           success: true,
@@ -225,7 +395,7 @@ describe('With class', () => {
       });
 
       test('should return success result with undefined if no values remain after filtering', () => {
-        input = [123];
+        input = [123, '', '   ', null];
         expected = {
           data: { [QUERY_NAMES.WTH]: undefined },
           success: true,
@@ -238,6 +408,14 @@ describe('With class', () => {
     });
 
     describe('with logging', () => {
+      test('should not log anything for valid values', () => {
+        With.safe(['posts', 'comments'], { logger });
+
+        expect(info).not.toHaveBeenCalled();
+        expect(warn).not.toHaveBeenCalled();
+        expect(error).not.toHaveBeenCalled();
+      });
+
       test('should log error if argument is not an array', () => {
         input = 'not an array';
 
@@ -245,6 +423,14 @@ describe('With class', () => {
 
         expect(error).toHaveBeenCalledExactlyOnceWith(
           'with: argument must be an array, got string instead',
+        );
+      });
+
+      test('should log error if argument is null', () => {
+        With.safe(null as never, { logger });
+
+        expect(error).toHaveBeenCalledExactlyOnceWith(
+          'with: argument must be an array, got null instead',
         );
       });
 
@@ -256,6 +442,22 @@ describe('With class', () => {
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'with: value must be a string, got number instead',
         );
+      });
+
+      test('should log info if value is an empty or whitespace-only string', () => {
+        input = ['posts', '   '];
+
+        With.safe(input, { logger });
+
+        expect(info).toHaveBeenCalledExactlyOnceWith(
+          'with: value must be a string, got string instead',
+        );
+      });
+
+      test('should log info when called with undefined or no arguments', () => {
+        With.safe(undefined, { logger });
+
+        expect(info).toHaveBeenCalledExactlyOnceWith('with: no values given');
       });
 
       test('should log info with empty array', () => {
