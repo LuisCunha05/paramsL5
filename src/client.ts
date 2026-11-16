@@ -5,16 +5,16 @@ import type {
   TValidateFlatArray,
   TValidateKeyTupleArray,
 } from '#/types';
-import { filter } from '#gen/filter';
-import { include } from '#gen/include';
+import { Filter } from '#gen/filter';
+import { Include } from '#gen/include';
 import { type TLimit, limit } from '#gen/limit';
 import { type TSortBy, orderBySortBy } from '#gen/order-sort';
 import { type TPage, page } from '#gen/page';
 import { query } from '#gen/query';
 import { type TCondition, search } from '#gen/search';
 import { type TSearchJoin, searchJoin } from '#gen/search-join';
-import { withRel } from '#gen/with';
-import { withCount } from '#gen/with-count';
+import { With } from '#gen/with';
+import { WithCount } from '#gen/with-count';
 
 interface DefaultOptions {
   sortBy?: TSortBy;
@@ -78,8 +78,8 @@ export function createClient(options: ClientOptions = {}): ClientRunner {
     });
 
     const result: TResultParams = {
-      ...filter(params.filter, { logger }),
-      ...include(params.include, { logger }),
+      ...Filter.build(params.filter, { logger }),
+      ...Include.build(params.include, { logger }),
       ...limit(params.limit, {
         defaultValue: options?.defaultOptions?.limit,
         logger,
@@ -101,8 +101,8 @@ export function createClient(options: ClientOptions = {}): ClientRunner {
       ...searchJoin(params.searchJoin ?? options?.defaultOptions?.searchJoin, {
         logger,
       }),
-      ...withRel(params.with, { logger }),
-      ...withCount(params.withCount, { logger }),
+      ...With.build(params.with, { logger }),
+      ...WithCount.build(params.withCount, { logger }),
       toParams: () => {},
     };
 

@@ -1,14 +1,14 @@
 import { type TParamsStrings } from '#/utils';
-import { type TFilter, filter } from '#gen/filter';
-import { type TInclude, include } from '#gen/include';
+import { type TFilter, Filter } from '#gen/filter';
+import { type TInclude, Include } from '#gen/include';
 import { type TLimit, limit } from '#gen/limit';
 import { type TOrderBySortBy, orderBySortBy } from '#gen/order-sort';
 import { type TPage, page } from '#gen/page';
 import { query } from '#gen/query';
 import { type TSearch, search } from '#gen/search';
 import { type TSearchJoin, searchJoin } from '#gen/search-join';
-import { type TWith, withRel } from '#gen/with';
-import { type TWithCount, withCount } from '#gen/with-count';
+import { type TWith, With } from '#gen/with';
+import { type TWithCount, WithCount } from '#gen/with-count';
 
 export interface TParams<TShape extends object = Record<string, unknown>> {
   readonly filter?: TFilter<TShape>;
@@ -51,8 +51,8 @@ export function paramsL5<TShape extends object = Record<string, unknown>>(
   arg: TParams<TShape> = {},
 ) {
   const result: TResultParams = {
-    ...filter(arg.filter),
-    ...include(arg.include),
+    ...Filter.build(arg.filter),
+    ...Include.build(arg.include),
     ...limit(arg.limit),
     ...orderBySortBy(arg.orderBySortBy),
     ...page(arg.page),
@@ -60,8 +60,8 @@ export function paramsL5<TShape extends object = Record<string, unknown>>(
       includeSearchFields: arg.includeSearchFields,
     }),
     ...searchJoin(arg.searchJoin),
-    ...withRel(arg.with),
-    ...withCount(arg.withCount),
+    ...With.build(arg.with),
+    ...WithCount.build(arg.withCount),
     toParams: () => {},
   };
 

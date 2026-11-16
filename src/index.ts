@@ -39,7 +39,7 @@ export type { TFilter, TFilterResult } from '#gen/filter';
  * filter(['id', 'name', 'email']); // => { filter: "id;name;email" }
  * ```
  */
-export { filter } from '#gen/filter';
+export { Filter } from '#gen/filter';
 
 export type { TInclude, TIncludeResult } from '#gen/include';
 
@@ -58,7 +58,7 @@ export type { TInclude, TIncludeResult } from '#gen/include';
  * include(['profile', 'posts']); // => { include: "profile,posts" }
  * ```
  */
-export { include } from '#gen/include';
+export { Include } from '#gen/include';
 
 export type { TLimit, TLimitResult } from '#gen/limit';
 
@@ -182,7 +182,7 @@ export type { TWith, TWithResult } from '#gen/with';
  * withRel(['author', 'comments.author']); // => { with: "author;comments.author" }
  * ```
  */
-export { withRel } from '#gen/with';
+export { With } from '#gen/with';
 
 export type { TWithCount, TWithCountResult } from '#gen/with-count';
 
@@ -201,7 +201,7 @@ export type { TWithCount, TWithCountResult } from '#gen/with-count';
  * withCount(['comments', 'likes']); // => { withCount: "comments;likes" }
  * ```
  */
-export { withCount } from '#gen/with-count';
+export { WithCount } from '#gen/with-count';
 
 /**
  * Compiles an object of repository query parameters into a URL-encoded query string (`URLSearchParams`).
