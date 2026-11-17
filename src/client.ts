@@ -8,7 +8,7 @@ import type {
 import { Filter } from '#gen/filter';
 import { Include } from '#gen/include';
 import { type TLimit, Limit } from '#gen/limit';
-import { type TSortBy, orderBySortBy } from '#gen/order-sort';
+import { OrderBySortBy, type TSortBy } from '#gen/order-sort';
 import { type TPage, Page } from '#gen/page';
 import { query } from '#gen/query';
 import { type TCondition, Search } from '#gen/search';
@@ -84,7 +84,7 @@ export function createClient(options: ClientOptions = {}): ClientRunner {
         defaultValue: options?.defaultOptions?.limit,
         logger,
       }),
-      ...orderBySortBy(params.orderBySortBy, {
+      ...OrderBySortBy.build(params.orderBySortBy, {
         defaultSortBy: options?.defaultOptions?.sortBy,
         logger,
       }),

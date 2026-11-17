@@ -2,7 +2,7 @@ import { type TParamsStrings } from '#/utils';
 import { type TFilter, Filter } from '#gen/filter';
 import { type TInclude, Include } from '#gen/include';
 import { type TLimit, Limit } from '#gen/limit';
-import { type TOrderBySortBy, orderBySortBy } from '#gen/order-sort';
+import { OrderBySortBy, type TOrderBySortBy } from '#gen/order-sort';
 import { type TPage, Page } from '#gen/page';
 import { query } from '#gen/query';
 import { type TSearch, Search } from '#gen/search';
@@ -54,7 +54,7 @@ export function paramsL5<TShape extends object = Record<string, unknown>>(
     ...Filter.build(arg.filter),
     ...Include.build(arg.include),
     ...Limit.build(arg.limit),
-    ...orderBySortBy(arg.orderBySortBy),
+    ...OrderBySortBy.build(arg.orderBySortBy),
     ...Page.build(arg.page),
     ...Search.build(arg.search, {
       includeSearchFields: arg.includeSearchFields,

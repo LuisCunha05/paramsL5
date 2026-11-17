@@ -79,25 +79,27 @@ export type { TLimit, TLimitResult } from '#gen/limit';
  */
 export { Limit } from '#gen/limit';
 
-export type { TOrderBySortBy, TOrderBySortByResult } from '#gen/order-sort';
+export type {
+  TOrderBySortBy,
+  TOrderBySortByOptions,
+  TOrderBySortByResult,
+  TSortBy,
+} from '#gen/order-sort';
 
 /**
  * Formats sorting columns and directions into paired `orderBy` and `sortedBy` parameters.
  *
  * @remarks
- * Fields are validated: `null`, `undefined`, and invalid shapes (such as malformed tuples or invalid sort directions) are filtered out safely.
- *
- * @param arg - Array of tuples in `[field, 'asc' | 'desc']` format.
- * @param options - Optional settings such as `defaultSortBy` and custom logger.
- * @returns An object `{ orderBy, sortedBy }` with semicolon-separated values, or `undefined` values if none remain.
+ * Top-level non-array inputs (excluding `null` and `undefined`) produce a validation error.
+ * Individual tuple entries with invalid shapes, keys, or sort directions are safely filtered out.
  *
  * @example
  * ```typescript
- * orderBySortBy([['created_at', 'desc'], ['name', 'asc']]);
+ * OrderBySortBy.build([['created_at', 'desc'], ['name', 'asc']]);
  * // => { orderBy: "created_at;name", sortedBy: "desc;asc" }
  * ```
  */
-export { orderBySortBy } from '#gen/order-sort';
+export { OrderBySortBy } from '#gen/order-sort';
 
 export type { TPage, TPageResult } from '#gen/page';
 
