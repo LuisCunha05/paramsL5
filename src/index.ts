@@ -121,30 +121,28 @@ export { Page } from '#gen/page';
 export type {
   TCondition,
   TSearch,
+  TSearchCondition,
   TSearchOptions,
   TSearchResult,
 } from '#gen/search';
 
 /**
- * Formats search criteria into `search` and optional `searchFields` parameter strings.
+ * Formats object-based search criteria into `search` and optional `searchFields` parameter strings.
  *
  * @remarks
- * Fields are validated: `null`, `undefined`, and invalid shapes (such as malformed tuples, non-array inputs, or invalid conditions) are filtered out safely.
- *
- * @param arg - Array of search tuples in `[field, value, condition?]` format.
- * @param options - Search options including `includeSearchFields` and `defaultCondition`.
- * @returns An object containing `{ search, searchFields }`, or `undefined` values if none remain.
+ * Top-level non-object inputs (excluding `null` and `undefined`) produce a validation error.
+ * Individual field entries with `null`, `undefined`, or invalid shapes/conditions are safely filtered out.
  *
  * @example
  * ```typescript
- * search([
- *   ['name', 'John', CONDITIONS.LIKE],
- *   ['age', 18, CONDITIONS.GTE],
- * ], { includeSearchFields: true });
+ * Search.build(
+ *   { name: { like: 'John' }, age: { gte: 18 } },
+ *   { includeSearchFields: true },
+ * );
  * // => { search: "name:John;age:18", searchFields: "name:like;age:>=" }
  * ```
  */
-export { search } from '#gen/search';
+export { Search } from '#gen/search';
 
 export type { TSearchJoin, TSearchJoinResult } from '#gen/search-join';
 
@@ -239,7 +237,7 @@ export type { TParams, TResultParams } from '#/params-l5';
  * @example
  * ```typescript
  * const query = paramsL5({
- *   search: [['status', 'active']],
+ *   search: { status: 'active' },
  *   filter: ['id', 'name'],
  *   limit: 10,
  * });

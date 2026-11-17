@@ -1,5 +1,7 @@
 import type { ParamsL5ValidationError } from '#/errors/ParamsL5ValidationError';
 
+import type { CONDITIONS } from './constants';
+
 export type TBaseValue = string | number | boolean;
 
 export type ToEnum<TObj> = TObj[keyof TObj];
@@ -21,7 +23,6 @@ export interface TLogger {
 
 export type Keys<TObj> = Extract<keyof TObj, string>;
 export type NonObject =
-  | readonly unknown[]
   | Date
   // oxlint-disable-next-line typescript/ban-types typescript/no-unsafe-function-type
   | Function
@@ -31,34 +32,43 @@ export type NonObject =
 
 export type TPath<
   TSource,
-  TKeys extends Keys<TSource> = Keys<TSource>,
-> = TSource extends object
-  ? TKeys extends string
-    ? TSource[TKeys] extends NonObject
-      ? TKeys
-      : TSource[TKeys] extends object
-        ? TKeys | `${TKeys}.${TPath<TSource[TKeys]>}`
-        : TKeys
-    : never
-  : never;
+  TDepth extends unknown[] = [],
+  // oxlint-disable-next-line no-magic-numbers
+> = TDepth['length'] extends 5
+  ? never
+  : TSource extends NonObject
+    ? never
+    : TSource extends object
+      ? {
+          [TKey in Keys<TSource>]: TElementType<TSource[TKey]> extends NonObject
+            ? TKey
+            : TElementType<TSource[TKey]> extends object
+              ?
+                  | TKey
+                  // oxlint-disable-next-line no-magic-numbers
+                  | `${TKey}.${TPath<TElementType<TSource[TKey]>, [...TDepth, 1]>}`
+              : TKey;
+        }[Keys<TSource>]
+      : never;
 
 type TElementType<TType> = TType extends readonly (infer TInt)[]
   ? TElementType<TInt>
   : TType;
 
-export type TPathPipe<
-  TSource,
-  TKeys extends Keys<TSource> = Keys<TSource>,
-> = TSource extends object
-  ? TKeys extends string
-    ? TElementType<TSource[TKeys]> extends object
-      ?
-          | TKeys
-          | `${TKeys}|${Keys<TElementType<TSource[TKeys]>>}`
-          | `${TKeys}:${string}|${Keys<TElementType<TSource[TKeys]>>}`
-      : TKeys
-    : never
-  : never;
+export type TPathPipe<TSource> = TSource extends NonObject
+  ? never
+  : TSource extends object
+    ? {
+        [TKeys in Keys<TSource>]: TElementType<TSource[TKeys]> extends NonObject
+          ? never
+          : TElementType<TSource[TKeys]> extends object
+            ?
+                | TKeys
+                | `${TKeys}|${Keys<TElementType<TSource[TKeys]>>}`
+                | `${TKeys}:${string}|${Keys<TElementType<TSource[TKeys]>>}`
+            : TKeys;
+      }[Keys<TSource>]
+    : never;
 
 export type TNoDuplicates<
   TTuple extends readonly unknown[],
@@ -97,3 +107,13 @@ export type TValidateKeyTupleArray<TArray> = TArray extends readonly unknown[]
     ? TArray
     : TNoDuplicateKeys<TArray>
   : TArray;
+
+export type TConditionObj = typeof CONDITIONS;
+export type TConditionKeys = keyof TConditionObj;
+
+export type OnlyOneKey<TObj> = {
+  [Keep in keyof TObj]: Record<Keep, TObj[Keep]> &
+    Partial<
+      Record<Exclude<keyof TObj, Keep>, 'Erro: Max one search type per key'>
+    >;
+}[keyof TObj];

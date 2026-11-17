@@ -5,6 +5,7 @@ const ARG_MUST_BE_ARRAY = 'argument must be an array';
 const TYPE_ARRAY = 'must have a type of array';
 const NON_EMPTY_STRING_KEYS = 'must have keys as non-empty strings';
 const VALUE_MUST_BE_STRING = 'value must be a string';
+const VALUE_MUST_BE_OBJECT = 'value must be a object';
 const IGNORING_ARRAY = 'ignoring array value: ';
 const IGNORING_VALUE = 'ignoring value: ';
 const EXPECTED_IN_BETWEEN = "expected 'in' or 'between'";
@@ -55,6 +56,10 @@ export function msgInvalidKey(label: string, got: string, index: number) {
 // Value validations
 export function msgMustBeString(label: string, got: string) {
   return `${label}: ${VALUE_MUST_BE_STRING}${gotInstead(got)}`;
+}
+
+export function msgMustBeObject(label: string, got: string) {
+  return `${label}: ${VALUE_MUST_BE_OBJECT}${gotInstead(got)}`;
 }
 
 export function msgMustBePositiveInteger(

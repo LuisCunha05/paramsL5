@@ -1,6 +1,5 @@
 export const CONDITIONS = Object.freeze({
   BTW: 'between',
-  DIFF: '!=',
   EQ: '=',
   GT: '>',
   GTE: '>=',
@@ -9,6 +8,7 @@ export const CONDITIONS = Object.freeze({
   LIKE: 'like',
   LT: '<',
   LTE: '<=',
+  NEQ: '!=',
 } as const);
 
 export const SEARCH_JOIN = Object.freeze({

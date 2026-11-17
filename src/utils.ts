@@ -1,5 +1,11 @@
-import { QUERY_NAMES } from '#/constants';
-import type { TBaseValue, TLogger, ToEnum, TResult } from '#/types';
+import { CONDITIONS, QUERY_NAMES } from '#/constants';
+import type {
+  TBaseValue,
+  TConditionKeys,
+  TLogger,
+  ToEnum,
+  TResult,
+} from '#/types';
 
 import { ParamsL5ValidationError } from './errors/ParamsL5ValidationError';
 import {
@@ -34,6 +40,15 @@ export function isBaseValue(arg: unknown): arg is TBaseValue {
     typeof arg !== 'boolean' &&
     !isNumber(arg) &&
     !isNonEmptyString(arg)
+  );
+}
+
+export function isObject(value: unknown): value is object {
+  return (
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    value !== null &&
+    !(value instanceof Date)
   );
 }
 
@@ -80,7 +95,7 @@ export function isArray(value: unknown): value is readonly unknown[] {
 
 export type TQueryKeys = ToEnum<typeof QUERY_NAMES>;
 export type TParamsStrings = Record<TQueryKeys, string | undefined>;
-export function assertQueryKey(val: string): val is TQueryKeys {
+export function isQueryKey(val: string): val is TQueryKeys {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   const kind = val as TQueryKeys;
   switch (kind) {
@@ -103,6 +118,12 @@ export function assertQueryKey(val: string): val is TQueryKeys {
       return false;
     }
   }
+}
+
+export function isConditionKey(val: string): val is TConditionKeys {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+  const kind = val as TConditionKeys;
+  return Boolean(CONDITIONS[kind]);
 }
 
 export function unwrap<TType>(result: TResult<TType>): TType {

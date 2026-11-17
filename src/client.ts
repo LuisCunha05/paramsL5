@@ -11,7 +11,7 @@ import { type TLimit, Limit } from '#gen/limit';
 import { type TSortBy, orderBySortBy } from '#gen/order-sort';
 import { type TPage, Page } from '#gen/page';
 import { query } from '#gen/query';
-import { type TCondition, search } from '#gen/search';
+import { type TCondition, Search } from '#gen/search';
 import { type TSearchJoin, SearchJoin } from '#gen/search-join';
 import { With } from '#gen/with';
 import { WithCount } from '#gen/with-count';
@@ -33,7 +33,7 @@ export interface ClientOptions {
 export type ValidateParams<TInput> = {
   [KFn in keyof TInput]: KFn extends 'include' | 'with' | 'withCount' | 'filter'
     ? TValidateFlatArray<TInput[KFn]>
-    : KFn extends 'orderBySortBy' | 'search'
+    : KFn extends 'orderBySortBy'
       ? TValidateKeyTupleArray<TInput[KFn]>
       : TInput[KFn];
 };
@@ -91,7 +91,7 @@ export function createClient(options: ClientOptions = {}): ClientRunner {
       ...Page.build(params.page ?? options?.defaultOptions?.page, {
         logger,
       }),
-      ...search(params.search, {
+      ...Search.build(params.search, {
         defaultCondition: options?.defaultOptions?.searchCondition,
         includeSearchFields:
           params.includeSearchFields ??

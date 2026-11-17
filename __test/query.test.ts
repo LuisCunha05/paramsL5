@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import { QUERY_NAMES } from '#/constants';
+import type { TParamsStrings } from '#/utils';
 import { query } from '#gen/query';
 
 describe('query function', () => {
@@ -29,7 +30,7 @@ describe('query function', () => {
   });
 
   test('should ignore keys not recognized as valid query parameter keys', () => {
-    const input = {
+    const input: Partial<TParamsStrings> = {
       [QUERY_NAMES.FLT]: 'id;name',
       // @ts-expect-error Testing invalid key
       invalidKey: 'should_be_ignored',

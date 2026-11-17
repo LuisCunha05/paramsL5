@@ -5,7 +5,7 @@ import { type TLimit, Limit } from '#gen/limit';
 import { type TOrderBySortBy, orderBySortBy } from '#gen/order-sort';
 import { type TPage, Page } from '#gen/page';
 import { query } from '#gen/query';
-import { type TSearch, search } from '#gen/search';
+import { type TSearch, Search } from '#gen/search';
 import { type TSearchJoin, SearchJoin } from '#gen/search-join';
 import { type TWith, With } from '#gen/with';
 import { type TWithCount, WithCount } from '#gen/with-count';
@@ -39,7 +39,7 @@ export type TResultParams = TParamsStrings & {
  * @example
  * ```typescript
  * const query = paramsL5({
- *   search: [['status', 'active']],
+ *   search: { status: 'active' },
  *   filter: ['id', 'name'],
  *   limit: 10,
  * });
@@ -56,7 +56,7 @@ export function paramsL5<TShape extends object = Record<string, unknown>>(
     ...Limit.build(arg.limit),
     ...orderBySortBy(arg.orderBySortBy),
     ...Page.build(arg.page),
-    ...search(arg.search, {
+    ...Search.build(arg.search, {
       includeSearchFields: arg.includeSearchFields,
     }),
     ...SearchJoin.build(arg.searchJoin),

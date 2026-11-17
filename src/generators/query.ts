@@ -1,4 +1,4 @@
-import { assertQueryKey, type TParamsStrings } from '#/utils';
+import { isQueryKey, type TParamsStrings } from '#/utils';
 
 /**
  * Compiles a dictionary of formatted query parameters into a URL query string (`URLSearchParams`).
@@ -26,7 +26,7 @@ export function query(arg: Partial<TParamsStrings>): string {
   Object.keys(arg)
     .toSorted()
     .forEach((key) => {
-      if (!assertQueryKey(key)) {
+      if (!isQueryKey(key)) {
         return;
       }
       const val = arg[key];

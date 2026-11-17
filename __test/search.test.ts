@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { CONDITIONS, QUERY_NAMES } from '#/constants';
+import { ParamsL5ValidationError } from '#/errors/ParamsL5ValidationError';
 import { logger as loggerFn } from '#/logger';
-import { search } from '#gen/search';
+import { Search } from '#gen/search';
 
 // biome-ignore lint/suspicious/noExplicitAny: Used to avoid many ts-expected-errors in the tests
 let input: any;
@@ -27,404 +28,509 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe('search function', () => {
-  describe('formatting', () => {
-    test('should format a single search param without searchFields by default', () => {
-      input = [['name', 'John']];
-      expected = {
-        [QUERY_NAMES.SRC]: 'name:John',
-        [QUERY_NAMES.SFI]: undefined,
-      };
+describe('Search class', () => {
+  describe('build', () => {
+    describe('formatting', () => {
+      test('should format a single search param without searchFields by default', () => {
+        input = { name: 'John' };
+        expected = {
+          [QUERY_NAMES.SRC]: 'name:John',
+          [QUERY_NAMES.SFI]: undefined,
+        };
 
-      result = search(input);
+        result = Search.build(input);
 
-      expect(result).toEqual(expected);
-    });
-
-    test('should include searchFields when includeSearchFields is true', () => {
-      input = [['name', 'John', CONDITIONS.EQ]];
-      expected = {
-        [QUERY_NAMES.SRC]: 'name:John',
-        [QUERY_NAMES.SFI]: 'name:=',
-      };
-
-      result = search(input, { includeSearchFields: true });
-
-      expect(result).toEqual(expected);
-    });
-
-    test('should change default condition when options is provided with includeSearchFields', () => {
-      input = [['name', 'John']];
-      expected = {
-        [QUERY_NAMES.SRC]: 'name:John',
-        [QUERY_NAMES.SFI]: 'name:>',
-      };
-
-      result = search(input, {
-        defaultCondition: CONDITIONS.GT,
-        includeSearchFields: true,
+        expect(result).toEqual(expected);
       });
 
-      expect(result).toEqual(expected);
+      test('should trim string values and support falsy base values (0, false)', () => {
+        input = { active: false, count: 0, name: '  John  ' };
+        expected = {
+          [QUERY_NAMES.SRC]: 'active:false;count:0;name:John',
+          [QUERY_NAMES.SFI]: 'active:=;count:=;name:=',
+        };
+
+        result = Search.build(input, { includeSearchFields: true });
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should include searchFields when includeSearchFields is true', () => {
+        input = { age: { gte: 18 }, name: { like: 'John' } };
+        expected = {
+          [QUERY_NAMES.SRC]: 'age:18;name:John',
+          [QUERY_NAMES.SFI]: 'age:>=;name:like',
+        };
+
+        result = Search.build(input, { includeSearchFields: true });
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should omit searchFields when includeSearchFields is false even with explicit conditions', () => {
+        input = { age: { gte: 18 }, name: { like: 'John' } };
+        expected = {
+          [QUERY_NAMES.SRC]: 'age:18;name:John',
+          [QUERY_NAMES.SFI]: undefined,
+        };
+
+        result = Search.build(input, { includeSearchFields: false });
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should apply defaultCondition to shorthand values and preserve explicit conditions', () => {
+        input = { age: { gte: 18 }, name: 'John' };
+        expected = {
+          [QUERY_NAMES.SRC]: 'age:18;name:John',
+          [QUERY_NAMES.SFI]: 'age:>=;name:like',
+        };
+
+        result = Search.build(input, {
+          defaultCondition: CONDITIONS.LIKE,
+          includeSearchFields: true,
+        });
+
+        expect(result).toEqual(expected);
+      });
+
+      test.each([
+        { condKey: 'eq', condVal: CONDITIONS.EQ, val: 'John' },
+        { condKey: 'neq', condVal: CONDITIONS.NEQ, val: 'inactive' },
+        { condKey: 'gt', condVal: CONDITIONS.GT, val: 10 },
+        { condKey: 'gte', condVal: CONDITIONS.GTE, val: 18 },
+        { condKey: 'lt', condVal: CONDITIONS.LT, val: 50 },
+        { condKey: 'lte', condVal: CONDITIONS.LTE, val: 65 },
+        { condKey: 'like', condVal: CONDITIONS.LIKE, val: 'Jo' },
+        { condKey: 'ilike', condVal: CONDITIONS.ILIKE, val: 'jo' },
+      ])(
+        'should format "$condKey" condition properly',
+        ({ condKey, condVal, val }) => {
+          result = Search.build({ field: { [condKey]: val } } as never, {
+            includeSearchFields: true,
+          });
+
+          expect(result).toEqual({
+            [QUERY_NAMES.SRC]: `field:${val}`,
+            [QUERY_NAMES.SFI]: `field:${condVal}`,
+          });
+        },
+      );
+
+      test('should handle "in" condition and filter null/undefined/empty elements', () => {
+        input = { status: { in: ['active', null, 'pending', undefined, ''] } };
+        expected = {
+          [QUERY_NAMES.SRC]: 'status:active,pending',
+          [QUERY_NAMES.SFI]: 'status:in',
+        };
+
+        result = Search.build(input, { includeSearchFields: true });
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should handle "in" condition with array of length 1 when includeSearchFields is true', () => {
+        input = { status: { in: ['active'] } };
+        expected = {
+          [QUERY_NAMES.SRC]: 'status:active',
+          [QUERY_NAMES.SFI]: 'status:in',
+        };
+
+        result = Search.build(input, { includeSearchFields: true });
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should handle "btw" condition with string and number tuples', () => {
+        input = {
+          age: { btw: [18, 30] },
+          date: { btw: ['2023-01-01', '2023-12-31'] },
+        };
+        expected = {
+          [QUERY_NAMES.SRC]: 'age:18,30;date:2023-01-01,2023-12-31',
+          [QUERY_NAMES.SFI]: `age:${CONDITIONS.BTW};date:${CONDITIONS.BTW}`,
+        };
+
+        result = Search.build(input, { includeSearchFields: true });
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should support typed generic shapes with nested and array relations', () => {
+        interface Post {
+          title: string;
+        }
+        interface User {
+          name: string;
+          posts: Post[];
+          profile: { city: string };
+        }
+
+        result = Search.build<User>(
+          {
+            name: { like: 'Alice' },
+            'posts.title': 'vitest',
+            'profile.city': { eq: 'NYC' },
+          },
+          { includeSearchFields: true },
+        );
+
+        expect(result).toEqual({
+          [QUERY_NAMES.SRC]: 'name:Alice;posts.title:vitest;profile.city:NYC',
+          [QUERY_NAMES.SFI]: 'name:like;posts.title:=;profile.city:=',
+        });
+      });
     });
 
-    test('should format a valid key-value pair with a specific condition when includeSearchFields is true', () => {
-      input = [['age', 18, CONDITIONS.GTE]];
-      expected = {
-        [QUERY_NAMES.SRC]: 'age:18',
-        [QUERY_NAMES.SFI]: 'age:>=',
-      };
+    describe('validations and edge cases', () => {
+      test('should return empty result when called with undefined, null, no arguments, or empty object', () => {
+        expected = {
+          [QUERY_NAMES.SRC]: undefined,
+          [QUERY_NAMES.SFI]: undefined,
+        };
 
-      result = search(input, { includeSearchFields: true });
+        expect(Search.build()).toEqual(expected);
+        expect(Search.build(undefined, { logger: noOpLogger })).toEqual(
+          expected,
+        );
+        expect(Search.build(null, { logger: noOpLogger })).toEqual(expected);
+        expect(Search.build({}, { logger: noOpLogger })).toEqual(expected);
+      });
 
-      expect(result).toEqual(expected);
+      test('should throw ParamsL5ValidationError with field, value, and issues for non-object input', () => {
+        input = 'invalid';
+        let caught: unknown;
+
+        try {
+          Search.build(input, { logger: noOpLogger });
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).toBeInstanceOf(ParamsL5ValidationError);
+        if (caught instanceof ParamsL5ValidationError) {
+          expect(caught.field).toBe(QUERY_NAMES.SRC);
+          expect(caught.value).toBe(input);
+          expect(caught.message).toBe(
+            'Search: value must be a object, got string instead',
+          );
+          expect(caught.issues).toEqual([
+            {
+              field: QUERY_NAMES.SRC,
+              message: 'Search: value must be a object, got string instead',
+              value: input,
+            },
+          ]);
+        }
+      });
+
+      test.each([
+        { label: 'number', value: 123, type: 'number' },
+        { label: 'boolean', value: true, type: 'boolean' },
+        { label: 'array', value: [['name', 'John']], type: 'Array' },
+        { label: 'Date', value: new Date(), type: 'object' },
+        { label: 'NaN', value: Number.NaN, type: 'NaN' },
+      ])('should throw error when called with $label', ({ value, type }) => {
+        expect(() =>
+          Search.build(value as never, { logger: noOpLogger }),
+        ).toThrow(`Search: value must be a object, got ${type} instead`);
+      });
+
+      test('should ignore null, undefined, empty string, and whitespace-only values', () => {
+        input = {
+          blank: '   ',
+          empty: '',
+          ignored: null,
+          missing: undefined,
+          nestedNull: { like: null },
+          nestedUndefined: { in: undefined },
+          status: 'active',
+        };
+        expected = {
+          [QUERY_NAMES.SRC]: 'status:active',
+          [QUERY_NAMES.SFI]: undefined,
+        };
+
+        result = Search.build(input, { logger: noOpLogger });
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should ignore empty or whitespace-only keys', () => {
+        input = { '': 'a', '   ': 'b', name: 'John' };
+        expected = {
+          [QUERY_NAMES.SRC]: 'name:John',
+          [QUERY_NAMES.SFI]: undefined,
+        };
+
+        result = Search.build(input, { logger: noOpLogger });
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should ignore invalid condition objects and unknown condition keys', () => {
+        input = {
+          emptyCond: {},
+          multiCond: { eq: 'a', like: 'b' },
+          name: 'John',
+          unknownCond: { invalid: 'x' },
+        };
+        expected = {
+          [QUERY_NAMES.SRC]: 'name:John',
+          [QUERY_NAMES.SFI]: undefined,
+        };
+
+        result = Search.build(input, { logger: noOpLogger });
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should ignore invalid "in" and "btw" values', () => {
+        input = {
+          btwInvalidItem: { btw: ['2023-01-01', null] },
+          btwLong: { btw: [1, 2, 3] },
+          btwNonArray: { btw: '2023-01-01' },
+          btwShort: { btw: [1] },
+          inEmpty: { in: [] },
+          inInvalidItems: { in: [null, undefined, {}] },
+          inNonArray: { in: 'active' },
+          status: 'active',
+        };
+        expected = {
+          [QUERY_NAMES.SRC]: 'status:active',
+          [QUERY_NAMES.SFI]: undefined,
+        };
+
+        result = Search.build(input, { logger: noOpLogger });
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should ignore array values without "in"/"btw" condition', () => {
+        input = {
+          directArray: ['a', 'b'],
+          scalarWithArray: { eq: ['a', 'b'] },
+        };
+        expected = {
+          [QUERY_NAMES.SRC]: undefined,
+          [QUERY_NAMES.SFI]: undefined,
+        };
+
+        result = Search.build(input, { logger: noOpLogger });
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should fall back to "=" when defaultCondition is invalid', () => {
+        result = Search.build(
+          { name: 'John' },
+          {
+            defaultCondition: 'invalid' as never,
+            includeSearchFields: true,
+            logger: noOpLogger,
+          },
+        );
+
+        expect(result).toEqual({
+          [QUERY_NAMES.SRC]: 'name:John',
+          [QUERY_NAMES.SFI]: 'name:=',
+        });
+      });
     });
 
-    test('should handle "in" condition with array of values when includeSearchFields is true', () => {
-      input = [['status', ['active', 'pending'], CONDITIONS.IN]];
-      expected = {
-        [QUERY_NAMES.SRC]: 'status:active,pending',
-        [QUERY_NAMES.SFI]: 'status:in',
-      };
+    describe('Search logging', () => {
+      test('should not log anything for valid values', () => {
+        Search.build({ name: { like: 'John' } }, { logger });
 
-      result = search(input, { includeSearchFields: true });
+        expect(info).not.toHaveBeenCalled();
+        expect(warn).not.toHaveBeenCalled();
+        expect(error).not.toHaveBeenCalled();
+      });
 
-      expect(result).toEqual(expected);
-    });
+      test('should log info when called with undefined or null', () => {
+        Search.build(undefined, { logger });
+        expect(info).toHaveBeenCalledExactlyOnceWith('Search: no value given');
 
-    test('should handle "in" condition with array of length 1 when includeSearchFields is true', () => {
-      input = [['status', ['active'], CONDITIONS.IN]];
-      expected = {
-        [QUERY_NAMES.SRC]: 'status:active',
-        [QUERY_NAMES.SFI]: 'status:in',
-      };
+        vi.clearAllMocks();
 
-      result = search(input, { includeSearchFields: true });
+        Search.build(null, { logger });
+        expect(info).toHaveBeenCalledExactlyOnceWith('Search: no value given');
+      });
 
-      expect(result).toEqual(expected);
-    });
+      test('should log info when called with empty object', () => {
+        Search.build({}, { logger });
+        expect(info).toHaveBeenCalledExactlyOnceWith('Search: no values given');
+      });
 
-    test('should handle "between" condition with tuple of values when includeSearchFields is true', () => {
-      input = [['date', ['2023-01-01', '2023-12-31'], CONDITIONS.BTW]];
-      expected = {
-        [QUERY_NAMES.SRC]: 'date:2023-01-01,2023-12-31',
-        [QUERY_NAMES.SFI]: `date:${CONDITIONS.BTW}`,
-      };
+      test('should log error when called with non-object', () => {
+        expect(() => Search.build('invalid' as never, { logger })).toThrow(
+          ParamsL5ValidationError,
+        );
 
-      result = search(input, { includeSearchFields: true });
+        expect(error).toHaveBeenCalledExactlyOnceWith(
+          'Search: value must be a object, got string instead',
+        );
+      });
 
-      expect(result).toEqual(expected);
-    });
+      test('should log warn for invalid key, condition, btw size, and array condition mismatch', () => {
+        Search.build(
+          {
+            '': 'emptyKey',
+            badCond: { foo: 'bar' } as never,
+            badBtw: { btw: [1] } as never,
+            directArr: ['a'] as never,
+            eqArr: { eq: ['a'] } as never,
+            name: 'John',
+          },
+          { logger },
+        );
 
-    test('should update the value if the key already exists (deduplication) with includeSearchFields', () => {
-      input = [
-        ['name', 'John', CONDITIONS.LIKE],
-        ['name', 'Doe', CONDITIONS.LIKE],
-      ];
-      expected = {
-        [QUERY_NAMES.SRC]: 'name:Doe',
-        [QUERY_NAMES.SFI]: 'name:like',
-      };
+        expect(warn).toHaveBeenCalledTimes(5);
+        expect(warn).toHaveBeenNthCalledWith(
+          1,
+          'Search: must have keys as non-empty strings, but got string at index 0 instead',
+        );
+        expect(warn).toHaveBeenNthCalledWith(
+          2,
+          'Search: ignoring value: invalid condition value, got foo',
+        );
+        expect(warn).toHaveBeenNthCalledWith(
+          3,
+          "Search: ignoring array value: expected 2 elements for 'between', got 1 at index 2 instead",
+        );
+        expect(warn).toHaveBeenNthCalledWith(
+          4,
+          "Search: ignoring array value: missing condition, expected 'in' or 'between'",
+        );
+        expect(warn).toHaveBeenNthCalledWith(
+          5,
+          "Search: ignoring array value: invalid condition, expected 'in' or 'between' at index 4",
+        );
+      });
 
-      result = search(input, { includeSearchFields: true });
+      test('should log info for invalid base values and when no values remain', () => {
+        Search.build({ name: '' }, { logger });
 
-      expect(result).toEqual(expected);
-    });
-
-    test('should format multiple search params correctly when includeSearchFields is true', () => {
-      input = [
-        ['name', 'John', CONDITIONS.LIKE],
-        ['email', 'gmail', CONDITIONS.ILIKE],
-      ];
-      expected = {
-        [QUERY_NAMES.SRC]: 'name:John;email:gmail',
-        [QUERY_NAMES.SFI]: 'name:like;email:ilike',
-      };
-
-      result = search(input, { includeSearchFields: true });
-
-      expect(result).toEqual(expected);
-    });
-
-    test('should omit searchFields by default even when conditions are provided', () => {
-      input = [
-        ['name', 'John'],
-        ['age', 18, CONDITIONS.GTE],
-      ];
-      expected = {
-        [QUERY_NAMES.SRC]: 'name:John;age:18',
-        [QUERY_NAMES.SFI]: undefined,
-      };
-
-      result = search(input);
-
-      expect(result).toEqual(expected);
-    });
-
-    test('should omit searchFields when includeSearchFields option is false', () => {
-      input = [['age', 18, CONDITIONS.GTE]];
-      expected = {
-        [QUERY_NAMES.SRC]: 'age:18',
-        [QUERY_NAMES.SFI]: undefined,
-      };
-
-      result = search(input, { includeSearchFields: false });
-
-      expect(result).toEqual(expected);
+        expect(info).toHaveBeenCalledTimes(2);
+        expect(info).toHaveBeenNthCalledWith(
+          1,
+          'Search: ignoring value: expected BaseValue, got string instead',
+        );
+        expect(info).toHaveBeenNthCalledWith(
+          2,
+          'Search: no values remaining to parse',
+        );
+      });
     });
   });
 
-  describe('validations and edge cases', () => {
-    test('should return empty result if called with no arguments', () => {
-      expected = { [QUERY_NAMES.SRC]: undefined, [QUERY_NAMES.SFI]: undefined };
+  describe('safe', () => {
+    describe('formatting', () => {
+      test('should return success result for valid object input', () => {
+        result = Search.safe(
+          {
+            age: { gte: 18 },
+            date: { btw: ['2023-01-01', '2023-12-31'] },
+            name: 'John',
+            status: { in: ['active', 'pending'] },
+          },
+          { includeSearchFields: true },
+        );
 
-      result = search(undefined, { logger: noOpLogger });
-
-      expect(result).toEqual(expected);
+        expect(result).toEqual({
+          data: {
+            [QUERY_NAMES.SRC]:
+              'age:18;date:2023-01-01,2023-12-31;name:John;status:active,pending',
+            [QUERY_NAMES.SFI]: 'age:>=;date:between;name:=;status:in',
+          },
+          success: true,
+        });
+      });
     });
 
-    test('should return empty result if called with an empty array', () => {
-      input = [];
-      expected = { [QUERY_NAMES.SRC]: undefined, [QUERY_NAMES.SFI]: undefined };
+    describe('validations and edge cases', () => {
+      test('should return success result with undefined fields for undefined, null, no args, or {}', () => {
+        expected = {
+          data: { [QUERY_NAMES.SRC]: undefined, [QUERY_NAMES.SFI]: undefined },
+          success: true,
+        };
 
-      result = search(input, { logger: noOpLogger });
+        expect(Search.safe()).toEqual(expected);
+        expect(Search.safe(undefined, { logger: noOpLogger })).toEqual(
+          expected,
+        );
+        expect(Search.safe(null, { logger: noOpLogger })).toEqual(expected);
+        expect(Search.safe({}, { logger: noOpLogger })).toEqual(expected);
+      });
 
-      expect(result).toEqual(expected);
+      test('should return failure result for non-object input', () => {
+        input = ['name', 'John'];
+
+        result = Search.safe(input, { logger: noOpLogger });
+
+        expect(result.success).toBe(false);
+        if (!result.success) {
+          expect(result.error).toBeInstanceOf(ParamsL5ValidationError);
+          expect(result.error.field).toBe(QUERY_NAMES.SRC);
+          expect(result.error.value).toBe(input);
+          expect(result.error.message).toBe(
+            'Search: value must be a object, got Array instead',
+          );
+          expect(result.error.issues).toEqual([
+            {
+              field: QUERY_NAMES.SRC,
+              message: 'Search: value must be a object, got Array instead',
+              value: input,
+            },
+          ]);
+        }
+      });
+
+      test('should filter invalid field entries and return success result', () => {
+        result = Search.safe(
+          {
+            bad: { invalid: 'x' } as never,
+            name: 'John',
+          },
+          { includeSearchFields: true, logger: noOpLogger },
+        );
+
+        expect(result).toEqual({
+          data: {
+            [QUERY_NAMES.SRC]: 'name:John',
+            [QUERY_NAMES.SFI]: 'name:=',
+          },
+          success: true,
+        });
+      });
     });
 
-    test('should return empty result if argument is not an array', () => {
-      input = 'invalid';
-      expected = { [QUERY_NAMES.SRC]: undefined, [QUERY_NAMES.SFI]: undefined };
+    describe('Search logging', () => {
+      test('should not log anything for valid values', () => {
+        Search.safe({ name: 'John' }, { logger });
 
-      result = search(input, { logger: noOpLogger });
+        expect(info).not.toHaveBeenCalled();
+        expect(warn).not.toHaveBeenCalled();
+        expect(error).not.toHaveBeenCalled();
+      });
 
-      expect(result).toEqual(expected);
-    });
+      test('should log info when called with undefined, null, or empty object', () => {
+        Search.safe(undefined, { logger });
+        expect(info).toHaveBeenCalledExactlyOnceWith('Search: no value given');
 
-    test('should ignore item if it is not an array', () => {
-      input = [['name', 'John'], 'invalid'];
-      expected = {
-        [QUERY_NAMES.SRC]: 'name:John',
-        [QUERY_NAMES.SFI]: undefined,
-      };
+        vi.clearAllMocks();
 
-      result = search(input, { logger: noOpLogger });
+        Search.safe({}, { logger });
+        expect(info).toHaveBeenCalledExactlyOnceWith('Search: no values given');
+      });
 
-      expect(result).toEqual(expected);
-    });
+      test('should log error when called with non-object', () => {
+        Search.safe('invalid' as never, { logger });
 
-    test('should return empty result if key is not a non-empty string', () => {
-      input = [['', 'value']];
-      expected = { [QUERY_NAMES.SRC]: undefined, [QUERY_NAMES.SFI]: undefined };
-
-      result = search(input, { logger: noOpLogger });
-
-      expect(result).toEqual(expected);
-    });
-
-    test('should ignore entries if value is null or undefined', () => {
-      input = [
-        ['status', 'active', CONDITIONS.EQ],
-        ['ignored', null],
-        ['alsoIgnored', undefined],
-      ];
-      expected = {
-        [QUERY_NAMES.SRC]: 'status:active',
-        [QUERY_NAMES.SFI]: undefined,
-      };
-
-      result = search(input, { logger: noOpLogger });
-
-      expect(result).toEqual(expected);
-    });
-
-    test('should ignore entries with invalid condition', () => {
-      input = [
-        ['name', 'John', 'INVALID_CONDITION'],
-        ['status', 'active'],
-      ];
-      expected = {
-        [QUERY_NAMES.SRC]: 'status:active',
-        [QUERY_NAMES.SFI]: undefined,
-      };
-
-      result = search(input, { logger: noOpLogger });
-
-      expect(result).toEqual(expected);
-    });
-
-    test('should ignore array value if it is empty or has invalid items', () => {
-      input = [
-        ['status', 'active', CONDITIONS.EQ],
-        ['emptyArray', [], CONDITIONS.IN],
-        ['invalidArray', [{}], CONDITIONS.IN],
-      ];
-      expected = {
-        [QUERY_NAMES.SRC]: 'status:active',
-        [QUERY_NAMES.SFI]: undefined,
-      };
-
-      result = search(input, { logger: noOpLogger });
-
-      expect(result).toEqual(expected);
-    });
-
-    test("shouldn't handle array value for non 'in' condition", () => {
-      input = [['status', [1, 2, 3], CONDITIONS.DIFF]];
-      expected = { [QUERY_NAMES.SRC]: undefined, [QUERY_NAMES.SFI]: undefined };
-
-      result = search(input, { logger: noOpLogger });
-
-      expect(result).toEqual(expected);
-    });
-
-    test("shouldn't handle array value for non 'between' condition", () => {
-      input = [['status', ['active', 'pending'], CONDITIONS.GT]];
-      expected = { [QUERY_NAMES.SRC]: undefined, [QUERY_NAMES.SFI]: undefined };
-
-      result = search(input, { logger: noOpLogger });
-
-      expect(result).toEqual(expected);
-    });
-
-    test("shouldn't handle array with length less than 2 for 'between' condition", () => {
-      input = [['status', ['active'], CONDITIONS.BTW]];
-      expected = { [QUERY_NAMES.SRC]: undefined, [QUERY_NAMES.SFI]: undefined };
-
-      result = search(input, { logger: noOpLogger });
-
-      expect(result).toEqual(expected);
-    });
-
-    test("shouldn't handle array with length more than 2 for 'between' condition", () => {
-      input = [['status', [1, 2, 3], CONDITIONS.BTW]];
-      expected = { [QUERY_NAMES.SRC]: undefined, [QUERY_NAMES.SFI]: undefined };
-
-      result = search(input, { logger: noOpLogger });
-
-      expect(result).toEqual(expected);
-    });
-  });
-
-  describe('Search logging', () => {
-    test('should log warn if key is not a non-empty string', () => {
-      input = [['', 'value']];
-
-      search(input, { logger });
-
-      expect(warn).toHaveBeenCalledExactlyOnceWith(
-        'Search: must have keys as non-empty strings, but got string at index 0 instead',
-      );
-    });
-
-    test('should log warn if item is not an array', () => {
-      input = [['name', 'John'], 'invalid'];
-
-      search(input, { logger });
-
-      expect(warn).toHaveBeenCalledExactlyOnceWith(
-        'Search: must have a type of array, got string instead',
-      );
-    });
-
-    test('should log error if argument is not an array', () => {
-      input = 'invalid';
-
-      search(input, { logger });
-
-      expect(error).toHaveBeenCalledExactlyOnceWith(
-        'Search: argument must be an array, got string instead',
-      );
-    });
-
-    test('should log warn if item length is less than 2', () => {
-      input = [['name']];
-
-      search(input, { logger });
-
-      expect(warn).toHaveBeenCalledExactlyOnceWith(
-        'Search: must have a key-value array, but got length 1 at index 0 instead',
-      );
-    });
-
-    test('should log warn if array value is missing condition', () => {
-      input = [['status', ['active', 'pending']]];
-
-      search(input, { logger });
-
-      expect(warn).toHaveBeenCalledExactlyOnceWith(
-        "Search: ignoring array value: missing condition, expected 'in' or 'between'",
-      );
-    });
-
-    test('should log warn if array value has invalid condition', () => {
-      input = [['status', ['active', 'pending'], CONDITIONS.EQ]];
-
-      search(input, { logger });
-
-      expect(warn).toHaveBeenCalledExactlyOnceWith(
-        "Search: ignoring array value: invalid condition, expected 'in' or 'between' at index 0",
-      );
-    });
-
-    test('should log warn if array value for between condition does not have size 2', () => {
-      input = [['date', ['2023-01-01'], CONDITIONS.BTW]];
-
-      search(input, { logger });
-
-      expect(warn).toHaveBeenCalledExactlyOnceWith(
-        "Search: ignoring array value: expected 2 elements for 'between', got 1 at index 0 instead",
-      );
-    });
-
-    test('should log info if value is not a BaseValue', () => {
-      input = [['name', { obj: true }]];
-
-      search(input, { logger });
-
-      expect(info).toHaveBeenCalledTimes(2);
-      expect(info).toHaveBeenNthCalledWith(
-        1,
-        'Search: ignoring value: expected BaseValue, got object instead',
-      );
-      expect(info).toHaveBeenNthCalledWith(
-        2,
-        'Search: no values remaining to parse',
-      );
-    });
-
-    test('should log warn if condition is invalid', () => {
-      input = [['name', 'John', 'INVALID_CONDITION']];
-
-      search(input, { logger });
-
-      expect(warn).toHaveBeenCalledExactlyOnceWith(
-        'Search: ignoring value: invalid condition value, got John',
-      );
-    });
-
-    test('should log info if arg is empty array', () => {
-      input = [];
-
-      search(input, { logger });
-
-      expect(info).toHaveBeenCalledExactlyOnceWith('Search: no values given');
-    });
-
-    test('should log info if no values remain after filtering', () => {
-      input = [['name', { obj: true }]];
-
-      search(input, { logger });
-
-      expect(info).toHaveBeenCalledTimes(2);
-      expect(info).toHaveBeenNthCalledWith(
-        1,
-        'Search: ignoring value: expected BaseValue, got object instead',
-      );
-      expect(info).toHaveBeenNthCalledWith(
-        2,
-        'Search: no values remaining to parse',
-      );
+        expect(error).toHaveBeenCalledExactlyOnceWith(
+          'Search: value must be a object, got string instead',
+        );
+      });
     });
   });
 });
