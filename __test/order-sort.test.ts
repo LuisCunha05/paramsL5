@@ -32,7 +32,7 @@ describe('OrderBySortBy class', () => {
   describe('build', () => {
     describe('formatting', () => {
       test('should generate correct URL params for a single order/sort pair', () => {
-        input = [['name', SORT_BY.ASC]];
+        input = { name: SORT_BY.ASC };
         expected = {
           [QUERY_NAMES.OBY]: 'name',
           [QUERY_NAMES.SBY]: 'asc',
@@ -44,11 +44,11 @@ describe('OrderBySortBy class', () => {
       });
 
       test('should generate correct string params with multiple order/sort pairs', () => {
-        input = [
-          ['name', SORT_BY.ASC],
-          ['age', SORT_BY.DESC],
-          ['created_at', SORT_BY.ASC],
-        ];
+        input = {
+          name: SORT_BY.ASC,
+          age: SORT_BY.DESC,
+          created_at: SORT_BY.ASC,
+        };
         expected = {
           [QUERY_NAMES.OBY]: 'name;age;created_at',
           [QUERY_NAMES.SBY]: 'asc;desc;asc',
@@ -59,11 +59,11 @@ describe('OrderBySortBy class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should deduplicate keys and capture the last element with same key', () => {
-        input = [
-          ['name', SORT_BY.ASC],
-          ['name', SORT_BY.DESC],
-        ];
+      test('should deduplicate keys after trimming and capture the last value', () => {
+        input = {
+          name: SORT_BY.ASC,
+          '  name  ': SORT_BY.DESC,
+        };
         expected = {
           [QUERY_NAMES.OBY]: 'name',
           [QUERY_NAMES.SBY]: 'desc',
@@ -74,20 +74,8 @@ describe('OrderBySortBy class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should allow multiple single value arrays', () => {
-        input = [['key1'], ['key2']];
-        expected = {
-          [QUERY_NAMES.OBY]: 'key1;key2',
-          [QUERY_NAMES.SBY]: 'asc;asc',
-        };
-
-        result = OrderBySortBy.build(input);
-
-        expect(result).toEqual(expected);
-      });
-
       test('should trim key strings', () => {
-        input = [['  name  ', SORT_BY.ASC]];
+        input = { '  name  ': SORT_BY.ASC };
         expected = {
           [QUERY_NAMES.OBY]: 'name',
           [QUERY_NAMES.SBY]: 'asc',
@@ -98,32 +86,39 @@ describe('OrderBySortBy class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should support typed generic shapes with nested and array relations', () => {
+      test('should support typed generic shapes with Date fields and TPathPipe relations', () => {
         interface Post {
           title: string;
         }
         interface User {
           name: string;
+          created_at: Date;
           posts: Post[];
           profile: { city: string };
         }
 
-        result = OrderBySortBy.build<User>([
-          ['name', SORT_BY.ASC],
-          ['posts.title', SORT_BY.DESC],
-          ['profile.city'],
-        ]);
+        result = OrderBySortBy.build<User>({
+          name: SORT_BY.ASC,
+          created_at: SORT_BY.DESC,
+          'posts|title': SORT_BY.DESC,
+          'posts:user_id|title': SORT_BY.ASC,
+          'profile|city': true,
+        });
 
         expect(result).toEqual({
-          [QUERY_NAMES.OBY]: 'name;posts.title;profile.city',
-          [QUERY_NAMES.SBY]: 'asc;desc;asc',
+          [QUERY_NAMES.OBY]:
+            'name;created_at;posts|title;posts:user_id|title;profile|city',
+          [QUERY_NAMES.SBY]: 'asc;desc;desc;asc;asc',
         });
+
+        // @ts-expect-error Invalid path 'unknown_field' for User
+        OrderBySortBy.build<User>({ unknown_field: SORT_BY.ASC });
       });
     });
 
     describe('default options', () => {
-      test('should allow key-only value with default ASC sortBy', () => {
-        input = [['key']];
+      test('should allow true value with default ASC sortBy', () => {
+        input = { key: true };
         expected = {
           [QUERY_NAMES.OBY]: 'key',
           [QUERY_NAMES.SBY]: 'asc',
@@ -134,8 +129,8 @@ describe('OrderBySortBy class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should change the default sortBy', () => {
-        input = [['key']];
+      test('should change the default sortBy when value is true', () => {
+        input = { key: true };
         expected = {
           [QUERY_NAMES.OBY]: 'key',
           [QUERY_NAMES.SBY]: 'desc',
@@ -146,8 +141,8 @@ describe('OrderBySortBy class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should allow multiple single value arrays with the default sortBy', () => {
-        input = [['key1'], ['key2']];
+      test('should allow multiple true values with the default sortBy', () => {
+        input = { key1: true, key2: true };
         expected = {
           [QUERY_NAMES.OBY]: 'key1;key2',
           [QUERY_NAMES.SBY]: 'desc;desc',
@@ -159,10 +154,13 @@ describe('OrderBySortBy class', () => {
       });
 
       test('should fall back to "asc" when defaultSortBy is invalid', () => {
-        result = OrderBySortBy.build([['name']], {
-          defaultSortBy: 'invalid' as never,
-          logger: noOpLogger,
-        });
+        result = OrderBySortBy.build(
+          { name: true },
+          {
+            defaultSortBy: 'invalid' as never,
+            logger: noOpLogger,
+          },
+        );
 
         expect(result).toEqual({
           [QUERY_NAMES.OBY]: 'name',
@@ -172,7 +170,7 @@ describe('OrderBySortBy class', () => {
     });
 
     describe('validations and edge cases', () => {
-      test('should return empty result when called with undefined, null, no arguments, or empty array', () => {
+      test('should return empty result when called with undefined, null, no arguments, or empty object', () => {
         expected = {
           [QUERY_NAMES.OBY]: undefined,
           [QUERY_NAMES.SBY]: undefined,
@@ -185,13 +183,13 @@ describe('OrderBySortBy class', () => {
         expect(OrderBySortBy.build(null, { logger: noOpLogger })).toEqual(
           expected,
         );
-        expect(OrderBySortBy.build([], { logger: noOpLogger })).toEqual(
+        expect(OrderBySortBy.build({}, { logger: noOpLogger })).toEqual(
           expected,
         );
       });
 
-      test('should throw ParamsL5ValidationError with field, value, and issues for non-array input', () => {
-        input = {};
+      test('should throw ParamsL5ValidationError with field, value, and issues for non-object input', () => {
+        input = 'invalid';
         let caught: unknown;
 
         try {
@@ -205,13 +203,13 @@ describe('OrderBySortBy class', () => {
           expect(caught.field).toBe(QUERY_NAMES.OBY);
           expect(caught.value).toBe(input);
           expect(caught.message).toBe(
-            'OrderBySortBy: argument must be an array, got object instead',
+            'OrderBySortBy: value must be a object, got string instead',
           );
           expect(caught.issues).toEqual([
             {
               field: QUERY_NAMES.OBY,
               message:
-                'OrderBySortBy: argument must be an array, got object instead',
+                'OrderBySortBy: value must be a object, got string instead',
               value: input,
             },
           ]);
@@ -222,18 +220,23 @@ describe('OrderBySortBy class', () => {
         { label: 'string', value: 'invalid', type: 'string' },
         { label: 'number', value: 123, type: 'number' },
         { label: 'boolean', value: true, type: 'boolean' },
-        { label: 'object', value: {}, type: 'object' },
+        { label: 'array', value: [['name', 'asc']], type: 'Array' },
+        { label: 'Date', value: new Date(), type: 'object' },
         { label: 'NaN', value: Number.NaN, type: 'NaN' },
       ])('should throw error when called with $label', ({ value, type }) => {
         expect(() =>
           OrderBySortBy.build(value as never, { logger: noOpLogger }),
-        ).toThrow(
-          `OrderBySortBy: argument must be an array, got ${type} instead`,
-        );
+        ).toThrow(`OrderBySortBy: value must be a object, got ${type} instead`);
       });
 
-      test('should return empty result if all items are invalid', () => {
-        input = ['invalid'];
+      test('should return empty result if all entries are invalid, null, or undefined', () => {
+        input = {
+          '': SORT_BY.ASC,
+          badSort: 'invalid_sort',
+          falsy: false,
+          ignored: null,
+          missing: undefined,
+        };
         expected = {
           [QUERY_NAMES.OBY]: undefined,
           [QUERY_NAMES.SBY]: undefined,
@@ -244,16 +247,17 @@ describe('OrderBySortBy class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should filter invalid items and keep valid entries', () => {
-        input = [
-          'invalid',
-          [],
-          ['too', 'asc', 'extra'],
-          ['', SORT_BY.ASC],
-          [123, SORT_BY.ASC],
-          ['badSort', 'invalid_sort'],
-          ['name', SORT_BY.DESC],
-        ];
+      test('should filter invalid, null, and undefined entries and keep valid entries', () => {
+        input = {
+          '': SORT_BY.ASC,
+          '   ': SORT_BY.DESC,
+          ignored: null,
+          missing: undefined,
+          falsy: false,
+          badSort: 'invalid_sort',
+          numSort: 123,
+          name: SORT_BY.DESC,
+        };
         expected = {
           [QUERY_NAMES.OBY]: 'name',
           [QUERY_NAMES.SBY]: 'desc',
@@ -267,7 +271,7 @@ describe('OrderBySortBy class', () => {
 
     describe('OrderBySortBy logging', () => {
       test('should not log anything for valid values', () => {
-        OrderBySortBy.build([['name', SORT_BY.ASC]], { logger });
+        OrderBySortBy.build({ name: SORT_BY.ASC }, { logger });
 
         expect(info).not.toHaveBeenCalled();
         expect(warn).not.toHaveBeenCalled();
@@ -288,60 +292,30 @@ describe('OrderBySortBy class', () => {
         );
       });
 
-      test('should log error if arg is not an array', () => {
-        input = {};
+      test('should log error if arg is not an object', () => {
+        input = [['name', 'asc']];
 
         expect(() => OrderBySortBy.build(input, { logger })).toThrow(
           ParamsL5ValidationError,
         );
 
         expect(error).toHaveBeenCalledExactlyOnceWith(
-          'OrderBySortBy: argument must be an array, got object instead',
+          'OrderBySortBy: value must be a object, got Array instead',
         );
       });
 
-      test('should log warn if an item is not an array', () => {
-        input = ['invalid'];
+      test('should log warn if key is empty or whitespace-only', () => {
+        input = { '   ': SORT_BY.ASC };
 
         OrderBySortBy.build(input, { logger });
 
         expect(warn).toHaveBeenCalledExactlyOnceWith(
-          'OrderBySortBy: must have a type of array, got string instead',
+          'OrderBySortBy: must have keys as non-empty strings, but got string at index 0 instead',
         );
       });
 
-      test('should log warn if an item is empty', () => {
-        input = [[]];
-
-        OrderBySortBy.build(input, { logger });
-
-        expect(warn).toHaveBeenCalledExactlyOnceWith(
-          'OrderBySortBy: must have a key-value array, but got length 0 at index 0 instead',
-        );
-      });
-
-      test('should log warn if an item has too many elements', () => {
-        input = [['alog', 'acs', 'bla']];
-
-        OrderBySortBy.build(input, { logger });
-
-        expect(warn).toHaveBeenCalledExactlyOnceWith(
-          'OrderBySortBy: must have a key-value array, but got length 3 at index 0 instead',
-        );
-      });
-
-      test('should log warn if key is not a non-empty string', () => {
-        input = [[123, SORT_BY.ASC]];
-
-        OrderBySortBy.build(input, { logger });
-
-        expect(warn).toHaveBeenCalledExactlyOnceWith(
-          'OrderBySortBy: must have keys as non-empty strings, but got number at index 0 instead',
-        );
-      });
-
-      test('should log warn if sort value is not a valid SORT_BY value', () => {
-        input = [['name', 'invalid_sort']];
+      test('should log warn if sort value is not a valid SORT_BY value or true', () => {
+        input = { name: 'invalid_sort' };
 
         OrderBySortBy.build(input, { logger });
 
@@ -350,19 +324,32 @@ describe('OrderBySortBy class', () => {
         );
       });
 
+      test('should log warn if sort value is false', () => {
+        input = { name: false };
+
+        OrderBySortBy.build(input, { logger });
+
+        expect(warn).toHaveBeenCalledExactlyOnceWith(
+          'OrderBySortBy: must have a valid SORT_BY value, but got false at index 0 instead',
+        );
+      });
+
       test('should log warn if defaultSortBy is invalid', () => {
-        OrderBySortBy.build([['name']], {
-          defaultSortBy: 'invalid' as never,
-          logger,
-        });
+        OrderBySortBy.build(
+          { name: true },
+          {
+            defaultSortBy: 'invalid' as never,
+            logger,
+          },
+        );
 
         expect(warn).toHaveBeenCalledExactlyOnceWith(
           'OrderBySortBy: must be either "asc" or "desc", got "invalid" instead',
         );
       });
 
-      test('should log info if arg is empty array', () => {
-        input = [];
+      test('should log info if arg is empty object', () => {
+        input = {};
 
         OrderBySortBy.build(input, { logger });
 
@@ -372,7 +359,7 @@ describe('OrderBySortBy class', () => {
       });
 
       test('should log info if no values remain after filtering', () => {
-        input = [['name', 'invalid_sort']];
+        input = { name: 'invalid_sort' };
 
         OrderBySortBy.build(input, { logger });
 
@@ -385,10 +372,13 @@ describe('OrderBySortBy class', () => {
 
   describe('safe', () => {
     describe('formatting', () => {
-      test('should return success result for valid tuple array input', () => {
-        result = OrderBySortBy.safe([['name', SORT_BY.ASC], ['created_at']], {
-          defaultSortBy: SORT_BY.DESC,
-        });
+      test('should return success result for valid object input', () => {
+        result = OrderBySortBy.safe(
+          { name: SORT_BY.ASC, created_at: true },
+          {
+            defaultSortBy: SORT_BY.DESC,
+          },
+        );
 
         expect(result).toEqual({
           data: {
@@ -401,7 +391,7 @@ describe('OrderBySortBy class', () => {
     });
 
     describe('validations and edge cases', () => {
-      test('should return success result with undefined fields for undefined, null, no args, or []', () => {
+      test('should return success result with undefined fields for undefined, null, no args, or {}', () => {
         expected = {
           data: { [QUERY_NAMES.OBY]: undefined, [QUERY_NAMES.SBY]: undefined },
           success: true,
@@ -414,13 +404,13 @@ describe('OrderBySortBy class', () => {
         expect(OrderBySortBy.safe(null, { logger: noOpLogger })).toEqual(
           expected,
         );
-        expect(OrderBySortBy.safe([], { logger: noOpLogger })).toEqual(
+        expect(OrderBySortBy.safe({}, { logger: noOpLogger })).toEqual(
           expected,
         );
       });
 
-      test('should return failure result for non-array input', () => {
-        input = { name: 'asc' };
+      test('should return failure result for non-object input', () => {
+        input = [['name', 'asc']];
 
         result = OrderBySortBy.safe(input, { logger: noOpLogger });
 
@@ -430,13 +420,13 @@ describe('OrderBySortBy class', () => {
           expect(result.error.field).toBe(QUERY_NAMES.OBY);
           expect(result.error.value).toBe(input);
           expect(result.error.message).toBe(
-            'OrderBySortBy: argument must be an array, got object instead',
+            'OrderBySortBy: value must be a object, got Array instead',
           );
           expect(result.error.issues).toEqual([
             {
               field: QUERY_NAMES.OBY,
               message:
-                'OrderBySortBy: argument must be an array, got object instead',
+                'OrderBySortBy: value must be a object, got Array instead',
               value: input,
             },
           ]);
@@ -445,7 +435,11 @@ describe('OrderBySortBy class', () => {
 
       test('should filter invalid entries and return success result', () => {
         result = OrderBySortBy.safe(
-          ['invalid' as never, ['name', SORT_BY.DESC]],
+          {
+            bad: 'invalid' as never,
+            ignored: null,
+            name: SORT_BY.DESC,
+          },
           { logger: noOpLogger },
         );
 
@@ -461,14 +455,14 @@ describe('OrderBySortBy class', () => {
 
     describe('OrderBySortBy logging', () => {
       test('should not log anything for valid values', () => {
-        OrderBySortBy.safe([['name', SORT_BY.ASC]], { logger });
+        OrderBySortBy.safe({ name: SORT_BY.ASC }, { logger });
 
         expect(info).not.toHaveBeenCalled();
         expect(warn).not.toHaveBeenCalled();
         expect(error).not.toHaveBeenCalled();
       });
 
-      test('should log info when called with undefined, null, or empty array', () => {
+      test('should log info when called with undefined, null, or empty object', () => {
         OrderBySortBy.safe(undefined, { logger });
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'OrderBySortBy: no value given',
@@ -483,17 +477,17 @@ describe('OrderBySortBy class', () => {
 
         vi.clearAllMocks();
 
-        OrderBySortBy.safe([], { logger });
+        OrderBySortBy.safe({}, { logger });
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'OrderBySortBy: no values given',
         );
       });
 
-      test('should log error when called with non-array', () => {
+      test('should log error when called with non-object', () => {
         OrderBySortBy.safe('invalid' as never, { logger });
 
         expect(error).toHaveBeenCalledExactlyOnceWith(
-          'OrderBySortBy: argument must be an array, got string instead',
+          'OrderBySortBy: value must be a object, got string instead',
         );
       });
     });

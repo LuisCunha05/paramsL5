@@ -26,7 +26,7 @@ describe('createClient function', () => {
   describe('global', () => {
     test('should return all default properties correctly without params', () => {
       input = {
-        orderBySortBy: [['name']],
+        orderBySortBy: { name: true },
         search: { name: 'john' },
       };
       expected = `limit=77&orderBy=name&page=2&search=name${URC.COLON}john&searchFields=name${URC.COLON}like&searchJoin=or&sortedBy=desc`;
@@ -109,7 +109,7 @@ describe('createClient function', () => {
 
   describe('sortBy', () => {
     test('should change the default sortBy when defaultOptions is provided', () => {
-      input = { orderBySortBy: [['name']] };
+      input = { orderBySortBy: { name: true } };
       expected = 'desc';
 
       const paramsL5 = createClient({
@@ -123,7 +123,7 @@ describe('createClient function', () => {
     });
 
     test('should prioritize sortBy from params over defaultOptions', () => {
-      input = { orderBySortBy: [['name', 'asc']] };
+      input = { orderBySortBy: { name: 'asc' } };
       expected = 'asc';
 
       const paramsL5 = createClient({
@@ -286,7 +286,7 @@ describe('createClient function', () => {
         filter: ['id', 'email'],
         include: ['profile', 'posts'],
         withCount: ['posts'],
-        orderBySortBy: [['name', 'asc']],
+        orderBySortBy: { name: 'asc' },
       });
 
       expect(res.filter).toBe('id;email');
@@ -305,10 +305,12 @@ describe('createClient function', () => {
         filter: ['id', 'email'],
         include: ['profile', 'posts'],
         withCount: ['posts'],
-        orderBySortBy: [
-          ['name', 'asc'],
-          ['id', 'desc'],
-        ],
+        orderBySortBy: {
+          name: 'asc',
+          id: 'desc',
+          'posts|title': 'asc',
+          'posts:author_id|title': 'desc',
+        },
       });
       expect(valid.include).toBe('profile,posts');
       expect(valid.withCount).toBe('posts');
@@ -323,11 +325,10 @@ describe('createClient function', () => {
       client.for<UserModel>()({ withCount: ['posts', 'posts'] });
 
       client.for<UserModel>()({
-        orderBySortBy: [
-          ['name', 'asc'],
-          // @ts-expect-error Duplicate key 'name'
-          ['name', 'desc'],
-        ],
+        orderBySortBy: {
+          // @ts-expect-error Invalid sort direction 'invalid'
+          name: 'invalid',
+        },
       });
     });
   });

@@ -1,10 +1,6 @@
 import { logger as loggerFn, type LogLevel } from '#/logger';
 import type { TParams, TResultParams } from '#/params-l5';
-import type {
-  TLogger,
-  TValidateFlatArray,
-  TValidateKeyTupleArray,
-} from '#/types';
+import type { TLogger, TValidateFlatArray } from '#/types';
 import { Filter } from '#gen/filter';
 import { Include } from '#gen/include';
 import { type TLimit, Limit } from '#gen/limit';
@@ -33,9 +29,7 @@ export interface ClientOptions {
 export type ValidateParams<TInput> = {
   [KFn in keyof TInput]: KFn extends 'include' | 'with' | 'withCount' | 'filter'
     ? TValidateFlatArray<TInput[KFn]>
-    : KFn extends 'orderBySortBy'
-      ? TValidateKeyTupleArray<TInput[KFn]>
-      : TInput[KFn];
+    : TInput[KFn];
 };
 
 export interface ClientRunner {

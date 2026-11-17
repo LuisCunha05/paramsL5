@@ -3,35 +3,27 @@ import { ParamsL5ValidationError } from '#/errors/ParamsL5ValidationError';
 import {
   msgInvalidKey,
   msgInvalidSortBy,
-  msgItemNotArray,
-  msgItemNotKeyValue,
   msgMustBeEither,
+  msgMustBeObject,
   msgNoRemaining,
   msgNoValue,
   msgNoValues,
-  msgNotArray,
 } from '#/messages';
-import type { TGenerator, TLogger, TPath, TResult, ToEnum } from '#/types';
-import { isArray, isNonEmptyString, typeName, unwrap } from '#/utils';
+import type { TGenerator, TLogger, TPathPipe, TResult, ToEnum } from '#/types';
+import { isNonEmptyString, isObject, typeName, unwrap } from '#/utils';
 
 export type TSortBy = ToEnum<typeof SORT_BY>;
 
-export type TOrderBySortByValue<TTShape> = readonly [
-  NoInfer<TPath<TTShape>>,
-  TSortBy?,
-];
-export type TOrderBySortByDefault<TTShape> = readonly [NoInfer<TPath<TTShape>>];
-export type TOrderBySortByArguments<TTShape> =
-  | TOrderBySortByValue<TTShape>
-  | TOrderBySortByDefault<TTShape>;
+export type TOrderBySortByValue = TSortBy | true | null | undefined;
+
+export type TOrderBySortBy<TTShape> = Readonly<
+  Partial<Record<NoInfer<TPathPipe<TTShape>>, TOrderBySortByValue>>
+>;
 
 export interface TOrderBySortByOptions {
   readonly defaultSortBy?: TSortBy;
   readonly logger?: TLogger;
 }
-
-export type TOrderBySortBy<TTShape> =
-  readonly TOrderBySortByArguments<TTShape>[];
 
 export interface TOrderBySortByResult {
   [QUERY_NAMES.OBY]: string | undefined;
@@ -45,8 +37,6 @@ const EMPTY_RESULT: TOrderBySortByResult = {
   [QUERY_NAMES.SBY]: undefined,
 };
 const SORT_BY_VALUES: readonly unknown[] = Object.values(SORT_BY);
-const MIN_TUPLE_SIZE = 1;
-const MAX_TUPLE_SIZE = 2;
 
 function isSortByValue(value: unknown): value is TSortBy {
   return SORT_BY_VALUES.includes(value);
@@ -74,15 +64,16 @@ function buildOrderBySortByResult(
 }
 
 /**
- * Formats sorting columns and directions into paired `orderBy` and `sortedBy` parameters.
+ * Formats object-based sorting columns and directions into paired `orderBy` and `sortedBy` parameters.
  *
  * @remarks
- * Top-level non-array inputs (excluding `null` and `undefined`) produce a validation error.
- * Individual tuple entries with invalid shapes, keys, or sort directions are safely filtered out.
+ * Top-level non-object inputs (excluding `null` and `undefined`) produce a validation error.
+ * Individual entries with `null`, `undefined`, invalid keys, or invalid sort directions are safely filtered out.
+ * Pass `true` as a column's value to use `options.defaultSortBy` (defaults to `'asc'`).
  *
  * @example
  * ```typescript
- * OrderBySortBy.build([['created_at', 'desc'], ['name', 'asc']]);
+ * OrderBySortBy.build({ created_at: 'desc', name: 'asc' });
  * // => { orderBy: "created_at;name", sortedBy: "desc;asc" }
  * ```
  */
@@ -97,8 +88,8 @@ export class OrderBySortBy {
       return { data: { ...EMPTY_RESULT }, success: true };
     }
 
-    if (!isArray(value)) {
-      const message = msgNotArray(QUERY_LABELS.OBY, typeName(value));
+    if (!isObject(value)) {
+      const message = msgMustBeObject(QUERY_LABELS.OBY, typeName(value));
       log?.error(message);
       return {
         error: ParamsL5ValidationError.fromField(
@@ -110,7 +101,8 @@ export class OrderBySortBy {
       };
     }
 
-    if (!value.length) {
+    const entries = Object.entries(value);
+    if (!entries.length) {
       log?.info(msgNoValues(QUERY_LABELS.OBY));
       return { data: { ...EMPTY_RESULT }, success: true };
     }
@@ -121,8 +113,8 @@ export class OrderBySortBy {
     );
 
     const parsedEntries = new Map<string, TSortBy>();
-    for (const [index, item] of value.entries()) {
-      const parsed = OrderBySortBy.#parseEntry(item, index, {
+    for (const [index, entry] of entries.entries()) {
+      const parsed = OrderBySortBy.#parseEntry(entry, index, {
         defaultSortBy,
         log,
       });
@@ -172,35 +164,31 @@ export class OrderBySortBy {
   }
 
   static #parseEntry(
-    item: unknown,
+    [key, rawValue]: readonly [string, unknown],
     index: number,
     context: { readonly defaultSortBy: TSortBy; readonly log?: TLogger },
   ): TParsedOrderSortEntry | undefined {
     const { defaultSortBy, log } = context;
-
-    if (!isArray(item)) {
-      log?.warn(msgItemNotArray(QUERY_LABELS.OBY, typeName(item)));
-      return undefined;
-    }
-
-    if (item.length < MIN_TUPLE_SIZE || item.length > MAX_TUPLE_SIZE) {
-      log?.warn(msgItemNotKeyValue(QUERY_LABELS.OBY, item.length, index));
-      return undefined;
-    }
-
-    const [key, sortBy] = item;
 
     if (!isNonEmptyString(key)) {
       log?.warn(msgInvalidKey(QUERY_LABELS.OBY, typeName(key), index));
       return undefined;
     }
 
-    if (sortBy !== undefined && !isSortByValue(sortBy)) {
-      log?.warn(msgInvalidSortBy(QUERY_LABELS.OBY, sortBy, index));
+    if (rawValue === null || rawValue === undefined) {
       return undefined;
     }
 
-    return [key.trim(), sortBy ?? defaultSortBy];
+    if (rawValue === true) {
+      return [key.trim(), defaultSortBy];
+    }
+
+    if (!isSortByValue(rawValue)) {
+      log?.warn(msgInvalidSortBy(QUERY_LABELS.OBY, rawValue, index));
+      return undefined;
+    }
+
+    return [key.trim(), rawValue];
   }
 }
 

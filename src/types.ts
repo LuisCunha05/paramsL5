@@ -59,14 +59,16 @@ export type TPathPipe<TSource> = TSource extends NonObject
   ? never
   : TSource extends object
     ? {
-        [TKeys in Keys<TSource>]: TElementType<TSource[TKeys]> extends NonObject
-          ? never
-          : TElementType<TSource[TKeys]> extends object
-            ?
-                | TKeys
-                | `${TKeys}|${Keys<TElementType<TSource[TKeys]>>}`
-                | `${TKeys}:${string}|${Keys<TElementType<TSource[TKeys]>>}`
-            : TKeys;
+        [TKeys in Keys<TSource>]: TElementType<TSource[TKeys]> extends Date
+          ? TKeys
+          : TElementType<TSource[TKeys]> extends NonObject
+            ? never
+            : TElementType<TSource[TKeys]> extends object
+              ?
+                  | TKeys
+                  | `${TKeys}|${Keys<TElementType<TSource[TKeys]>>}`
+                  | `${TKeys}:${string}|${Keys<TElementType<TSource[TKeys]>>}`
+              : TKeys;
       }[Keys<TSource>]
     : never;
 

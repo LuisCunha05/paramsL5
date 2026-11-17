@@ -83,19 +83,21 @@ export type {
   TOrderBySortBy,
   TOrderBySortByOptions,
   TOrderBySortByResult,
+  TOrderBySortByValue,
   TSortBy,
 } from '#gen/order-sort';
 
 /**
- * Formats sorting columns and directions into paired `orderBy` and `sortedBy` parameters.
+ * Formats object-based sorting columns and directions into paired `orderBy` and `sortedBy` parameters.
  *
  * @remarks
- * Top-level non-array inputs (excluding `null` and `undefined`) produce a validation error.
- * Individual tuple entries with invalid shapes, keys, or sort directions are safely filtered out.
+ * Top-level non-object inputs (excluding `null` and `undefined`) produce a validation error.
+ * Individual entries with `null`, `undefined`, invalid keys, or invalid sort directions are safely filtered out.
+ * Pass `true` as a column's value to use `options.defaultSortBy` (defaults to `'asc'`).
  *
  * @example
  * ```typescript
- * OrderBySortBy.build([['created_at', 'desc'], ['name', 'asc']]);
+ * OrderBySortBy.build({ created_at: 'desc', name: 'asc' });
  * // => { orderBy: "created_at;name", sortedBy: "desc;asc" }
  * ```
  */
