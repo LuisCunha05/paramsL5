@@ -180,6 +180,21 @@ describe('Search class', () => {
           [QUERY_NAMES.SFI]: 'name:like;posts.title:=;profile.city:=',
         });
       });
+
+      test('should allow commas in scalar string values', () => {
+        result = Search.build(
+          {
+            address: '123 Main St, Apt 4',
+            name: { like: 'Doe, John' },
+          },
+          { includeSearchFields: true },
+        );
+
+        expect(result).toEqual({
+          [QUERY_NAMES.SRC]: 'address:123 Main St, Apt 4;name:Doe, John',
+          [QUERY_NAMES.SFI]: 'address:=;name:like',
+        });
+      });
     });
 
     describe('validations and edge cases', () => {
@@ -355,6 +370,92 @@ describe('Search class', () => {
           [QUERY_NAMES.SFI]: 'name:=',
         });
       });
+
+      test.each([
+        {
+          desc: 'key containing semicolon',
+          inputObj: { 'name;role': 'John' },
+          expectedFields: ['search[0]'],
+        },
+        {
+          desc: 'key containing colon',
+          inputObj: { 'name:role': 'John' },
+          expectedFields: ['search[0]'],
+        },
+        {
+          desc: 'key containing comma',
+          inputObj: { 'name,role': 'John' },
+          expectedFields: ['search[0]'],
+        },
+        {
+          desc: 'shorthand value containing colon',
+          inputObj: { title: 'Alpha: Part 1' },
+          expectedFields: ['search.title'],
+        },
+        {
+          desc: 'shorthand value containing semicolon',
+          inputObj: { title: 'Part 1; Special' },
+          expectedFields: ['search.title'],
+        },
+        {
+          desc: 'condition value containing colon or semicolon',
+          inputObj: { url: { like: 'https://example.com' } },
+          expectedFields: ['search.url'],
+        },
+        {
+          desc: 'in item containing comma',
+          inputObj: { status: { in: ['active,admin', 'pending'] } },
+          expectedFields: ['search.status'],
+        },
+        {
+          desc: 'in item containing semicolon or colon',
+          inputObj: { status: { in: ['a;b', 'c:d'] } },
+          expectedFields: ['search.status'],
+        },
+        {
+          desc: 'btw item containing comma, colon, or semicolon',
+          inputObj: { date: { btw: ['2026-01-01,00', '2026-12-31'] } },
+          expectedFields: ['search.date'],
+        },
+      ])(
+        'should throw ParamsL5ValidationError for $desc by default',
+        ({ inputObj, expectedFields }) => {
+          let caught: unknown;
+
+          try {
+            Search.build(inputObj as never, { logger: noOpLogger });
+          } catch (err) {
+            caught = err;
+          }
+
+          expect(caught).toBeInstanceOf(ParamsL5ValidationError);
+          if (caught instanceof ParamsL5ValidationError) {
+            expect(caught.issues.map((issue) => issue.field)).toEqual(
+              expectedFields,
+            );
+          }
+        },
+      );
+
+      test('should drop entries with delimiter collisions when strict is false', () => {
+        result = Search.build(
+          {
+            'bad;key': 'ok',
+            badBtw: { btw: ['a,b', 'c'] },
+            badCond: { like: 'a;b' },
+            badInAll: { in: ['a,b', 'c:d'] },
+            badScalar: 'Alpha: Part 1',
+            partialIn: { in: ['active', 'bad,item', 'pending'] },
+            status: 'active',
+          } as never,
+          { logger: noOpLogger, strict: false },
+        );
+
+        expect(result).toEqual({
+          [QUERY_NAMES.SRC]: 'partialIn:active,pending;status:active',
+          [QUERY_NAMES.SFI]: undefined,
+        });
+      });
     });
 
     describe('Search logging', () => {
@@ -438,6 +539,32 @@ describe('Search class', () => {
         expect(info).toHaveBeenNthCalledWith(
           2,
           'Search: no values remaining to parse',
+        );
+      });
+
+      test('should log warn for delimiter collisions when strict is false', () => {
+        Search.build(
+          {
+            'bad:key': 'ok',
+            badBtw: { btw: ['a,b', 'c'] },
+            badScalar: 'a;b',
+            status: 'active',
+          } as never,
+          { logger, strict: false },
+        );
+
+        expect(warn).toHaveBeenCalledTimes(3);
+        expect(warn).toHaveBeenNthCalledWith(
+          1,
+          'Search: key must not contain reserved delimiters (;, :, or ,)',
+        );
+        expect(warn).toHaveBeenNthCalledWith(
+          2,
+          'Search: value must not contain reserved delimiters (;, :, or ,)',
+        );
+        expect(warn).toHaveBeenNthCalledWith(
+          3,
+          'Search: value must not contain reserved delimiters (; or :)',
         );
       });
     });

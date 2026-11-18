@@ -15,6 +15,7 @@ import {
   msgNoRemaining,
   msgNoValue,
   msgNoValues,
+  msgReservedDelimiter,
 } from '#/messages';
 import type {
   OnlyOneKey,
@@ -96,6 +97,40 @@ const EMPTY_RESULT: TSearchResult = {
 const CONDITION_VALUES: readonly unknown[] = Object.values(CONDITIONS);
 const SINGLE_CONDITION_COUNT = 1;
 const TUPLE_SIZE = 2;
+const ALL_DELIMITER_RE = /[;:,]/v;
+const SCALAR_DELIMITER_RE = /[;:]/v;
+const DELIMITERS_ALL = ';, :, or ,';
+const DELIMITERS_PAIR = '; or :';
+
+interface DelimiterCheck {
+  readonly allowComma?: boolean;
+  readonly field: string;
+  readonly target: 'key' | 'value';
+  readonly text: string;
+  readonly value: unknown;
+}
+
+function hasValidDelimiters(
+  check: DelimiterCheck,
+  context: {
+    readonly issues: TValidationIssue[];
+    readonly log?: TLogger;
+    readonly strict: boolean;
+  },
+): boolean {
+  const pattern = check.allowComma ? SCALAR_DELIMITER_RE : ALL_DELIMITER_RE;
+  if (!pattern.test(check.text)) {
+    return true;
+  }
+
+  const delimiters = check.allowComma ? DELIMITERS_PAIR : DELIMITERS_ALL;
+  recordSearchIssue(context, {
+    field: check.field,
+    message: msgReservedDelimiter(QUERY_LABELS.SRC, check.target, delimiters),
+    value: check.value,
+  });
+  return false;
+}
 
 function formatBaseValue(value: TBaseValue): string {
   return typeof value === 'string' ? value.trim() : String(value);
@@ -283,9 +318,40 @@ export class Search {
     }
 
     const trimmedKey = key.trim();
+    if (
+      !hasValidDelimiters(
+        {
+          field: `${QUERY_NAMES.SRC}[${index}]`,
+          target: 'key',
+          text: trimmedKey,
+          value: key,
+        },
+        context,
+      )
+    ) {
+      return undefined;
+    }
 
     if (isBaseValue(rawValue)) {
-      return [trimmedKey, formatBaseValue(rawValue), context.defaultCondition];
+      const formatted = formatBaseValue(rawValue);
+      const allowComma =
+        context.defaultCondition !== CONDITIONS.IN &&
+        context.defaultCondition !== CONDITIONS.BTW;
+      if (
+        !hasValidDelimiters(
+          {
+            allowComma,
+            field: `${QUERY_NAMES.SRC}.${trimmedKey}`,
+            target: 'value',
+            text: formatted,
+            value: rawValue,
+          },
+          context,
+        )
+      ) {
+        return undefined;
+      }
+      return [trimmedKey, formatted, context.defaultCondition];
     }
 
     if (isObject(rawValue)) {
@@ -387,7 +453,23 @@ export class Search {
       return undefined;
     }
 
-    return [key, formatBaseValue(rawVal), condition];
+    const formatted = formatBaseValue(rawVal);
+    if (
+      !hasValidDelimiters(
+        {
+          allowComma: true,
+          field,
+          target: 'value',
+          text: formatted,
+          value: rawVal,
+        },
+        context,
+      )
+    ) {
+      return undefined;
+    }
+
+    return [key, formatted, condition];
   }
 
   static #parseInCondition(
@@ -405,11 +487,26 @@ export class Search {
       return undefined;
     }
 
-    const validItems: TBaseValue[] = [];
+    const validItems: string[] = [];
     for (const item of rawVal) {
       if (item !== null && item !== undefined) {
         if (isBaseValue(item)) {
-          validItems.push(item);
+          const formatted = formatBaseValue(item);
+          if (
+            hasValidDelimiters(
+              {
+                field,
+                target: 'value',
+                text: formatted,
+                value: rawVal,
+              },
+              context,
+            )
+          ) {
+            validItems.push(formatted);
+          } else if (context.strict) {
+            return undefined;
+          }
         } else if (context.strict) {
           recordSearchIssue(context, {
             field,
@@ -432,11 +529,7 @@ export class Search {
       return undefined;
     }
 
-    return [
-      key,
-      validItems.map((item) => formatBaseValue(item)).join(','),
-      CONDITIONS.IN,
-    ];
+    return [key, validItems.join(','), CONDITIONS.IN];
   }
 
   static #parseBtwCondition(
@@ -477,11 +570,24 @@ export class Search {
       return undefined;
     }
 
-    return [
-      key,
-      rawVal.map((item) => formatBaseValue(item)).join(','),
-      CONDITIONS.BTW,
-    ];
+    const formattedItems = rawVal.map((item) => formatBaseValue(item));
+    for (const formatted of formattedItems) {
+      if (
+        !hasValidDelimiters(
+          {
+            field,
+            target: 'value',
+            text: formatted,
+            value: rawVal,
+          },
+          context,
+        )
+      ) {
+        return undefined;
+      }
+    }
+
+    return [key, formattedItems.join(','), CONDITIONS.BTW];
   }
 }
 

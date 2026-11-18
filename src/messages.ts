@@ -116,3 +116,11 @@ export function msgInvalidValueAtIndex(
 ) {
   return `${label}: ${IGNORING_VALUE}expected BaseValue, got ${got}${atIndexInstead(index)}`;
 }
+
+export function msgReservedDelimiter(
+  label: string,
+  target: 'key' | 'value',
+  delimiters: string,
+) {
+  return `${label}: ${target} must not contain reserved delimiters (${delimiters})`;
+}

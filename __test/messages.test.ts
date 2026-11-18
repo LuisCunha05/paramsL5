@@ -19,6 +19,7 @@ import {
   msgNotArray,
   msgNoValue,
   msgNoValues,
+  msgReservedDelimiter,
 } from '#/messages';
 
 describe('Message functions', () => {
@@ -133,6 +134,12 @@ describe('Message functions', () => {
     test('msgInvalidValueAtIndex', () => {
       expect(msgInvalidValueAtIndex(QUERY_LABELS.SRC, 'object', 0)).toBe(
         'Search: ignoring value: expected BaseValue, got object at index 0 instead',
+      );
+    });
+
+    test('msgReservedDelimiter', () => {
+      expect(msgReservedDelimiter(QUERY_LABELS.SRC, 'value', '; or :')).toBe(
+        'Search: value must not contain reserved delimiters (; or :)',
       );
     });
   });
