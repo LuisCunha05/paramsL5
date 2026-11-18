@@ -34,8 +34,26 @@ export interface TParams<TShape extends object = Record<string, unknown>> {
 }
 
 export type TResultParams = TParamsStrings & {
-  toParams: () => string | undefined;
+  readonly toParams: () => string;
+  readonly toString: () => string;
+  readonly [Symbol.toPrimitive]: (hint: string) => string;
 };
+
+function createResultParams(merged: TParamsStrings): TResultParams {
+  const result = { ...merged };
+  function compile(): string {
+    return query(result);
+  }
+
+  Object.defineProperties(result, {
+    [Symbol.toPrimitive]: { value: compile },
+    toParams: { value: compile },
+    toString: { value: compile },
+  });
+
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+  return result as TResultParams;
+}
 
 export interface ParamsL5DefaultOptions {
   readonly sortBy?: TSortBy;
@@ -183,12 +201,7 @@ export class ParamsL5 {
       };
     }
 
-    const result: TResultParams = {
-      ...merged,
-      toParams: () => query(result),
-    };
-
-    return { data: result, success: true };
+    return { data: createResultParams(merged), success: true };
   }
 
   build<TShape extends object = Record<string, unknown>>(

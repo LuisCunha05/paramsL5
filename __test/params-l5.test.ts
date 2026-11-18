@@ -71,6 +71,32 @@ describe('ParamsL5 class', () => {
       expect(res.toParams()).toBe('limit=25&page=2&searchJoin=or');
     });
 
+    test('result should support toString(), template literal coercion, and keep methods non-enumerable', () => {
+      const res = ParamsL5.build({
+        filter: ['id', 'name'],
+        limit: 10,
+      });
+
+      const compiled: string = res.toParams();
+      const expectedQuery = `filter=id${URC.SEMICOLON}name&limit=10&page=1`;
+
+      expect(compiled).toBe(expectedQuery);
+      expect(res.toString()).toBe(expectedQuery);
+      expect(String(res)).toBe(expectedQuery);
+      expect(`https://api.example.com/users?${res}`).toBe(
+        `https://api.example.com/users?${expectedQuery}`,
+      );
+
+      expect(Object.keys(res)).not.toContain('toParams');
+      expect(Object.keys(res)).not.toContain('toString');
+      expect({ ...res }).not.toHaveProperty('toParams');
+      expect(JSON.parse(JSON.stringify(res))).toEqual({
+        filter: 'id;name',
+        limit: '10',
+        page: '1',
+      });
+    });
+
     test('ParamsL5.safe should return success result for valid params', () => {
       const res = ParamsL5.safe({
         filter: ['id'],
