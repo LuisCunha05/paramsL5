@@ -132,8 +132,8 @@ const EMPTY_RESULT: TSearchResult = {
 const CONDITION_VALUES: readonly unknown[] = Object.values(CONDITIONS);
 const SINGLE_CONDITION_COUNT = 1;
 const TUPLE_SIZE = 2;
-const ALL_DELIMITER_RE = /[;:,]/v;
-const SCALAR_DELIMITER_RE = /[;:]/v;
+const ALL_DELIMITER_RE = /[;:,]/u;
+const SCALAR_DELIMITER_RE = /[;:]/u;
 const DELIMITERS_ALL = ';, :, or ,';
 const DELIMITERS_PAIR = '; or :';
 
