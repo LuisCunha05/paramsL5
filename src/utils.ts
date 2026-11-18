@@ -19,8 +19,6 @@ import {
 } from './messages';
 
 const NON_EMPTY_STRING_LEN = 0;
-const HEX_ENCODING = 16;
-const START_CHAR = 0;
 export function isNonEmptyString(value: unknown): value is string {
   return (
     typeof value === 'string' && value.trim().length > NON_EMPTY_STRING_LEN
@@ -66,30 +64,6 @@ export function typeName(arg?: unknown): string {
     return 'NaN';
   }
   return typeof arg;
-}
-
-/**
- * Docs [#link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent#description)
- */
-export function encodeSearchParam(str: string) {
-  return encodeURIComponent(str)
-    .replaceAll(
-      /[!'\(\)*]/gv,
-      (char) =>
-        `%${char.codePointAt(START_CHAR)?.toString(HEX_ENCODING).toUpperCase()}`,
-    )
-    .replaceAll('%20', '+');
-}
-
-export function decodeSearchParam(str: string) {
-  try {
-    return decodeURIComponent(str.replaceAll('+', '%20'));
-  } catch (error: unknown) {
-    console.error(
-      `    [ParamsL5]: Malformed URL. ${error instanceof URIError ? error.message : error}`,
-    );
-    return str.replaceAll('+', ' ');
-  }
 }
 
 export function isArray(value: unknown): value is readonly unknown[] {
