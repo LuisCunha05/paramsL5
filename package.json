@@ -1,11 +1,15 @@
 {
   "name": "params-l5",
   "version": "0.2.0",
-  "description": "package to generate  l5repository query strings",
+  "description": "Type-safe query string builder for Laravel l5-repository",
   "keywords": [
     "l5",
+    "l5-repository",
+    "laravel",
     "params",
-    "repository"
+    "query-string",
+    "repository",
+    "typescript"
   ],
   "homepage": "https://github.com/LuisCunha05/paramsL5#readme",
   "bugs": {
@@ -17,6 +21,11 @@
     "type": "git",
     "url": "git+https://github.com/LuisCunha05/paramsL5.git"
   },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.cjs",
@@ -44,7 +53,8 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check"
+    "fmt:check": "oxfmt --check",
+    "prepublishOnly": "pnpm run lint && pnpm run fmt:check && pnpm test --run && pnpm run build"
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.5",
