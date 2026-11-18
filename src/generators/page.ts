@@ -7,6 +7,7 @@ import { isNumber, typeName, unwrap } from '#/utils';
 export type TPage = number;
 
 export interface TPageOptions {
+  readonly defaultValue?: TPage;
   readonly logger?: TLogger;
   readonly strict?: boolean;
 }
@@ -23,7 +24,7 @@ const DEFAULT_PAGE = 1;
  *
  * @remarks
  * Fields are validated: `null`, `undefined`, and invalid shapes/types (numbers <= 0, decimals, non-numeric values) are handled safely.
- * Defaults to `'1'` when no page is given.
+ * Falls back to `options.defaultValue` or `'1'` when no page is given.
  *
  * @example
  * ```typescript
@@ -37,7 +38,8 @@ export class Page {
   ): TResult<TPageResult> {
     const log = options?.logger;
     const strict = options?.strict ?? true;
-    if (value === undefined || value === null) {
+    const val = value ?? options?.defaultValue;
+    if (val === undefined) {
       log?.info(msgNoValue(QUERY_LABELS.PAG));
       return {
         data: { [QUERY_NAMES.PAG]: String(DEFAULT_PAGE) },
@@ -45,32 +47,33 @@ export class Page {
       };
     }
 
-    if (!Page.#isInputValid(value)) {
+    if (!Page.#isInputValid(val)) {
       const message = msgMustBePositiveInteger(
         QUERY_LABELS.PAG,
-        typeName(value),
+        typeName(val),
         false,
       );
       if (!strict) {
         log?.warn(message);
+        const fallback =
+          options?.defaultValue !== undefined &&
+          Page.#isInputValid(options.defaultValue)
+            ? String(options.defaultValue)
+            : String(DEFAULT_PAGE);
         return {
-          data: { [QUERY_NAMES.PAG]: String(DEFAULT_PAGE) },
+          data: { [QUERY_NAMES.PAG]: fallback },
           success: true,
         };
       }
       log?.error(message);
       return {
-        error: ParamsL5ValidationError.fromField(
-          QUERY_NAMES.PAG,
-          message,
-          value,
-        ),
+        error: ParamsL5ValidationError.fromField(QUERY_NAMES.PAG, message, val),
         success: false,
       };
     }
 
     return {
-      data: { [QUERY_NAMES.PAG]: String(value) },
+      data: { [QUERY_NAMES.PAG]: String(val) },
       success: true,
     };
   }

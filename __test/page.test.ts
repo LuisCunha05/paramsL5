@@ -94,14 +94,19 @@ describe('Page class', () => {
         ).toThrow(`Page: must be a positive integer, got ${type} instead`);
       });
 
-      test('should fall back to "1" when strict is false and input is invalid', () => {
+      test('should fall back to defaultValue or "1" when strict is false and input is invalid', () => {
+        expect(Page.build(0, { defaultValue: 3, strict: false })).toEqual({
+          [QUERY_NAMES.PAG]: '3',
+        });
         expect(Page.build(0, { strict: false })).toEqual({
           [QUERY_NAMES.PAG]: '1',
         });
         expect(Page.build(-3, { strict: false })).toEqual({
           [QUERY_NAMES.PAG]: '1',
         });
-        expect(Page.safe('invalid' as never, { strict: false })).toEqual({
+        expect(
+          Page.safe('invalid' as never, { defaultValue: -2, strict: false }),
+        ).toEqual({
           data: { [QUERY_NAMES.PAG]: '1' },
           success: true,
         });

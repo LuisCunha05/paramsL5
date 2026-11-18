@@ -360,7 +360,7 @@ describe('ParamsL5 class', () => {
 
       test('should drop invalid fields and fall back to defaults when strict is false', () => {
         const client = new ParamsL5({
-          defaultOptions: { limit: 15, searchJoin: 'and' },
+          defaultOptions: { limit: 15, page: 4, searchJoin: 'and' },
           strict: false,
         });
 
@@ -381,7 +381,7 @@ describe('ParamsL5 class', () => {
         expect(res.limit).toBe('15');
         expect(res.orderBy).toBe('name');
         expect(res.sortedBy).toBe('desc');
-        expect(res.page).toBe('1');
+        expect(res.page).toBe('4');
         expect(res.search).toBe('status:active');
         expect(res.searchJoin).toBe('and');
       });

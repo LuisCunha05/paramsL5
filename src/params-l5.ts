@@ -155,7 +155,10 @@ export class ParamsL5 {
         ...baseOptions,
         defaultSortBy: this.#defaultOptions?.sortBy,
       }),
-      Page.safe(params.page ?? this.#defaultOptions?.page, baseOptions),
+      Page.safe(params.page, {
+        ...baseOptions,
+        defaultValue: this.#defaultOptions?.page,
+      }),
       Search.safe(params.search, {
         ...baseOptions,
         defaultCondition: this.#defaultOptions?.searchCondition,
