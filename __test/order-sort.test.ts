@@ -94,7 +94,7 @@ describe('OrderBySortBy class', () => {
           name: string;
           created_at: Date;
           posts: Post[];
-          profile: { city: string };
+          profile?: { city: string } | null;
         }
 
         result = OrderBySortBy.build<User>({

@@ -61,15 +61,15 @@ export type TPathPipe<TSource> = TSource extends NonObject
   ? never
   : TSource extends object
     ? {
-        [TKeys in Keys<TSource>]: TElementType<TSource[TKeys]> extends Date
+        [TKeys in Keys<TSource>]: TUnwrapField<TSource[TKeys]> extends Date
           ? TKeys
-          : TElementType<TSource[TKeys]> extends NonObject
+          : TUnwrapField<TSource[TKeys]> extends NonObject
             ? never
-            : TElementType<TSource[TKeys]> extends object
+            : TUnwrapField<TSource[TKeys]> extends object
               ?
                   | TKeys
-                  | `${TKeys}|${Keys<TElementType<TSource[TKeys]>>}`
-                  | `${TKeys}:${string}|${Keys<TElementType<TSource[TKeys]>>}`
+                  | `${TKeys}|${Keys<TUnwrapField<TSource[TKeys]>>}`
+                  | `${TKeys}:${string}|${Keys<TUnwrapField<TSource[TKeys]>>}`
               : TKeys;
       }[Keys<TSource>]
     : never;
@@ -133,6 +133,6 @@ type TNonNeverKeys<TObj> = {
 export type OnlyOneKey<TObj> = {
   [Keep in TNonNeverKeys<TObj>]: Record<Keep, TObj[Keep]> &
     Partial<
-      Record<Exclude<keyof TObj, Keep>, 'Erro: Max one search type per key'>
+      Record<Exclude<keyof TObj, Keep>, 'Error: Max one search type per key'>
     >;
 }[TNonNeverKeys<TObj>];
