@@ -17,10 +17,11 @@ export interface TWithResult {
  * Formats relations to eager load via repository `with` into a semicolon-separated string.
  *
  * @remarks
- * Fields are automatically validated: `null`, `undefined`, and invalid shapes are filtered out safely.
+ * Under strict mode (default), non-array inputs and non-string items produce a `ParamsL5ValidationError`.
+ * Set `options.strict` to `false` to filter out invalid entries safely without throwing.
  *
- * @param arg - Array of relation paths (supports dot and pipe notation).
- * @param options - Optional settings including custom logger.
+ * @param value - Array of relation paths (supports dot and pipe notation).
+ * @param options - Optional settings including custom logger and strict mode.
  * @returns An object `{ with }` containing a semicolon-separated string of unique relation paths, or `undefined`.
  *
  * @example

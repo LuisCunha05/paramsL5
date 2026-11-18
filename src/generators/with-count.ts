@@ -17,10 +17,11 @@ export interface TWithCountResult {
  * Formats relations whose count should be loaded (`withCount`) into a semicolon-separated string.
  *
  * @remarks
- * Fields are automatically validated: `null`, `undefined`, and invalid shapes are filtered out safely.
+ * Under strict mode (default), non-array inputs and non-string items produce a `ParamsL5ValidationError`.
+ * Set `options.strict` to `false` to filter out invalid entries safely without throwing.
  *
- * @param arg - Array of relation names to count.
- * @param options - Optional settings including custom logger.
+ * @param value - Array of relation names to count.
+ * @param options - Optional settings including custom logger and strict mode.
  * @returns An object `{ withCount }` containing a semicolon-separated string of unique relation names, or `undefined`.
  *
  * @example
