@@ -24,6 +24,7 @@ import type {
   TGenerator,
   TLogger,
   TPath,
+  TPathValue,
   TResult,
   ToEnum,
 } from '#/types';
@@ -38,32 +39,66 @@ import {
 } from '#/utils';
 
 export type TCondition = ToEnum<typeof CONDITIONS>;
-export type TSearchValue = TBaseValue | null | undefined;
+export type TSearchValue<TValue extends TBaseValue = TBaseValue> = [
+  TValue,
+] extends [never]
+  ? never
+  : TValue | null | undefined;
 type BetweenTuple<TValue> = readonly [TValue, TValue];
 
-type TSearchBetweenValue =
-  | BetweenTuple<string | null | undefined>
-  | BetweenTuple<number | null | undefined>
-  | null
-  | undefined;
+type TSearchBetweenValue<TValue extends TBaseValue = TBaseValue> = [
+  TValue,
+] extends [never]
+  ? never
+  :
+      | (Extract<TValue, string> extends never
+          ? never
+          : BetweenTuple<Extract<TValue, string> | null | undefined>)
+      | (Extract<TValue, number> extends never
+          ? never
+          : BetweenTuple<Extract<TValue, number> | null | undefined>)
+      | null
+      | undefined;
 
-type TSearchInValue =
-  | readonly (string | number | null | undefined)[]
-  | null
-  | undefined;
+type TSearchInValue<TValue extends TBaseValue = TBaseValue> = [TValue] extends [
+  never,
+]
+  ? never
+  : readonly (TValue | null | undefined)[] | null | undefined;
 
-type TConditionMap = {
+type TSearchableValue<TValue> = unknown extends TValue
+  ? TBaseValue
+  : Exclude<TValue, null | undefined> extends infer TNormalized
+    ? TNormalized extends TBaseValue
+      ? TNormalized
+      : TNormalized extends Date
+        ? string
+        : never
+    : never;
+
+type TConditionMap<TValue extends TBaseValue = TBaseValue> = {
   [TKey in Lowercase<TConditionKeys>]: TKey extends 'btw'
-    ? TSearchBetweenValue
+    ? TSearchBetweenValue<Exclude<TValue, boolean>>
     : TKey extends 'in'
-      ? TSearchInValue
-      : TSearchValue;
+      ? TSearchInValue<Exclude<TValue, boolean>>
+      : TKey extends 'like' | 'ilike'
+        ? TSearchValue<Extract<TValue, string>>
+        : TKey extends 'gt' | 'gte' | 'lt' | 'lte'
+          ? TSearchValue<Exclude<TValue, boolean>>
+          : TSearchValue<TValue>;
 };
 
-export type TSearchCondition = OnlyOneKey<TConditionMap>;
-export type TSearch<TTShape> = Readonly<
-  Partial<Record<TPath<TTShape>, TSearchCondition | TSearchValue>>
->;
+export type TSearchCondition<TValue extends TBaseValue = TBaseValue> = [
+  TValue,
+] extends [never]
+  ? never
+  : OnlyOneKey<TConditionMap<TValue>>;
+
+export type TSearch<TTShape> = {
+  readonly [TKey in TPath<TTShape>]?:
+    | TSearchCondition<TSearchableValue<TPathValue<TTShape, TKey>>>
+    | TSearchValue<TSearchableValue<TPathValue<TTShape, TKey>>>;
+};
 
 export interface TSearchOptions {
   readonly defaultCondition?: TCondition;

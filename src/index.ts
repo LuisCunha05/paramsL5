@@ -187,5 +187,6 @@ export type {
   TNoDuplicates,
   TPath,
   TPathPipe,
+  TPathValue,
   TResult,
 } from '#/types';

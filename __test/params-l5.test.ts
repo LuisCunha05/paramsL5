@@ -488,6 +488,9 @@ describe('ParamsL5 class', () => {
           },
         });
         expect(invalidSortRes.success).toBe(false);
+
+        // @ts-expect-error string field cannot accept number search value
+        client.for<UserModel>().build({ search: { name: 123 } });
       });
     });
   });

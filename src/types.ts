@@ -40,13 +40,13 @@ export type TPath<
     ? never
     : TSource extends object
       ? {
-          [TKey in Keys<TSource>]: TElementType<TSource[TKey]> extends NonObject
+          [TKey in Keys<TSource>]: TUnwrapField<TSource[TKey]> extends NonObject
             ? TKey
-            : TElementType<TSource[TKey]> extends object
+            : TUnwrapField<TSource[TKey]> extends object
               ?
                   | TKey
                   // oxlint-disable-next-line no-magic-numbers
-                  | `${TKey}.${TPath<TElementType<TSource[TKey]>, [...TDepth, 1]>}`
+                  | `${TKey}.${TPath<TUnwrapField<TSource[TKey]>, [...TDepth, 1]>}`
               : TKey;
         }[Keys<TSource>]
       : never;
@@ -54,6 +54,8 @@ export type TPath<
 type TElementType<TType> = TType extends readonly (infer TInt)[]
   ? TElementType<TInt>
   : TType;
+
+type TUnwrapField<TType> = Exclude<TElementType<TType>, null | undefined>;
 
 export type TPathPipe<TSource> = TSource extends NonObject
   ? never
@@ -70,6 +72,17 @@ export type TPathPipe<TSource> = TSource extends NonObject
                   | `${TKeys}:${string}|${Keys<TElementType<TSource[TKeys]>>}`
               : TKeys;
       }[Keys<TSource>]
+    : never;
+
+export type TPathValue<
+  TSource,
+  TPathKey extends string,
+> = TPathKey extends `${infer THead}.${infer TRest}`
+  ? THead extends keyof Exclude<TSource, null | undefined>
+    ? TPathValue<TElementType<Exclude<TSource, null | undefined>[THead]>, TRest>
+    : never
+  : TPathKey extends keyof Exclude<TSource, null | undefined>
+    ? Exclude<TSource, null | undefined>[TPathKey]
     : never;
 
 export type TNoDuplicates<
@@ -113,9 +126,13 @@ export type TValidateKeyTupleArray<TArray> = TArray extends readonly unknown[]
 export type TConditionObj = typeof CONDITIONS;
 export type TConditionKeys = keyof TConditionObj;
 
+type TNonNeverKeys<TObj> = {
+  [TKey in keyof TObj]: [TObj[TKey]] extends [never] ? never : TKey;
+}[keyof TObj];
+
 export type OnlyOneKey<TObj> = {
-  [Keep in keyof TObj]: Record<Keep, TObj[Keep]> &
+  [Keep in TNonNeverKeys<TObj>]: Record<Keep, TObj[Keep]> &
     Partial<
       Record<Exclude<keyof TObj, Keep>, 'Erro: Max one search type per key'>
     >;
-}[keyof TObj];
+}[TNonNeverKeys<TObj>];

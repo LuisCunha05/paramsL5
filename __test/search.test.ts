@@ -181,6 +181,70 @@ describe('Search class', () => {
         });
       });
 
+      test('should correlate search field values and operators with schema types', () => {
+        interface Post {
+          likes: number;
+          title: string;
+        }
+        interface User {
+          active: boolean;
+          age: number;
+          createdAt: Date;
+          name: string;
+          posts: Post[];
+          profile?: { city: string } | null;
+          role: 'admin' | 'user';
+        }
+
+        const valid = Search.build<User>(
+          {
+            active: true,
+            age: { btw: [18, 65] },
+            createdAt: { gte: '2026-01-01' },
+            name: { like: 'Alice' },
+            'posts.likes': { gt: 10 },
+            'posts.title': { in: ['ts', 'vitest'] },
+            'profile.city': 'NYC',
+            role: { in: ['admin', 'user'] },
+          },
+          { includeSearchFields: true },
+        );
+
+        expect(valid).toEqual({
+          [QUERY_NAMES.SRC]:
+            'active:true;age:18,65;createdAt:2026-01-01;name:Alice;posts.likes:10;posts.title:ts,vitest;profile.city:NYC;role:admin,user',
+          [QUERY_NAMES.SFI]:
+            'active:=;age:between;createdAt:>=;name:like;posts.likes:>;posts.title:in;profile.city:=;role:in',
+        });
+
+        // @ts-expect-error number field cannot take string shorthand
+        Search.build<User>({ age: '18' });
+
+        // @ts-expect-error number field cannot take string in `in`
+        Search.build<User>({ age: { in: ['18'] } });
+
+        // @ts-expect-error number field cannot use `like`
+        Search.build<User>({ age: { like: '18' } });
+
+        // @ts-expect-error boolean field cannot take number or `gt`
+        Search.build<User>({ active: { gt: 1 } });
+
+        // @ts-expect-error string union field rejects invalid literal
+        Search.build<User>({ role: 'guest' });
+
+        // @ts-expect-error nested array number field rejects string
+        Search.build<User>({ 'posts.likes': { gte: '10' } });
+
+        // @ts-expect-error nested optional object string field rejects number
+        Search.build<User>({ 'profile.city': 123 });
+
+        // @ts-expect-error Date field maps to string, rejecting boolean
+        Search.build<User>({ createdAt: false });
+
+        // @ts-expect-error object/array path cannot be searched with scalar
+        Search.build<User>({ posts: 'anything' });
+      });
+
       test('should allow commas in scalar string values', () => {
         result = Search.build(
           {
