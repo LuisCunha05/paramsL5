@@ -6,8 +6,13 @@ import { isNonEmptyString, typeName, unwrap } from '#/utils';
 
 export type TSearchJoin = ToEnum<typeof SEARCH_JOIN>;
 export interface TSearchJoinOptions {
-  logger?: TLogger;
-  defaultSearchJoin?: TSearchJoin;
+  readonly logger?: TLogger;
+  readonly defaultSearchJoin?: TSearchJoin;
+  readonly strict?: boolean;
+}
+
+function isValidSearchJoin(val: unknown): val is TSearchJoin {
+  return val === SEARCH_JOIN.AND || val === SEARCH_JOIN.OR;
 }
 
 export interface TSearchJoinResult {
@@ -31,6 +36,7 @@ export class SearchJoin {
     options?: TSearchJoinOptions,
   ): TResult<TSearchJoinResult> {
     const log = options?.logger;
+    const strict = options?.strict ?? true;
     const val = value ?? options?.defaultSearchJoin;
     if (val === undefined) {
       log?.info(msgNoValue(QUERY_LABELS.SJO));
@@ -42,6 +48,16 @@ export class SearchJoin {
 
     if (!isNonEmptyString(val)) {
       const message = msgMustBeString(QUERY_LABELS.SJO, typeName(val));
+      if (!strict) {
+        log?.warn(message);
+        const fallback = isValidSearchJoin(options?.defaultSearchJoin)
+          ? options.defaultSearchJoin
+          : undefined;
+        return {
+          data: { [QUERY_NAMES.SJO]: fallback },
+          success: true,
+        };
+      }
       log?.error(message);
       return {
         error: ParamsL5ValidationError.fromField(QUERY_NAMES.SJO, message, val),
@@ -49,13 +65,23 @@ export class SearchJoin {
       };
     }
 
-    if (!(val === SEARCH_JOIN.AND || val === SEARCH_JOIN.OR)) {
+    if (!isValidSearchJoin(val)) {
       const message = msgMustBeEither(
         QUERY_LABELS.SJO,
         SEARCH_JOIN.AND,
         SEARCH_JOIN.OR,
         val,
       );
+      if (!strict) {
+        log?.warn(message);
+        const fallback = isValidSearchJoin(options?.defaultSearchJoin)
+          ? options.defaultSearchJoin
+          : undefined;
+        return {
+          data: { [QUERY_NAMES.SJO]: fallback },
+          success: true,
+        };
+      }
       log?.error(message);
       return {
         error: ParamsL5ValidationError.fromField(QUERY_NAMES.SJO, message, val),

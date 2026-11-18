@@ -7,7 +7,10 @@ import type {
   TResult,
 } from '#/types';
 
-import { ParamsL5ValidationError } from './errors/ParamsL5ValidationError';
+import {
+  ParamsL5ValidationError,
+  type TValidationIssue,
+} from './errors/ParamsL5ValidationError';
 import {
   msgMustBeString,
   msgNoRemaining,
@@ -133,12 +136,23 @@ export function unwrap<TType>(result: TResult<TType>): TType {
   return result.data;
 }
 
-export function filterWithDelimeter<TLabel extends TQueryKeys>(
-  label: TLabel,
-  delimiter: ':' | ';' | ',',
-  value?: unknown,
-  logger?: TLogger,
-): TResult<Record<TLabel, string | undefined>> {
+export interface FilterWithDelimiterConfig<TLabel extends TQueryKeys> {
+  readonly label: TLabel;
+  readonly delimiter: ':' | ';' | ',';
+  readonly value?: unknown;
+  readonly logger?: TLogger;
+  readonly strict?: boolean;
+}
+
+export function filterWithDelimeter<TLabel extends TQueryKeys>({
+  label,
+  delimiter,
+  value,
+  logger,
+  strict = true,
+}: FilterWithDelimiterConfig<TLabel>): TResult<
+  Record<TLabel, string | undefined>
+> {
   const log = logger;
   if (value === undefined) {
     const message = msgNoValues(label);
@@ -153,6 +167,13 @@ export function filterWithDelimeter<TLabel extends TQueryKeys>(
   if (!isArray(value)) {
     const message = msgNotArray(label, typeName(value));
     log?.error(message);
+    if (!strict) {
+      return {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+        data: { [label]: undefined } as Record<TLabel, undefined>,
+        success: true,
+      };
+    }
     return {
       error: ParamsL5ValidationError.fromField(label, message, value),
       success: false,
@@ -169,13 +190,33 @@ export function filterWithDelimeter<TLabel extends TQueryKeys>(
     };
   }
 
-  const filteredValues = value.filter((item) => {
-    if (!isNonEmptyString(item)) {
-      log?.info(msgMustBeString(label, typeName(item)));
-      return false;
+  const issues: TValidationIssue[] = [];
+  const filteredValues: string[] = [];
+
+  for (const [index, item] of value.entries()) {
+    if (isNonEmptyString(item)) {
+      filteredValues.push(item);
+    } else {
+      const message = msgMustBeString(label, typeName(item));
+      if (strict) {
+        log?.error(message);
+        issues.push({
+          field: `${label}[${index}]`,
+          message,
+          value: item,
+        });
+      } else {
+        log?.info(message);
+      }
     }
-    return true;
-  });
+  }
+
+  if (issues.length) {
+    return {
+      error: ParamsL5ValidationError.fromIssues(issues),
+      success: false,
+    };
+  }
 
   if (!filteredValues.length) {
     const message = msgNoRemaining(label);
@@ -188,14 +229,6 @@ export function filterWithDelimeter<TLabel extends TQueryKeys>(
   }
 
   const uniqueValues = [...new Set(filteredValues)];
-
-  if (!uniqueValues.length) {
-    return {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-      data: { [label]: undefined } as Record<TLabel, undefined>,
-      success: true,
-    };
-  }
 
   return {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion

@@ -7,8 +7,9 @@ import { isNumber, typeName, unwrap } from '#/utils';
 export type TLimit = number;
 
 export interface TLimitOptions {
-  logger?: TLogger;
-  defaultValue?: TLimit;
+  readonly logger?: TLogger;
+  readonly defaultValue?: TLimit;
+  readonly strict?: boolean;
 }
 
 export interface TLimitResult {
@@ -36,6 +37,7 @@ export class Limit {
     options?: TLimitOptions,
   ): TResult<TLimitResult> {
     const log = options?.logger;
+    const strict = options?.strict ?? true;
     const val = value ?? options?.defaultValue;
     if (val === undefined) {
       log?.info(msgNoValue(QUERY_LABELS.LMT));
@@ -51,6 +53,18 @@ export class Limit {
         typeName(val),
         true,
       );
+      if (!strict) {
+        log?.warn(message);
+        const fallback =
+          options?.defaultValue !== undefined &&
+          Limit.#isInputValid(options.defaultValue)
+            ? String(options.defaultValue)
+            : DEFAULT_VALUE;
+        return {
+          data: { [QUERY_NAMES.LMT]: fallback },
+          success: true,
+        };
+      }
       log?.error(message);
       return {
         error: ParamsL5ValidationError.fromField(QUERY_NAMES.LMT, message, val),

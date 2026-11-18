@@ -136,29 +136,51 @@ describe('WithCount class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should filter out non-string items', () => {
-        input = ['comments', 123, null, undefined, {}, 'likes'];
+      test('should throw ParamsL5ValidationError with issues for non-string or empty/whitespace items by default', () => {
+        input = ['comments', 123, '', '   ', null, 'likes'];
+        let caught: unknown;
+
+        try {
+          WithCount.build(input, { logger: noOpLogger });
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).toBeInstanceOf(ParamsL5ValidationError);
+        if (caught instanceof ParamsL5ValidationError) {
+          expect(caught.issues.map((issue) => issue.field)).toEqual([
+            'withCount[1]',
+            'withCount[2]',
+            'withCount[3]',
+            'withCount[4]',
+          ]);
+        }
+      });
+
+      test('should filter out invalid items when strict is false', () => {
+        input = [
+          'comments',
+          123,
+          null,
+          undefined,
+          {},
+          'likes',
+          '',
+          '   ',
+          '\t\n',
+        ];
         expected = { [QUERY_NAMES.WTC]: 'comments;likes' };
 
-        result = WithCount.build(input, { logger: noOpLogger });
+        result = WithCount.build(input, { logger: noOpLogger, strict: false });
 
         expect(result).toEqual(expected);
       });
 
-      test('should filter out empty and whitespace-only strings', () => {
-        input = ['comments', '', 'likes', '   ', '\t\n'];
-        expected = { [QUERY_NAMES.WTC]: 'comments;likes' };
-
-        result = WithCount.build(input, { logger: noOpLogger });
-
-        expect(result).toEqual(expected);
-      });
-
-      test('should return empty result if no values remain after filtering', () => {
+      test('should return empty result when strict is false and no values remain', () => {
         input = [123, '', '   ', null];
         expected = { [QUERY_NAMES.WTC]: undefined };
 
-        result = WithCount.build(input, { logger: noOpLogger });
+        result = WithCount.build(input, { logger: noOpLogger, strict: false });
 
         expect(result).toEqual(expected);
       });
@@ -197,20 +219,32 @@ describe('WithCount class', () => {
         );
       });
 
-      test('should log info if an item is not a string', () => {
+      test('should log error when strict is true and an item is not a non-empty string', () => {
         input = ['comments', 123];
 
-        WithCount.build(input, { logger });
+        expect(() => WithCount.build(input, { logger })).toThrow(
+          ParamsL5ValidationError,
+        );
+
+        expect(error).toHaveBeenCalledExactlyOnceWith(
+          'withCount: value must be a string, got number instead',
+        );
+      });
+
+      test('should log info when strict is false and an item is not a string', () => {
+        input = ['comments', 123];
+
+        WithCount.build(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'withCount: value must be a string, got number instead',
         );
       });
 
-      test('should log info if an item is an empty or whitespace-only string', () => {
+      test('should log info when strict is false and an item is an empty or whitespace-only string', () => {
         input = ['comments', '   '];
 
-        WithCount.build(input, { logger });
+        WithCount.build(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'withCount: value must be a string, got string instead',
@@ -235,10 +269,10 @@ describe('WithCount class', () => {
         );
       });
 
-      test('should log info with no values remaining to parse', () => {
+      test('should log info with no values remaining to parse when strict is false', () => {
         input = [123];
 
-        WithCount.build(input, { logger });
+        WithCount.build(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledTimes(2);
         expect(info).toHaveBeenNthCalledWith(
@@ -376,38 +410,51 @@ describe('WithCount class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should filter out non-string items', () => {
-        input = ['comments', 123, null, undefined, {}, 'likes'];
+      test('should return failure result for invalid array items under strict mode', () => {
+        input = ['comments', 123, '   '];
+
+        const safeResult = WithCount.safe(input, { logger: noOpLogger });
+
+        expect(safeResult.success).toBe(false);
+        if (!safeResult.success) {
+          expect(safeResult.error).toBeInstanceOf(ParamsL5ValidationError);
+          expect(safeResult.error.issues.map((issue) => issue.field)).toEqual([
+            'withCount[1]',
+            'withCount[2]',
+          ]);
+        }
+      });
+
+      test('should filter out invalid items when strict is false', () => {
+        input = [
+          'comments',
+          123,
+          null,
+          undefined,
+          {},
+          'likes',
+          '',
+          '   ',
+          '\t\n',
+        ];
         expected = {
           data: { [QUERY_NAMES.WTC]: 'comments;likes' },
           success: true,
         };
 
-        result = WithCount.safe(input, { logger: noOpLogger });
+        result = WithCount.safe(input, { logger: noOpLogger, strict: false });
 
         expect(result).toEqual(expected);
       });
 
-      test('should filter out empty and whitespace-only strings', () => {
-        input = ['comments', '', 'likes', '   ', '\t\n'];
-        expected = {
-          data: { [QUERY_NAMES.WTC]: 'comments;likes' },
-          success: true,
-        };
-
-        result = WithCount.safe(input, { logger: noOpLogger });
-
-        expect(result).toEqual(expected);
-      });
-
-      test('should return success result with undefined if no values remain after filtering', () => {
+      test('should return success result with undefined when strict is false and no values remain', () => {
         input = [123, '', '   ', null];
         expected = {
           data: { [QUERY_NAMES.WTC]: undefined },
           success: true,
         };
 
-        result = WithCount.safe(input, { logger: noOpLogger });
+        result = WithCount.safe(input, { logger: noOpLogger, strict: false });
 
         expect(result).toEqual(expected);
       });
@@ -440,20 +487,30 @@ describe('WithCount class', () => {
         );
       });
 
-      test('should log info if an item is not a string', () => {
+      test('should log error when strict is true and an item is not a non-empty string', () => {
         input = ['comments', 123];
 
         WithCount.safe(input, { logger });
+
+        expect(error).toHaveBeenCalledExactlyOnceWith(
+          'withCount: value must be a string, got number instead',
+        );
+      });
+
+      test('should log info when strict is false and an item is not a string', () => {
+        input = ['comments', 123];
+
+        WithCount.safe(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'withCount: value must be a string, got number instead',
         );
       });
 
-      test('should log info if an item is an empty or whitespace-only string', () => {
+      test('should log info when strict is false and an item is an empty or whitespace-only string', () => {
         input = ['comments', '   '];
 
-        WithCount.safe(input, { logger });
+        WithCount.safe(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'withCount: value must be a string, got string instead',
@@ -478,10 +535,10 @@ describe('WithCount class', () => {
         );
       });
 
-      test('should log info with no values remaining to parse', () => {
+      test('should log info with no values remaining to parse when strict is false', () => {
         input = [123];
 
-        WithCount.safe(input, { logger });
+        WithCount.safe(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledTimes(2);
         expect(info).toHaveBeenNthCalledWith(

@@ -1,5 +1,8 @@
 import { CONDITIONS, QUERY_LABELS, QUERY_NAMES } from '#/constants';
-import { ParamsL5ValidationError } from '#/errors/ParamsL5ValidationError';
+import {
+  ParamsL5ValidationError,
+  type TValidationIssue,
+} from '#/errors/ParamsL5ValidationError';
 import {
   msgInvalidBaseValue,
   msgInvalidBetweenSize,
@@ -34,7 +37,6 @@ import {
 } from '#/utils';
 
 export type TCondition = ToEnum<typeof CONDITIONS>;
-
 export type TSearchValue = TBaseValue | null | undefined;
 type BetweenTuple<TValue> = readonly [TValue, TValue];
 
@@ -66,6 +68,7 @@ export interface TSearchOptions {
   readonly defaultCondition?: TCondition;
   readonly includeSearchFields?: boolean;
   readonly logger?: TLogger;
+  readonly strict?: boolean;
 }
 
 export interface TSearchResult {
@@ -78,6 +81,13 @@ type TParsedSearchEntry = readonly [
   value: string,
   condition: TCondition,
 ];
+
+interface SearchParseContext {
+  readonly defaultCondition: TCondition;
+  readonly issues: TValidationIssue[];
+  readonly log?: TLogger;
+  readonly strict: boolean;
+}
 
 const EMPTY_RESULT: TSearchResult = {
   [QUERY_NAMES.SRC]: undefined,
@@ -93,6 +103,23 @@ function formatBaseValue(value: TBaseValue): string {
 
 function isConditionValue(value: unknown): value is TCondition {
   return CONDITION_VALUES.includes(value);
+}
+
+function recordSearchIssue(
+  context: {
+    readonly issues: TValidationIssue[];
+    readonly log?: TLogger;
+    readonly strict: boolean;
+  },
+  issue: TValidationIssue,
+  level: 'info' | 'warn' = 'warn',
+): void {
+  if (context.strict) {
+    context.log?.error(issue.message);
+    context.issues.push(issue);
+  } else {
+    context.log?.[level](issue.message);
+  }
 }
 
 function buildSearchResult(
@@ -123,8 +150,9 @@ function buildSearchResult(
  * Formats object-based search criteria into `search` and optional `searchFields` parameter strings.
  *
  * @remarks
- * Top-level non-object inputs (excluding `null` and `undefined`) produce a validation error.
- * Individual field entries with `null`, `undefined`, or invalid shapes/conditions are safely filtered out.
+ * Under strict mode (default), top-level non-object inputs and invalid entries/options produce a `ParamsL5ValidationError`.
+ * `null` and `undefined` entry values are safely skipped.
+ * Set `options.strict` to `false` to drop invalid entries and fall back to defaults without throwing.
  *
  * @example
  * ```typescript
@@ -141,6 +169,8 @@ export class Search {
     options?: TSearchOptions,
   ): TResult<TSearchResult> {
     const log = options?.logger;
+    const strict = options?.strict ?? true;
+
     if (value === undefined || value === null) {
       log?.info(msgNoValue(QUERY_LABELS.SRC));
       return { data: { ...EMPTY_RESULT }, success: true };
@@ -149,6 +179,9 @@ export class Search {
     if (!isObject(value)) {
       const message = msgMustBeObject(QUERY_LABELS.SRC, typeName(value));
       log?.error(message);
+      if (!strict) {
+        return { data: { ...EMPTY_RESULT }, success: true };
+      }
       return {
         error: ParamsL5ValidationError.fromField(
           QUERY_NAMES.SRC,
@@ -165,20 +198,30 @@ export class Search {
       return { data: { ...EMPTY_RESULT }, success: true };
     }
 
+    const issues: TValidationIssue[] = [];
     const defaultCondition = Search.#resolveDefaultCondition(
       options?.defaultCondition,
-      log,
+      { issues, log, strict },
     );
 
     const parsedEntries: TParsedSearchEntry[] = [];
     for (const [index, entry] of entries.entries()) {
       const parsed = Search.#parseEntry(entry, index, {
         defaultCondition,
+        issues,
         log,
+        strict,
       });
       if (parsed) {
         parsedEntries.push(parsed);
       }
+    }
+
+    if (issues.length) {
+      return {
+        error: ParamsL5ValidationError.fromIssues(issues),
+        success: false,
+      };
     }
 
     if (!parsedEntries.length) {
@@ -200,14 +243,22 @@ export class Search {
   }
 
   static #resolveDefaultCondition(
-    defaultCondition?: TCondition,
-    log?: TLogger,
+    defaultCondition: TCondition | undefined,
+    context: {
+      readonly issues: TValidationIssue[];
+      readonly log?: TLogger;
+      readonly strict: boolean;
+    },
   ): TCondition {
     if (defaultCondition === undefined) {
       return CONDITIONS.EQ;
     }
     if (!isConditionValue(defaultCondition)) {
-      log?.warn(msgInvalidCondition(QUERY_LABELS.SRC, defaultCondition));
+      recordSearchIssue(context, {
+        field: `${QUERY_NAMES.SRC}.defaultCondition`,
+        message: msgInvalidCondition(QUERY_LABELS.SRC, defaultCondition),
+        value: defaultCondition,
+      });
       return CONDITIONS.EQ;
     }
     return defaultCondition;
@@ -216,11 +267,14 @@ export class Search {
   static #parseEntry(
     [key, rawValue]: readonly [string, unknown],
     index: number,
-    context: { readonly defaultCondition: TCondition; readonly log?: TLogger },
+    context: SearchParseContext,
   ): TParsedSearchEntry | undefined {
-    const { defaultCondition, log } = context;
     if (!isNonEmptyString(key)) {
-      log?.warn(msgInvalidKey(QUERY_LABELS.SRC, typeName(key), index));
+      recordSearchIssue(context, {
+        field: `${QUERY_NAMES.SRC}[${index}]`,
+        message: msgInvalidKey(QUERY_LABELS.SRC, typeName(key), index),
+        value: key,
+      });
       return undefined;
     }
 
@@ -231,31 +285,50 @@ export class Search {
     const trimmedKey = key.trim();
 
     if (isBaseValue(rawValue)) {
-      return [trimmedKey, formatBaseValue(rawValue), defaultCondition];
+      return [trimmedKey, formatBaseValue(rawValue), context.defaultCondition];
     }
 
     if (isObject(rawValue)) {
-      return Search.#parseConditionObject(trimmedKey, rawValue, { index, log });
+      return Search.#parseConditionObject(trimmedKey, rawValue, index, context);
     }
 
     if (isArray(rawValue)) {
-      log?.warn(msgMissingConditionArray(QUERY_LABELS.SRC));
-    } else {
-      log?.info(msgInvalidBaseValue(QUERY_LABELS.SRC, typeName(rawValue)));
+      recordSearchIssue(context, {
+        field: `${QUERY_NAMES.SRC}.${trimmedKey}`,
+        message: msgMissingConditionArray(QUERY_LABELS.SRC),
+        value: rawValue,
+      });
+      return undefined;
     }
+
+    recordSearchIssue(
+      context,
+      {
+        field: `${QUERY_NAMES.SRC}.${trimmedKey}`,
+        message: msgInvalidBaseValue(QUERY_LABELS.SRC, typeName(rawValue)),
+        value: rawValue,
+      },
+      'info',
+    );
     return undefined;
   }
 
   static #parseConditionObject(
     key: string,
     rawCondition: object,
-    context: { readonly index: number; readonly log?: TLogger },
+    index: number,
+    context: SearchParseContext,
   ): TParsedSearchEntry | undefined {
-    const { index, log } = context;
+    const field = `${QUERY_NAMES.SRC}.${key}`;
     const conditionEntries: readonly [string, unknown][] =
       Object.entries(rawCondition);
+
     if (conditionEntries.length !== SINGLE_CONDITION_COUNT) {
-      log?.warn(msgInvalidCondition(QUERY_LABELS.SRC, typeName(rawCondition)));
+      recordSearchIssue(context, {
+        field,
+        message: msgInvalidCondition(QUERY_LABELS.SRC, typeName(rawCondition)),
+        value: rawCondition,
+      });
       return undefined;
     }
 
@@ -268,8 +341,13 @@ export class Search {
     const upperKey = isNonEmptyString(rawKey)
       ? rawKey.trim().toUpperCase()
       : '';
+
     if (!isConditionKey(upperKey)) {
-      log?.warn(msgInvalidCondition(QUERY_LABELS.SRC, rawKey));
+      recordSearchIssue(context, {
+        field,
+        message: msgInvalidCondition(QUERY_LABELS.SRC, rawKey),
+        value: rawCondition,
+      });
       return undefined;
     }
 
@@ -280,56 +358,130 @@ export class Search {
     const condition = CONDITIONS[upperKey];
 
     if (condition === CONDITIONS.IN) {
-      if (!isArray(rawVal)) {
-        log?.warn(msgItemNotArray(QUERY_LABELS.SRC, typeName(rawVal)));
-        return undefined;
-      }
-      const validItems = rawVal.filter((item): item is TBaseValue =>
-        isBaseValue(item),
-      );
-      if (!validItems.length) {
-        return undefined;
-      }
-      return [
-        key,
-        validItems.map((item) => formatBaseValue(item)).join(','),
-        condition,
-      ];
+      return Search.#parseInCondition(key, field, rawVal, context);
     }
 
     if (condition === CONDITIONS.BTW) {
-      if (!isArray(rawVal)) {
-        log?.warn(msgItemNotArray(QUERY_LABELS.SRC, typeName(rawVal)));
-        return undefined;
-      }
-      if (rawVal.length !== TUPLE_SIZE) {
-        log?.warn(
-          msgInvalidBetweenSize(QUERY_LABELS.SRC, rawVal.length, index),
-        );
-        return undefined;
-      }
-      if (!rawVal.every((item): item is TBaseValue => isBaseValue(item))) {
-        log?.info(msgInvalidBaseValue(QUERY_LABELS.SRC, typeName(rawVal)));
-        return undefined;
-      }
-      return [
-        key,
-        rawVal.map((item) => formatBaseValue(item)).join(','),
-        condition,
-      ];
+      return Search.#parseBtwCondition(key, field, rawVal, index, context);
     }
 
     if (isArray(rawVal)) {
-      log?.warn(msgInvalidConditionArray(QUERY_LABELS.SRC, index));
+      recordSearchIssue(context, {
+        field,
+        message: msgInvalidConditionArray(QUERY_LABELS.SRC, index),
+        value: rawVal,
+      });
       return undefined;
     }
 
     if (!isBaseValue(rawVal)) {
-      log?.info(msgInvalidBaseValue(QUERY_LABELS.SRC, typeName(rawVal)));
+      recordSearchIssue(
+        context,
+        {
+          field,
+          message: msgInvalidBaseValue(QUERY_LABELS.SRC, typeName(rawVal)),
+          value: rawVal,
+        },
+        'info',
+      );
       return undefined;
     }
 
     return [key, formatBaseValue(rawVal), condition];
+  }
+
+  static #parseInCondition(
+    key: string,
+    field: string,
+    rawVal: unknown,
+    context: SearchParseContext,
+  ): TParsedSearchEntry | undefined {
+    if (!isArray(rawVal)) {
+      recordSearchIssue(context, {
+        field,
+        message: msgItemNotArray(QUERY_LABELS.SRC, typeName(rawVal)),
+        value: rawVal,
+      });
+      return undefined;
+    }
+
+    const validItems: TBaseValue[] = [];
+    for (const item of rawVal) {
+      if (item !== null && item !== undefined) {
+        if (isBaseValue(item)) {
+          validItems.push(item);
+        } else if (context.strict) {
+          recordSearchIssue(context, {
+            field,
+            message: msgInvalidBaseValue(QUERY_LABELS.SRC, typeName(item)),
+            value: rawVal,
+          });
+          return undefined;
+        }
+      }
+    }
+
+    if (!validItems.length) {
+      if (context.strict) {
+        recordSearchIssue(context, {
+          field,
+          message: msgNoValues(QUERY_LABELS.SRC),
+          value: rawVal,
+        });
+      }
+      return undefined;
+    }
+
+    return [
+      key,
+      validItems.map((item) => formatBaseValue(item)).join(','),
+      CONDITIONS.IN,
+    ];
+  }
+
+  static #parseBtwCondition(
+    key: string,
+    field: string,
+    rawVal: unknown,
+    index: number,
+    context: SearchParseContext,
+  ): TParsedSearchEntry | undefined {
+    if (!isArray(rawVal)) {
+      recordSearchIssue(context, {
+        field,
+        message: msgItemNotArray(QUERY_LABELS.SRC, typeName(rawVal)),
+        value: rawVal,
+      });
+      return undefined;
+    }
+
+    if (rawVal.length !== TUPLE_SIZE) {
+      recordSearchIssue(context, {
+        field,
+        message: msgInvalidBetweenSize(QUERY_LABELS.SRC, rawVal.length, index),
+        value: rawVal,
+      });
+      return undefined;
+    }
+
+    if (!rawVal.every((item): item is TBaseValue => isBaseValue(item))) {
+      recordSearchIssue(
+        context,
+        {
+          field,
+          message: msgInvalidBaseValue(QUERY_LABELS.SRC, typeName(rawVal)),
+          value: rawVal,
+        },
+        'info',
+      );
+      return undefined;
+    }
+
+    return [
+      key,
+      rawVal.map((item) => formatBaseValue(item)).join(','),
+      CONDITIONS.BTW,
+    ];
   }
 }
 

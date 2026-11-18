@@ -7,7 +7,8 @@ import { isNumber, typeName, unwrap } from '#/utils';
 export type TPage = number;
 
 export interface TPageOptions {
-  logger?: TLogger;
+  readonly logger?: TLogger;
+  readonly strict?: boolean;
 }
 
 export interface TPageResult {
@@ -35,6 +36,7 @@ export class Page {
     options?: TPageOptions,
   ): TResult<TPageResult> {
     const log = options?.logger;
+    const strict = options?.strict ?? true;
     if (value === undefined || value === null) {
       log?.info(msgNoValue(QUERY_LABELS.PAG));
       return {
@@ -49,6 +51,13 @@ export class Page {
         typeName(value),
         false,
       );
+      if (!strict) {
+        log?.warn(message);
+        return {
+          data: { [QUERY_NAMES.PAG]: String(DEFAULT_PAGE) },
+          success: true,
+        };
+      }
       log?.error(message);
       return {
         error: ParamsL5ValidationError.fromField(

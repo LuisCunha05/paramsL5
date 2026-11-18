@@ -6,6 +6,7 @@ export type TWithCount<TTShape> = readonly NoInfer<TPath<TTShape>>[];
 
 export interface TWithCountOptions {
   readonly logger?: TLogger;
+  readonly strict?: boolean;
 }
 
 export interface TWithCountResult {
@@ -32,7 +33,13 @@ export class WithCount {
     value?: TWithCount<TShape>,
     options?: TWithCountOptions,
   ): TResult<TWithCountResult> {
-    return filterWithDelimeter(QUERY_NAMES.WTC, ';', value, options?.logger);
+    return filterWithDelimeter({
+      delimiter: ';',
+      label: QUERY_NAMES.WTC,
+      logger: options?.logger,
+      strict: options?.strict,
+      value,
+    });
   }
 
   static build<TShape extends object = Record<string, unknown>>(

@@ -153,12 +153,27 @@ describe('OrderBySortBy class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should fall back to "asc" when defaultSortBy is invalid', () => {
+      test('should throw ParamsL5ValidationError when defaultSortBy is invalid by default', () => {
+        expect(() =>
+          OrderBySortBy.build(
+            { name: true },
+            {
+              defaultSortBy: 'invalid' as never,
+              logger: noOpLogger,
+            },
+          ),
+        ).toThrow(
+          'OrderBySortBy: must be either "asc" or "desc", got "invalid" instead',
+        );
+      });
+
+      test('should fall back to "asc" when defaultSortBy is invalid and strict is false', () => {
         result = OrderBySortBy.build(
           { name: true },
           {
             defaultSortBy: 'invalid' as never,
             logger: noOpLogger,
+            strict: false,
           },
         );
 
@@ -229,11 +244,8 @@ describe('OrderBySortBy class', () => {
         ).toThrow(`OrderBySortBy: value must be a object, got ${type} instead`);
       });
 
-      test('should return empty result if all entries are invalid, null, or undefined', () => {
+      test('should ignore null and undefined entry values', () => {
         input = {
-          '': SORT_BY.ASC,
-          badSort: 'invalid_sort',
-          falsy: false,
           ignored: null,
           missing: undefined,
         };
@@ -247,7 +259,55 @@ describe('OrderBySortBy class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should filter invalid, null, and undefined entries and keep valid entries', () => {
+      test('should throw ParamsL5ValidationError with issues for invalid entries by default', () => {
+        input = {
+          '': SORT_BY.ASC,
+          badSort: 'invalid_sort',
+          falsy: false,
+          ignored: null,
+          missing: undefined,
+          name: SORT_BY.DESC,
+        };
+        let caught: unknown;
+
+        try {
+          OrderBySortBy.build(input, { logger: noOpLogger });
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).toBeInstanceOf(ParamsL5ValidationError);
+        if (caught instanceof ParamsL5ValidationError) {
+          expect(caught.issues.map((issue) => issue.field)).toEqual([
+            'orderBy[0]',
+            'orderBy.badSort',
+            'orderBy.falsy',
+          ]);
+        }
+      });
+
+      test('should return empty result when strict is false and all entries are invalid, null, or undefined', () => {
+        input = {
+          '': SORT_BY.ASC,
+          badSort: 'invalid_sort',
+          falsy: false,
+          ignored: null,
+          missing: undefined,
+        };
+        expected = {
+          [QUERY_NAMES.OBY]: undefined,
+          [QUERY_NAMES.SBY]: undefined,
+        };
+
+        result = OrderBySortBy.build(input, {
+          logger: noOpLogger,
+          strict: false,
+        });
+
+        expect(result).toEqual(expected);
+      });
+
+      test('should filter invalid, null, and undefined entries when strict is false and keep valid entries', () => {
         input = {
           '': SORT_BY.ASC,
           '   ': SORT_BY.DESC,
@@ -263,7 +323,10 @@ describe('OrderBySortBy class', () => {
           [QUERY_NAMES.SBY]: 'desc',
         };
 
-        result = OrderBySortBy.build(input, { logger: noOpLogger });
+        result = OrderBySortBy.build(input, {
+          logger: noOpLogger,
+          strict: false,
+        });
 
         expect(result).toEqual(expected);
       });
@@ -304,42 +367,43 @@ describe('OrderBySortBy class', () => {
         );
       });
 
-      test('should log warn if key is empty or whitespace-only', () => {
+      test('should log warn when strict is false and key is empty or whitespace-only', () => {
         input = { '   ': SORT_BY.ASC };
 
-        OrderBySortBy.build(input, { logger });
+        OrderBySortBy.build(input, { logger, strict: false });
 
         expect(warn).toHaveBeenCalledExactlyOnceWith(
           'OrderBySortBy: must have keys as non-empty strings, but got string at index 0 instead',
         );
       });
 
-      test('should log warn if sort value is not a valid SORT_BY value or true', () => {
+      test('should log warn when strict is false and sort value is not a valid SORT_BY value or true', () => {
         input = { name: 'invalid_sort' };
 
-        OrderBySortBy.build(input, { logger });
+        OrderBySortBy.build(input, { logger, strict: false });
 
         expect(warn).toHaveBeenCalledExactlyOnceWith(
           'OrderBySortBy: must have a valid SORT_BY value, but got invalid_sort at index 0 instead',
         );
       });
 
-      test('should log warn if sort value is false', () => {
+      test('should log warn when strict is false and sort value is false', () => {
         input = { name: false };
 
-        OrderBySortBy.build(input, { logger });
+        OrderBySortBy.build(input, { logger, strict: false });
 
         expect(warn).toHaveBeenCalledExactlyOnceWith(
           'OrderBySortBy: must have a valid SORT_BY value, but got false at index 0 instead',
         );
       });
 
-      test('should log warn if defaultSortBy is invalid', () => {
+      test('should log warn when strict is false and defaultSortBy is invalid', () => {
         OrderBySortBy.build(
           { name: true },
           {
             defaultSortBy: 'invalid' as never,
             logger,
+            strict: false,
           },
         );
 
@@ -358,10 +422,10 @@ describe('OrderBySortBy class', () => {
         );
       });
 
-      test('should log info if no values remain after filtering', () => {
+      test('should log info when strict is false and no values remain after filtering', () => {
         input = { name: 'invalid_sort' };
 
-        OrderBySortBy.build(input, { logger });
+        OrderBySortBy.build(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'OrderBySortBy: no values remaining to parse',
@@ -433,14 +497,33 @@ describe('OrderBySortBy class', () => {
         }
       });
 
-      test('should filter invalid entries and return success result', () => {
-        result = OrderBySortBy.safe(
+      test('should return failure result for invalid entries under strict mode', () => {
+        const safeResult = OrderBySortBy.safe(
           {
             bad: 'invalid' as never,
             ignored: null,
             name: SORT_BY.DESC,
           },
           { logger: noOpLogger },
+        );
+
+        expect(safeResult.success).toBe(false);
+        if (!safeResult.success) {
+          expect(safeResult.error).toBeInstanceOf(ParamsL5ValidationError);
+          expect(safeResult.error.issues.map((issue) => issue.field)).toEqual([
+            'orderBy.bad',
+          ]);
+        }
+      });
+
+      test('should filter invalid entries when strict is false and return success result', () => {
+        result = OrderBySortBy.safe(
+          {
+            bad: 'invalid' as never,
+            ignored: null,
+            name: SORT_BY.DESC,
+          },
+          { logger: noOpLogger, strict: false },
         );
 
         expect(result).toEqual({

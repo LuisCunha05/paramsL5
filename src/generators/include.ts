@@ -6,6 +6,7 @@ export type TInclude<TTShape> = readonly NoInfer<TPath<TTShape>>[];
 
 export interface TIncludeOptions {
   readonly logger?: TLogger;
+  readonly strict?: boolean;
 }
 
 export interface TIncludeResult {
@@ -32,7 +33,13 @@ export class Include {
     value?: TInclude<TShape>,
     options?: TIncludeOptions,
   ): TResult<TIncludeResult> {
-    return filterWithDelimeter(QUERY_NAMES.INC, ',', value, options?.logger);
+    return filterWithDelimeter({
+      delimiter: ',',
+      label: QUERY_NAMES.INC,
+      logger: options?.logger,
+      strict: options?.strict,
+      value,
+    });
   }
 
   static build<TShape extends object = Record<string, unknown>>(

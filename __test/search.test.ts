@@ -117,8 +117,8 @@ describe('Search class', () => {
         },
       );
 
-      test('should handle "in" condition and filter null/undefined/empty elements', () => {
-        input = { status: { in: ['active', null, 'pending', undefined, ''] } };
+      test('should handle "in" condition and skip null/undefined elements', () => {
+        input = { status: { in: ['active', null, 'pending', undefined] } };
         expected = {
           [QUERY_NAMES.SRC]: 'status:active,pending',
           [QUERY_NAMES.SFI]: 'status:in',
@@ -236,10 +236,8 @@ describe('Search class', () => {
         ).toThrow(`Search: value must be a object, got ${type} instead`);
       });
 
-      test('should ignore null, undefined, empty string, and whitespace-only values', () => {
+      test('should ignore null and undefined values (including inside condition objects)', () => {
         input = {
-          blank: '   ',
-          empty: '',
           ignored: null,
           missing: undefined,
           nestedNull: { like: null },
@@ -256,44 +254,64 @@ describe('Search class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should ignore empty or whitespace-only keys', () => {
-        input = { '': 'a', '   ': 'b', name: 'John' };
-        expected = {
-          [QUERY_NAMES.SRC]: 'name:John',
-          [QUERY_NAMES.SFI]: undefined,
+      test('should throw ParamsL5ValidationError with issues for invalid entries and options by default', () => {
+        input = {
+          '': 'emptyKey',
+          badBase: '',
+          badBtw: { btw: [1] },
+          badCond: { invalid: 'x' },
+          badIn: { in: ['active', ''] },
+          directArr: ['a'],
+          emptyIn: { in: [] },
         };
+        let caught: unknown;
 
-        result = Search.build(input, { logger: noOpLogger });
+        try {
+          Search.build(input, {
+            defaultCondition: 'invalid' as never,
+            logger: noOpLogger,
+          });
+        } catch (err) {
+          caught = err;
+        }
 
-        expect(result).toEqual(expected);
+        expect(caught).toBeInstanceOf(ParamsL5ValidationError);
+        if (caught instanceof ParamsL5ValidationError) {
+          expect(caught.issues.map((issue) => issue.field)).toEqual([
+            'search.defaultCondition',
+            'search[0]',
+            'search.badBase',
+            'search.badBtw',
+            'search.badCond',
+            'search.badIn',
+            'search.directArr',
+            'search.emptyIn',
+          ]);
+        }
       });
 
-      test('should ignore invalid condition objects and unknown condition keys', () => {
+      test('should ignore empty/whitespace values and invalid entries when strict is false', () => {
         input = {
-          emptyCond: {},
-          multiCond: { eq: 'a', like: 'b' },
-          name: 'John',
-          unknownCond: { invalid: 'x' },
-        };
-        expected = {
-          [QUERY_NAMES.SRC]: 'name:John',
-          [QUERY_NAMES.SFI]: undefined,
-        };
-
-        result = Search.build(input, { logger: noOpLogger });
-
-        expect(result).toEqual(expected);
-      });
-
-      test('should ignore invalid "in" and "btw" values', () => {
-        input = {
+          '': 'a',
+          '   ': 'b',
+          badCond: { invalid: 'x' },
+          blank: '   ',
           btwInvalidItem: { btw: ['2023-01-01', null] },
           btwLong: { btw: [1, 2, 3] },
           btwNonArray: { btw: '2023-01-01' },
           btwShort: { btw: [1] },
+          directArray: ['a', 'b'],
+          empty: '',
+          emptyCond: {},
+          ignored: null,
           inEmpty: { in: [] },
           inInvalidItems: { in: [null, undefined, {}] },
           inNonArray: { in: 'active' },
+          missing: undefined,
+          multiCond: { eq: 'a', like: 'b' },
+          nestedNull: { like: null },
+          nestedUndefined: { in: undefined },
+          scalarWithArray: { eq: ['a', 'b'] },
           status: 'active',
         };
         expected = {
@@ -301,12 +319,12 @@ describe('Search class', () => {
           [QUERY_NAMES.SFI]: undefined,
         };
 
-        result = Search.build(input, { logger: noOpLogger });
+        result = Search.build(input, { logger: noOpLogger, strict: false });
 
         expect(result).toEqual(expected);
       });
 
-      test('should ignore array values without "in"/"btw" condition', () => {
+      test('should return empty result when strict is false and only array values remain', () => {
         input = {
           directArray: ['a', 'b'],
           scalarWithArray: { eq: ['a', 'b'] },
@@ -316,18 +334,19 @@ describe('Search class', () => {
           [QUERY_NAMES.SFI]: undefined,
         };
 
-        result = Search.build(input, { logger: noOpLogger });
+        result = Search.build(input, { logger: noOpLogger, strict: false });
 
         expect(result).toEqual(expected);
       });
 
-      test('should fall back to "=" when defaultCondition is invalid', () => {
+      test('should fall back to "=" when defaultCondition is invalid and strict is false', () => {
         result = Search.build(
           { name: 'John' },
           {
             defaultCondition: 'invalid' as never,
             includeSearchFields: true,
             logger: noOpLogger,
+            strict: false,
           },
         );
 
@@ -372,7 +391,7 @@ describe('Search class', () => {
         );
       });
 
-      test('should log warn for invalid key, condition, btw size, and array condition mismatch', () => {
+      test('should log warn for invalid key, condition, btw size, and array condition mismatch when strict is false', () => {
         Search.build(
           {
             '': 'emptyKey',
@@ -382,7 +401,7 @@ describe('Search class', () => {
             eqArr: { eq: ['a'] } as never,
             name: 'John',
           },
-          { logger },
+          { logger, strict: false },
         );
 
         expect(warn).toHaveBeenCalledTimes(5);
@@ -408,8 +427,8 @@ describe('Search class', () => {
         );
       });
 
-      test('should log info for invalid base values and when no values remain', () => {
-        Search.build({ name: '' }, { logger });
+      test('should log info for invalid base values and when no values remain when strict is false', () => {
+        Search.build({ name: '' }, { logger, strict: false });
 
         expect(info).toHaveBeenCalledTimes(2);
         expect(info).toHaveBeenNthCalledWith(
@@ -486,13 +505,31 @@ describe('Search class', () => {
         }
       });
 
-      test('should filter invalid field entries and return success result', () => {
-        result = Search.safe(
+      test('should return failure result for invalid field entries under strict mode', () => {
+        const safeResult = Search.safe(
           {
             bad: { invalid: 'x' } as never,
             name: 'John',
           },
           { includeSearchFields: true, logger: noOpLogger },
+        );
+
+        expect(safeResult.success).toBe(false);
+        if (!safeResult.success) {
+          expect(safeResult.error).toBeInstanceOf(ParamsL5ValidationError);
+          expect(safeResult.error.issues.map((issue) => issue.field)).toEqual([
+            'search.bad',
+          ]);
+        }
+      });
+
+      test('should filter invalid field entries when strict is false and return success result', () => {
+        result = Search.safe(
+          {
+            bad: { invalid: 'x' } as never,
+            name: 'John',
+          },
+          { includeSearchFields: true, logger: noOpLogger, strict: false },
         );
 
         expect(result).toEqual({

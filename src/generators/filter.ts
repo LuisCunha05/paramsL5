@@ -6,6 +6,7 @@ export type TFilter<TTShape> = readonly NoInfer<TPath<TTShape>>[];
 
 export interface TFilterOptions {
   readonly logger?: TLogger;
+  readonly strict?: boolean;
 }
 
 export interface TFilterResult {
@@ -33,7 +34,13 @@ export class Filter {
     value?: TFilter<TShape>,
     options?: TFilterOptions,
   ): TResult<TFilterResult> {
-    return filterWithDelimeter(QUERY_NAMES.FLT, ';', value, options?.logger);
+    return filterWithDelimeter({
+      delimiter: ';',
+      label: QUERY_NAMES.FLT,
+      logger: options?.logger,
+      strict: options?.strict,
+      value,
+    });
   }
 
   static build<TShape extends object = Record<string, unknown>>(

@@ -136,6 +136,22 @@ describe('Limit class', () => {
           'Limit: must be a positive integer or zero, got number instead',
         );
       });
+
+      test('should fall back to defaultValue or "1" when strict is false and input is invalid', () => {
+        expect(Limit.build(-10, { defaultValue: 25, strict: false })).toEqual({
+          [QUERY_NAMES.LMT]: '25',
+        });
+        expect(Limit.build(-10, { strict: false })).toEqual({
+          [QUERY_NAMES.LMT]: '1',
+        });
+        expect(
+          Limit.build('invalid' as never, { defaultValue: -5, strict: false }),
+        ).toEqual({ [QUERY_NAMES.LMT]: '1' });
+        expect(Limit.safe(-10, { strict: false })).toEqual({
+          data: { [QUERY_NAMES.LMT]: '1' },
+          success: true,
+        });
+      });
     });
 
     describe('Limit logging', () => {

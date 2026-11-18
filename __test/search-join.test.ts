@@ -139,6 +139,29 @@ describe('SearchJoin class', () => {
           'SearchJoin: must be either "and" or "or", got "xor" instead',
         );
       });
+
+      test('should fall back to valid defaultSearchJoin or undefined when strict is false', () => {
+        expect(
+          SearchJoin.build('xor' as never, {
+            defaultSearchJoin: SEARCH_JOIN.OR,
+            strict: false,
+          }),
+        ).toEqual({ [QUERY_NAMES.SJO]: SEARCH_JOIN.OR });
+
+        expect(SearchJoin.build('xor' as never, { strict: false })).toEqual({
+          [QUERY_NAMES.SJO]: undefined,
+        });
+
+        expect(
+          SearchJoin.safe(123 as never, {
+            defaultSearchJoin: 'bad' as never,
+            strict: false,
+          }),
+        ).toEqual({
+          data: { [QUERY_NAMES.SJO]: undefined },
+          success: true,
+        });
+      });
     });
 
     describe('SearchJoin logging', () => {

@@ -137,29 +137,51 @@ describe('Include class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should filter out non-string items', () => {
-        input = ['author', 123, null, undefined, {}, 'comments'];
+      test('should throw ParamsL5ValidationError with issues for non-string or empty/whitespace items by default', () => {
+        input = ['author', 123, '', '   ', null, 'comments'];
+        let caught: unknown;
+
+        try {
+          Include.build(input, { logger: noOpLogger });
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).toBeInstanceOf(ParamsL5ValidationError);
+        if (caught instanceof ParamsL5ValidationError) {
+          expect(caught.issues.map((issue) => issue.field)).toEqual([
+            'include[1]',
+            'include[2]',
+            'include[3]',
+            'include[4]',
+          ]);
+        }
+      });
+
+      test('should filter out invalid items when strict is false', () => {
+        input = [
+          'author',
+          123,
+          null,
+          undefined,
+          {},
+          'comments',
+          '',
+          '   ',
+          '\t\n',
+        ];
         expected = { [QUERY_NAMES.INC]: 'author,comments' };
 
-        result = Include.build(input, { logger: noOpLogger });
+        result = Include.build(input, { logger: noOpLogger, strict: false });
 
         expect(result).toEqual(expected);
       });
 
-      test('should filter out empty and whitespace-only strings', () => {
-        input = ['author', '', 'comments', '   ', '\t\n'];
-        expected = { [QUERY_NAMES.INC]: 'author,comments' };
-
-        result = Include.build(input, { logger: noOpLogger });
-
-        expect(result).toEqual(expected);
-      });
-
-      test('should return empty result if no values remain after filtering', () => {
+      test('should return empty result when strict is false and no values remain', () => {
         input = [123, '', '   ', null];
         expected = { [QUERY_NAMES.INC]: undefined };
 
-        result = Include.build(input, { logger: noOpLogger });
+        result = Include.build(input, { logger: noOpLogger, strict: false });
 
         expect(result).toEqual(expected);
       });
@@ -198,20 +220,32 @@ describe('Include class', () => {
         );
       });
 
-      test('should log info if an item is not a string', () => {
+      test('should log error when strict is true and an item is not a non-empty string', () => {
         input = ['author', 123];
 
-        Include.build(input, { logger });
+        expect(() => Include.build(input, { logger })).toThrow(
+          ParamsL5ValidationError,
+        );
+
+        expect(error).toHaveBeenCalledExactlyOnceWith(
+          'include: value must be a string, got number instead',
+        );
+      });
+
+      test('should log info when strict is false and an item is not a string', () => {
+        input = ['author', 123];
+
+        Include.build(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'include: value must be a string, got number instead',
         );
       });
 
-      test('should log info if an item is an empty or whitespace-only string', () => {
+      test('should log info when strict is false and an item is an empty or whitespace-only string', () => {
         input = ['author', '   '];
 
-        Include.build(input, { logger });
+        Include.build(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'include: value must be a string, got string instead',
@@ -236,10 +270,10 @@ describe('Include class', () => {
         );
       });
 
-      test('should log info with no values remaining to parse', () => {
+      test('should log info with no values remaining to parse when strict is false', () => {
         input = [123];
 
-        Include.build(input, { logger });
+        Include.build(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledTimes(2);
         expect(info).toHaveBeenNthCalledWith(
@@ -376,38 +410,51 @@ describe('Include class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should filter out non-string items', () => {
-        input = ['author', 123, null, undefined, {}, 'comments'];
+      test('should return failure result for invalid array items under strict mode', () => {
+        input = ['author', 123, '   '];
+
+        const safeResult = Include.safe(input, { logger: noOpLogger });
+
+        expect(safeResult.success).toBe(false);
+        if (!safeResult.success) {
+          expect(safeResult.error).toBeInstanceOf(ParamsL5ValidationError);
+          expect(safeResult.error.issues.map((issue) => issue.field)).toEqual([
+            'include[1]',
+            'include[2]',
+          ]);
+        }
+      });
+
+      test('should filter out invalid items when strict is false', () => {
+        input = [
+          'author',
+          123,
+          null,
+          undefined,
+          {},
+          'comments',
+          '',
+          '   ',
+          '\t\n',
+        ];
         expected = {
           data: { [QUERY_NAMES.INC]: 'author,comments' },
           success: true,
         };
 
-        result = Include.safe(input, { logger: noOpLogger });
+        result = Include.safe(input, { logger: noOpLogger, strict: false });
 
         expect(result).toEqual(expected);
       });
 
-      test('should filter out empty and whitespace-only strings', () => {
-        input = ['author', '', 'comments', '   ', '\t\n'];
-        expected = {
-          data: { [QUERY_NAMES.INC]: 'author,comments' },
-          success: true,
-        };
-
-        result = Include.safe(input, { logger: noOpLogger });
-
-        expect(result).toEqual(expected);
-      });
-
-      test('should return success result with undefined if no values remain after filtering', () => {
+      test('should return success result with undefined when strict is false and no values remain', () => {
         input = [123, '', '   ', null];
         expected = {
           data: { [QUERY_NAMES.INC]: undefined },
           success: true,
         };
 
-        result = Include.safe(input, { logger: noOpLogger });
+        result = Include.safe(input, { logger: noOpLogger, strict: false });
 
         expect(result).toEqual(expected);
       });
@@ -440,20 +487,30 @@ describe('Include class', () => {
         );
       });
 
-      test('should log info if an item is not a string', () => {
+      test('should log error when strict is true and an item is not a non-empty string', () => {
         input = ['author', 123];
 
         Include.safe(input, { logger });
+
+        expect(error).toHaveBeenCalledExactlyOnceWith(
+          'include: value must be a string, got number instead',
+        );
+      });
+
+      test('should log info when strict is false and an item is not a string', () => {
+        input = ['author', 123];
+
+        Include.safe(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'include: value must be a string, got number instead',
         );
       });
 
-      test('should log info if an item is an empty or whitespace-only string', () => {
+      test('should log info when strict is false and an item is an empty or whitespace-only string', () => {
         input = ['author', '   '];
 
-        Include.safe(input, { logger });
+        Include.safe(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'include: value must be a string, got string instead',
@@ -478,10 +535,10 @@ describe('Include class', () => {
         );
       });
 
-      test('should log info with no values remaining to parse', () => {
+      test('should log info with no values remaining to parse when strict is false', () => {
         input = [123];
 
-        Include.safe(input, { logger });
+        Include.safe(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledTimes(2);
         expect(info).toHaveBeenNthCalledWith(

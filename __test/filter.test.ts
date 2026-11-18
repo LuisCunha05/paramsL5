@@ -135,29 +135,57 @@ describe('Filter class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should filter out non-string items', () => {
-        input = ['a', 123, null, undefined, {}, 'b'];
+      test('should throw ParamsL5ValidationError with issues for non-string or empty/whitespace items by default', () => {
+        input = ['a', 123, '', '   ', null, 'b'];
+        let caught: unknown;
+
+        try {
+          Filter.build(input, { logger: noOpLogger });
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).toBeInstanceOf(ParamsL5ValidationError);
+        if (caught instanceof ParamsL5ValidationError) {
+          expect(caught.issues).toEqual([
+            {
+              field: 'filter[1]',
+              message: 'filter: value must be a string, got number instead',
+              value: 123,
+            },
+            {
+              field: 'filter[2]',
+              message: 'filter: value must be a string, got string instead',
+              value: '',
+            },
+            {
+              field: 'filter[3]',
+              message: 'filter: value must be a string, got string instead',
+              value: '   ',
+            },
+            {
+              field: 'filter[4]',
+              message: 'filter: value must be a string, got null instead',
+              value: null,
+            },
+          ]);
+        }
+      });
+
+      test('should filter out invalid items when strict is false', () => {
+        input = ['a', 123, null, undefined, {}, 'b', '', '   ', '\t\n'];
         expected = { [QUERY_NAMES.FLT]: 'a;b' };
 
-        result = Filter.build(input, { logger: noOpLogger });
+        result = Filter.build(input, { logger: noOpLogger, strict: false });
 
         expect(result).toEqual(expected);
       });
 
-      test('should filter out empty and whitespace-only strings', () => {
-        input = ['a', '', 'b', '   ', '\t\n'];
-        expected = { [QUERY_NAMES.FLT]: 'a;b' };
-
-        result = Filter.build(input, { logger: noOpLogger });
-
-        expect(result).toEqual(expected);
-      });
-
-      test('should return empty result if no values remain after filtering', () => {
+      test('should return empty result when strict is false and no values remain after filtering', () => {
         input = [123, '', '   ', null];
         expected = { [QUERY_NAMES.FLT]: undefined };
 
-        result = Filter.build(input, { logger: noOpLogger });
+        result = Filter.build(input, { logger: noOpLogger, strict: false });
 
         expect(result).toEqual(expected);
       });
@@ -196,20 +224,32 @@ describe('Filter class', () => {
         );
       });
 
-      test('should log info if an item is not a string', () => {
+      test('should log error when strict is true and an item is not a non-empty string', () => {
         input = ['a', 123];
 
-        Filter.build(input, { logger });
+        expect(() => Filter.build(input, { logger })).toThrow(
+          ParamsL5ValidationError,
+        );
+
+        expect(error).toHaveBeenCalledExactlyOnceWith(
+          'filter: value must be a string, got number instead',
+        );
+      });
+
+      test('should log info when strict is false and an item is not a string', () => {
+        input = ['a', 123];
+
+        Filter.build(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'filter: value must be a string, got number instead',
         );
       });
 
-      test('should log info if an item is an empty or whitespace-only string', () => {
+      test('should log info when strict is false and an item is an empty or whitespace-only string', () => {
         input = ['a', '   '];
 
-        Filter.build(input, { logger });
+        Filter.build(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'filter: value must be a string, got string instead',
@@ -230,10 +270,10 @@ describe('Filter class', () => {
         expect(info).toHaveBeenCalledExactlyOnceWith('filter: no values given');
       });
 
-      test('should log info with no values remaining to parse', () => {
+      test('should log info with no values remaining to parse when strict is false', () => {
         input = [123];
 
-        Filter.build(input, { logger });
+        Filter.build(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledTimes(2);
         expect(info).toHaveBeenNthCalledWith(
@@ -370,38 +410,49 @@ describe('Filter class', () => {
         expect(result).toEqual(expected);
       });
 
-      test('should filter out non-string items', () => {
-        input = ['a', 123, null, undefined, {}, 'b'];
+      test('should return failure result for invalid array items under strict mode', () => {
+        input = ['a', 123, '   '];
+
+        result = Filter.safe(input, { logger: noOpLogger });
+
+        expect(result.success).toBe(false);
+        if (!result.success) {
+          expect(result.error).toBeInstanceOf(ParamsL5ValidationError);
+          expect(result.error.issues).toEqual([
+            {
+              field: 'filter[1]',
+              message: 'filter: value must be a string, got number instead',
+              value: 123,
+            },
+            {
+              field: 'filter[2]',
+              message: 'filter: value must be a string, got string instead',
+              value: '   ',
+            },
+          ]);
+        }
+      });
+
+      test('should filter out invalid items when strict is false', () => {
+        input = ['a', 123, null, undefined, {}, 'b', '', '   ', '\t\n'];
         expected = {
           data: { [QUERY_NAMES.FLT]: 'a;b' },
           success: true,
         };
 
-        result = Filter.safe(input, { logger: noOpLogger });
+        result = Filter.safe(input, { logger: noOpLogger, strict: false });
 
         expect(result).toEqual(expected);
       });
 
-      test('should filter out empty and whitespace-only strings', () => {
-        input = ['a', '', 'b', '   ', '\t\n'];
-        expected = {
-          data: { [QUERY_NAMES.FLT]: 'a;b' },
-          success: true,
-        };
-
-        result = Filter.safe(input, { logger: noOpLogger });
-
-        expect(result).toEqual(expected);
-      });
-
-      test('should return success result with undefined if no values remain after filtering', () => {
+      test('should return success result with undefined when strict is false and no values remain', () => {
         input = [123, '', '   ', null];
         expected = {
           data: { [QUERY_NAMES.FLT]: undefined },
           success: true,
         };
 
-        result = Filter.safe(input, { logger: noOpLogger });
+        result = Filter.safe(input, { logger: noOpLogger, strict: false });
 
         expect(result).toEqual(expected);
       });
@@ -434,20 +485,30 @@ describe('Filter class', () => {
         );
       });
 
-      test('should log info if an item is not a string', () => {
+      test('should log error when strict is true and an item is not a non-empty string', () => {
         input = ['a', 123];
 
         Filter.safe(input, { logger });
+
+        expect(error).toHaveBeenCalledExactlyOnceWith(
+          'filter: value must be a string, got number instead',
+        );
+      });
+
+      test('should log info when strict is false and an item is not a string', () => {
+        input = ['a', 123];
+
+        Filter.safe(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'filter: value must be a string, got number instead',
         );
       });
 
-      test('should log info if an item is an empty or whitespace-only string', () => {
+      test('should log info when strict is false and an item is an empty or whitespace-only string', () => {
         input = ['a', '   '];
 
-        Filter.safe(input, { logger });
+        Filter.safe(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
           'filter: value must be a string, got string instead',
@@ -468,10 +529,10 @@ describe('Filter class', () => {
         expect(info).toHaveBeenCalledExactlyOnceWith('filter: no values given');
       });
 
-      test('should log info with no values remaining to parse', () => {
+      test('should log info with no values remaining to parse when strict is false', () => {
         input = [123];
 
-        Filter.safe(input, { logger });
+        Filter.safe(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledTimes(2);
         expect(info).toHaveBeenNthCalledWith(

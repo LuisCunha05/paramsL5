@@ -6,6 +6,7 @@ export type TWith<TTShape> = readonly NoInfer<TPathPipe<TTShape>>[];
 
 export interface TWithOptions {
   readonly logger?: TLogger;
+  readonly strict?: boolean;
 }
 
 export interface TWithResult {
@@ -32,7 +33,13 @@ export class With {
     value?: TWith<TShape>,
     options?: TWithOptions,
   ): TResult<TWithResult> {
-    return filterWithDelimeter(QUERY_NAMES.WTH, ';', value, options?.logger);
+    return filterWithDelimeter({
+      delimiter: ';',
+      label: QUERY_NAMES.WTH,
+      logger: options?.logger,
+      strict: options?.strict,
+      value,
+    });
   }
 
   static build<TShape extends object = Record<string, unknown>>(
