@@ -17,14 +17,14 @@ export interface TLimitResult {
 }
 
 const MIN_LIMIT = 0;
-const DEFAULT_VALUE = '1';
+const DEFAULT_VALUE = '15';
 
 /**
  * Formats the pagination limit (records per page) into a query parameter string.
  *
  * @remarks
  * Fields are validated: `null`, `undefined`, and invalid shapes/types (negative numbers, decimals, non-numeric values) are handled safely.
- * Falls back to `options.defaultValue` or `'1'` when no limit is given.
+ * Falls back to `options.defaultValue` or `'15'` when no limit is given.
  *
  * @example
  * ```typescript

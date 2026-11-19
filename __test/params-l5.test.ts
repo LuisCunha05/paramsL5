@@ -246,7 +246,7 @@ describe('ParamsL5 class', () => {
 
     describe('searchCondition', () => {
       test('should use default searchCondition when defaultOptions is provided', () => {
-        expected = `limit=1&page=1&search=age${URC.COLON}18&searchFields=age${URC.COLON}${URC.GREATER_THAN}${URC.EQUALS}`;
+        expected = `limit=15&page=1&search=age${URC.COLON}18&searchFields=age${URC.COLON}${URC.GREATER_THAN}${URC.EQUALS}`;
 
         const client = new ParamsL5({
           defaultOptions: {
@@ -260,7 +260,7 @@ describe('ParamsL5 class', () => {
       });
 
       test('should prioritize searchCondition from params over defaultOptions', () => {
-        expected = `limit=1&page=1&search=age${URC.COLON}18&searchFields=age${URC.COLON}${URC.LESS_THAN}${URC.EQUALS}`;
+        expected = `limit=15&page=1&search=age${URC.COLON}18&searchFields=age${URC.COLON}${URC.LESS_THAN}${URC.EQUALS}`;
 
         const client = new ParamsL5({
           defaultOptions: {
@@ -282,7 +282,7 @@ describe('ParamsL5 class', () => {
         });
 
         expect(client.build({ search: { age: { gte: 18 } } }).toParams()).toBe(
-          `limit=1&page=1&search=age${URC.COLON}18`,
+          `limit=15&page=1&search=age${URC.COLON}18`,
         );
       });
 
@@ -293,7 +293,7 @@ describe('ParamsL5 class', () => {
         });
 
         expect(client.build({ search: { age: { gte: 18 } } }).toParams()).toBe(
-          `limit=1&page=1&search=age${URC.COLON}18&searchFields=age${URC.COLON}${URC.GREATER_THAN}${URC.EQUALS}`,
+          `limit=15&page=1&search=age${URC.COLON}18&searchFields=age${URC.COLON}${URC.GREATER_THAN}${URC.EQUALS}`,
         );
       });
 
@@ -310,7 +310,7 @@ describe('ParamsL5 class', () => {
               search: { age: { gte: 18 } },
             })
             .toParams(),
-        ).toBe(`limit=1&page=1&search=age${URC.COLON}18`);
+        ).toBe(`limit=15&page=1&search=age${URC.COLON}18`);
       });
     });
 
@@ -324,7 +324,7 @@ describe('ParamsL5 class', () => {
 
         expect(res.withCount).toBe('comments;likes');
         expect(res.toParams()).toBe(
-          `limit=1&page=1&withCount=comments${URC.SEMICOLON}likes`,
+          `limit=15&page=1&withCount=comments${URC.SEMICOLON}likes`,
         );
       });
     });
@@ -401,7 +401,7 @@ describe('ParamsL5 class', () => {
         const ok = permissiveClient.safe({ limit: -1, page: 0 });
         expect(ok.success).toBe(true);
         if (ok.success) {
-          expect(ok.data.limit).toBe('1');
+          expect(ok.data.limit).toBe('15');
           expect(ok.data.page).toBe('1');
         }
       });

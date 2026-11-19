@@ -75,8 +75,8 @@ describe('Limit class', () => {
     });
 
     describe('validations and edge cases', () => {
-      test('should return default limit "1" when called with undefined, null, or no arguments', () => {
-        expected = { [QUERY_NAMES.LMT]: '1' };
+      test('should return default limit "15" when called with undefined, null, or no arguments', () => {
+        expected = { [QUERY_NAMES.LMT]: '15' };
 
         expect(Limit.build()).toEqual(expected);
         expect(Limit.build(undefined, { logger: noOpLogger })).toEqual(
@@ -141,18 +141,18 @@ describe('Limit class', () => {
         );
       });
 
-      test('should fall back to defaultValue or "1" when strict is false and input is invalid', () => {
+      test('should fall back to defaultValue or "15" when strict is false and input is invalid', () => {
         expect(Limit.build(-10, { defaultValue: 25, strict: false })).toEqual({
           [QUERY_NAMES.LMT]: '25',
         });
         expect(Limit.build(-10, { strict: false })).toEqual({
-          [QUERY_NAMES.LMT]: '1',
+          [QUERY_NAMES.LMT]: '15',
         });
         expect(
           Limit.build('invalid' as never, { defaultValue: -5, strict: false }),
-        ).toEqual({ [QUERY_NAMES.LMT]: '1' });
+        ).toEqual({ [QUERY_NAMES.LMT]: '15' });
         expect(Limit.safe(-10, { strict: false })).toEqual({
-          data: { [QUERY_NAMES.LMT]: '1' },
+          data: { [QUERY_NAMES.LMT]: '15' },
           success: true,
         });
       });
@@ -233,9 +233,9 @@ describe('Limit class', () => {
     });
 
     describe('validations and edge cases', () => {
-      test('should return success result with default limit "1" for undefined, null, or no arguments', () => {
+      test('should return success result with default limit "15" for undefined, null, or no arguments', () => {
         expected = {
-          data: { [QUERY_NAMES.LMT]: '1' },
+          data: { [QUERY_NAMES.LMT]: '15' },
           success: true,
         };
 
