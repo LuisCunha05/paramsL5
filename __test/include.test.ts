@@ -248,7 +248,7 @@ describe('Include class', () => {
         Include.build(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
-          'include: value must be a string, got string instead',
+          'include: value must be a string, got empty string instead',
         );
       });
 
@@ -513,7 +513,7 @@ describe('Include class', () => {
         Include.safe(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
-          'include: value must be a string, got string instead',
+          'include: value must be a string, got empty string instead',
         );
       });
 

@@ -63,6 +63,12 @@ export function typeName(arg?: unknown): string {
   if (Number.isNaN(arg)) {
     return 'NaN';
   }
+  if (typeof arg === 'number' && !Number.isFinite(arg)) {
+    return String(arg);
+  }
+  if (typeof arg === 'string' && !isNonEmptyString(arg)) {
+    return 'empty string';
+  }
   return typeof arg;
 }
 

@@ -247,7 +247,7 @@ describe('WithCount class', () => {
         WithCount.build(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
-          'withCount: value must be a string, got string instead',
+          'withCount: value must be a string, got empty string instead',
         );
       });
 
@@ -513,7 +513,7 @@ describe('WithCount class', () => {
         WithCount.safe(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
-          'withCount: value must be a string, got string instead',
+          'withCount: value must be a string, got empty string instead',
         );
       });
 

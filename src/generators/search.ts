@@ -593,11 +593,12 @@ export class Search {
     }
 
     if (!rawVal.every((item): item is TBaseValue => isBaseValue(item))) {
+      const invalidItem = rawVal.find((item) => !isBaseValue(item));
       recordSearchIssue(
         context,
         {
           field,
-          message: msgInvalidBaseValue(QUERY_LABELS.SRC, typeName(rawVal)),
+          message: msgInvalidBaseValue(QUERY_LABELS.SRC, typeName(invalidItem)),
           value: rawVal,
         },
         'info',

@@ -155,12 +155,14 @@ describe('Filter class', () => {
             },
             {
               field: 'filter[2]',
-              message: 'filter: value must be a string, got string instead',
+              message:
+                'filter: value must be a string, got empty string instead',
               value: '',
             },
             {
               field: 'filter[3]',
-              message: 'filter: value must be a string, got string instead',
+              message:
+                'filter: value must be a string, got empty string instead',
               value: '   ',
             },
             {
@@ -252,7 +254,7 @@ describe('Filter class', () => {
         Filter.build(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
-          'filter: value must be a string, got string instead',
+          'filter: value must be a string, got empty string instead',
         );
       });
 
@@ -426,7 +428,8 @@ describe('Filter class', () => {
             },
             {
               field: 'filter[2]',
-              message: 'filter: value must be a string, got string instead',
+              message:
+                'filter: value must be a string, got empty string instead',
               value: '   ',
             },
           ]);
@@ -511,7 +514,7 @@ describe('Filter class', () => {
         Filter.safe(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
-          'filter: value must be a string, got string instead',
+          'filter: value must be a string, got empty string instead',
         );
       });
 

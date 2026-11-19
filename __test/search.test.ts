@@ -364,7 +364,32 @@ describe('Search class', () => {
             'search.badCond',
             'search.badIn',
             'search.directArr',
-            'search.emptyIn',
+          ]);
+        }
+      });
+
+      test('should report descriptive error messages for empty strings, non-finite numbers, and invalid btw items', () => {
+        const res = Search.safe(
+          {
+            blankCond: { like: '   ' },
+            btwEmpty: { btw: ['', 'z'] },
+            btwUndef: { btw: [1, undefined] as never },
+            emptyBase: '',
+            emptyIn: { in: ['active', ''] },
+            infVal: Number.POSITIVE_INFINITY,
+          },
+          { logger: noOpLogger },
+        );
+
+        expect(res.success).toBe(false);
+        if (!res.success) {
+          expect(res.error.issues.map((issue) => issue.message)).toEqual([
+            'Search: ignoring value: expected BaseValue, got empty string instead',
+            'Search: ignoring value: expected BaseValue, got empty string instead',
+            'Search: ignoring value: expected BaseValue, got undefined instead',
+            'Search: ignoring value: expected BaseValue, got empty string instead',
+            'Search: ignoring value: expected BaseValue, got empty string instead',
+            'Search: ignoring value: expected BaseValue, got Infinity instead',
           ]);
         }
       });
@@ -572,7 +597,7 @@ describe('Search class', () => {
         expect(warn).toHaveBeenCalledTimes(5);
         expect(warn).toHaveBeenNthCalledWith(
           1,
-          'Search: must have keys as non-empty strings, but got string at index 0 instead',
+          'Search: must have keys as non-empty strings, but got empty string at index 0 instead',
         );
         expect(warn).toHaveBeenNthCalledWith(
           2,
@@ -598,7 +623,7 @@ describe('Search class', () => {
         expect(info).toHaveBeenCalledTimes(2);
         expect(info).toHaveBeenNthCalledWith(
           1,
-          'Search: ignoring value: expected BaseValue, got string instead',
+          'Search: ignoring value: expected BaseValue, got empty string instead',
         );
         expect(info).toHaveBeenNthCalledWith(
           2,

@@ -373,7 +373,7 @@ describe('OrderBySortBy class', () => {
         OrderBySortBy.build(input, { logger, strict: false });
 
         expect(warn).toHaveBeenCalledExactlyOnceWith(
-          'OrderBySortBy: must have keys as non-empty strings, but got string at index 0 instead',
+          'OrderBySortBy: must have keys as non-empty strings, but got empty string at index 0 instead',
         );
       });
 

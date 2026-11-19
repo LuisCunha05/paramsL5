@@ -118,8 +118,8 @@ describe('SearchJoin class', () => {
 
       test.each([
         { label: 'number', value: 123, type: 'number' },
-        { label: 'empty string', value: '', type: 'string' },
-        { label: 'whitespace string', value: '   ', type: 'string' },
+        { label: 'empty string', value: '', type: 'empty string' },
+        { label: 'whitespace string', value: '   ', type: 'empty string' },
         { label: 'object', value: {}, type: 'object' },
         { label: 'array', value: [], type: 'Array' },
         { label: 'boolean', value: true, type: 'boolean' },
@@ -287,8 +287,8 @@ describe('SearchJoin class', () => {
 
       test.each([
         { label: 'number', value: 123, type: 'number' },
-        { label: 'empty string', value: '', type: 'string' },
-        { label: 'whitespace string', value: '   ', type: 'string' },
+        { label: 'empty string', value: '', type: 'empty string' },
+        { label: 'whitespace string', value: '   ', type: 'empty string' },
         { label: 'object', value: {}, type: 'object' },
         { label: 'array', value: [], type: 'Array' },
       ])(

@@ -83,7 +83,11 @@ describe('Page class', () => {
         { label: 'negative number', value: -5, type: 'number' },
         { label: 'decimal', value: 1.5, type: 'number' },
         { label: 'NaN', value: Number.NaN, type: 'NaN' },
-        { label: 'Infinity', value: Number.POSITIVE_INFINITY, type: 'number' },
+        {
+          label: 'Infinity',
+          value: Number.POSITIVE_INFINITY,
+          type: 'Infinity',
+        },
         { label: 'string', value: 'invalid', type: 'string' },
         { label: 'object', value: {}, type: 'object' },
         { label: 'array', value: [], type: 'Array' },

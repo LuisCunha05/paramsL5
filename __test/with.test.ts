@@ -248,7 +248,7 @@ describe('With class', () => {
         With.build(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
-          'with: value must be a string, got string instead',
+          'with: value must be a string, got empty string instead',
         );
       });
 
@@ -507,7 +507,7 @@ describe('With class', () => {
         With.safe(input, { logger, strict: false });
 
         expect(info).toHaveBeenCalledExactlyOnceWith(
-          'with: value must be a string, got string instead',
+          'with: value must be a string, got empty string instead',
         );
       });
 
