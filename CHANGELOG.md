@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2026-11-19
+
+### Bug Fixes
+
+- Report empty string, Infinity, and btw element types in typeName
+- Tighten btw tuple types and skip empty in arrays in strict mode
+- Change default limit from 1 to 15
+
+### Maintenance
+
+- Resolve oxlint warnings and mark logger types readonly
+
 ## [0.2.0] - 2026-11-18
 
 ### Bug Fixes
