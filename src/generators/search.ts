@@ -53,10 +53,10 @@ type TSearchBetweenValue<TValue extends TBaseValue = TBaseValue> = [
   :
       | (Extract<TValue, string> extends never
           ? never
-          : BetweenTuple<Extract<TValue, string> | null | undefined>)
+          : BetweenTuple<Extract<TValue, string>>)
       | (Extract<TValue, number> extends never
           ? never
-          : BetweenTuple<Extract<TValue, number> | null | undefined>)
+          : BetweenTuple<Extract<TValue, number>>)
       | null
       | undefined;
 
@@ -522,6 +522,11 @@ export class Search {
       return undefined;
     }
 
+    if (!rawVal.length) {
+      context.log?.info(msgNoValues(QUERY_LABELS.SRC));
+      return undefined;
+    }
+
     const validItems: string[] = [];
     for (const item of rawVal) {
       if (item !== null && item !== undefined) {
@@ -554,13 +559,7 @@ export class Search {
     }
 
     if (!validItems.length) {
-      if (context.strict) {
-        recordSearchIssue(context, {
-          field,
-          message: msgNoValues(QUERY_LABELS.SRC),
-          value: rawVal,
-        });
-      }
+      context.log?.info(msgNoRemaining(QUERY_LABELS.SRC));
       return undefined;
     }
 

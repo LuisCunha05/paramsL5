@@ -243,6 +243,43 @@ describe('Search class', () => {
 
         // @ts-expect-error object/array path cannot be searched with scalar
         Search.build<User>({ posts: 'anything' });
+
+        expect(() =>
+          // @ts-expect-error btw tuple cannot contain undefined
+          Search.build<User>({ age: { btw: [18, undefined] } }),
+        ).toThrow(ParamsL5ValidationError);
+
+        expect(() =>
+          // @ts-expect-error btw tuple cannot have both elements undefined
+          Search.build<User>({ age: { btw: [undefined, undefined] } }),
+        ).toThrow(ParamsL5ValidationError);
+
+        expect(() =>
+          // @ts-expect-error btw tuple cannot contain null
+          Search.build<User>({ name: { btw: ['a', null] } }),
+        ).toThrow(ParamsL5ValidationError);
+
+        // Untyped btw also rejects null/undefined elements
+        expect(() =>
+          // @ts-expect-error btw tuple cannot contain undefined
+          Search.build({ age: { btw: [18, undefined] } }),
+        ).toThrow(ParamsL5ValidationError);
+        expect(() =>
+          // @ts-expect-error btw tuple cannot have both elements undefined
+          Search.build({ age: { btw: [undefined, undefined] } }),
+        ).toThrow(ParamsL5ValidationError);
+
+        // Whole btw/in value can still be omitted as undefined/null, and in accepts empty arrays
+        expect(
+          Search.build<User>({
+            age: { btw: undefined },
+            name: { btw: null },
+            role: { in: [] },
+          }),
+        ).toEqual({
+          [QUERY_NAMES.SRC]: undefined,
+          [QUERY_NAMES.SFI]: undefined,
+        });
       });
 
       test('should allow commas in scalar string values', () => {
@@ -315,12 +352,14 @@ describe('Search class', () => {
         ).toThrow(`Search: value must be a object, got ${type} instead`);
       });
 
-      test('should ignore null and undefined values (including inside condition objects)', () => {
+      test('should ignore null and undefined values (including inside condition objects and empty "in" arrays)', () => {
         input = {
+          emptyIn: { in: [] },
           ignored: null,
           missing: undefined,
           nestedNull: { like: null },
           nestedUndefined: { in: undefined },
+          nullishIn: { in: [null, undefined] },
           status: 'active',
         };
         expected = {
@@ -341,7 +380,6 @@ describe('Search class', () => {
           badCond: { invalid: 'x' },
           badIn: { in: ['active', ''] },
           directArr: ['a'],
-          emptyIn: { in: [] },
         };
         let caught: unknown;
 
