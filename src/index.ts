@@ -3,8 +3,8 @@ export { CONDITIONS, SEARCH_JOIN, SORT_BY } from '#/constants';
 export type {
   TValidationErrorOptions,
   TValidationIssue,
-} from '#/errors/ParamsL5ValidationError';
-export { ParamsL5ValidationError } from '#/errors/ParamsL5ValidationError';
+} from '#/errors/params-l5-validation-error';
+export { ParamsL5ValidationError } from '#/errors/params-l5-validation-error';
 
 export type { TFilter, TFilterOptions, TFilterResult } from '#gen/filter';
 

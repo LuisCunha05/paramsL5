@@ -1,5 +1,5 @@
 import { QUERY_LABELS, QUERY_NAMES, SEARCH_JOIN } from '#/constants';
-import { ParamsL5ValidationError } from '#/errors/ParamsL5ValidationError';
+import { ParamsL5ValidationError } from '#/errors/params-l5-validation-error';
 import { msgMustBeEither, msgMustBeString, msgNoValue } from '#/messages';
 import type { TGenerator, TLogger, ToEnum, TResult } from '#/types';
 import { isNonEmptyString, typeName, unwrap } from '#/utils';

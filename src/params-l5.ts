@@ -1,7 +1,7 @@
 import {
   ParamsL5ValidationError,
   type TValidationIssue,
-} from '#/errors/ParamsL5ValidationError';
+} from '#/errors/params-l5-validation-error';
 import { logger as loggerFn, type LogLevel } from '#/logger';
 import type { TGenerator, TLogger, TResult, TValidateFlatArray } from '#/types';
 import { type TParamsStrings, unwrap } from '#/utils';

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { QUERY_NAMES } from '#/constants';
-import { ParamsL5ValidationError } from '#/errors/ParamsL5ValidationError';
+import { ParamsL5ValidationError } from '#/errors/params-l5-validation-error';
 import { logger as loggerFn } from '#/logger';
 import { WithCount } from '#gen/with-count';
 

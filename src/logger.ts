@@ -1,9 +1,9 @@
 import type { TLogger } from '#/types';
 
 export interface LogLevel {
-  error?: boolean;
-  info?: boolean;
-  warn?: boolean;
+  readonly error?: boolean;
+  readonly info?: boolean;
+  readonly warn?: boolean;
 }
 
 export const LOGGER_PREFIX = '[ParamsL5]:';
@@ -13,8 +13,11 @@ interface LoggerArgs {
   readonly logLevel?: LogLevel;
 }
 
-export function logger({ logger, logLevel }: LoggerArgs = {}): TLogger {
-  const log: TLogger = logger ?? {
+export function logger({
+  logger: loggerValue,
+  logLevel,
+}: LoggerArgs = {}): TLogger {
+  const log: TLogger = loggerValue ?? {
     error: console.error,
     info: console.info,
     warn: console.warn,

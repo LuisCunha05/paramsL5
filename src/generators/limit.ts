@@ -1,5 +1,5 @@
 import { QUERY_LABELS, QUERY_NAMES } from '#/constants';
-import { ParamsL5ValidationError } from '#/errors/ParamsL5ValidationError';
+import { ParamsL5ValidationError } from '#/errors/params-l5-validation-error';
 import { msgMustBePositiveInteger, msgNoValue } from '#/messages';
 import type { TGenerator, TLogger, TResult } from '#/types';
 import { isNumber, typeName, unwrap } from '#/utils';

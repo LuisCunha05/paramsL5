@@ -2,7 +2,7 @@ import { QUERY_LABELS, QUERY_NAMES, SORT_BY } from '#/constants';
 import {
   ParamsL5ValidationError,
   type TValidationIssue,
-} from '#/errors/ParamsL5ValidationError';
+} from '#/errors/params-l5-validation-error';
 import {
   msgInvalidKey,
   msgInvalidSortBy,
@@ -54,6 +54,7 @@ function isSortByValue(value: unknown): value is TSortBy {
 }
 
 function buildOrderBySortByResult(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types
   entries: ReadonlyMap<string, TSortBy>,
 ): TOrderBySortByResult {
   if (!entries.size) {
@@ -75,6 +76,7 @@ function buildOrderBySortByResult(
 }
 
 function recordOrderSortIssue(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types
   context: {
     readonly issues: TValidationIssue[];
     readonly log?: TLogger;
@@ -188,6 +190,7 @@ export class OrderBySortBy {
 
   static #resolveDefaultSortBy(
     defaultSortBy: TSortBy | undefined,
+    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types
     context: {
       readonly issues: TValidationIssue[];
       readonly log?: TLogger;
@@ -217,6 +220,7 @@ export class OrderBySortBy {
   static #parseEntry(
     [key, rawValue]: readonly [string, unknown],
     index: number,
+    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types
     context: OrderSortParseContext,
   ): TParsedOrderSortEntry | undefined {
     const { defaultSortBy } = context;

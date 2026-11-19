@@ -2,7 +2,7 @@ import { CONDITIONS, QUERY_LABELS, QUERY_NAMES } from '#/constants';
 import {
   ParamsL5ValidationError,
   type TValidationIssue,
-} from '#/errors/ParamsL5ValidationError';
+} from '#/errors/params-l5-validation-error';
 import {
   msgInvalidBaseValue,
   msgInvalidBetweenSize,
@@ -147,6 +147,7 @@ interface DelimiterCheck {
 
 function hasValidDelimiters(
   check: DelimiterCheck,
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types
   context: {
     readonly issues: TValidationIssue[];
     readonly log?: TLogger;
@@ -176,6 +177,7 @@ function isConditionValue(value: unknown): value is TCondition {
 }
 
 function recordSearchIssue(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types
   context: {
     readonly issues: TValidationIssue[];
     readonly log?: TLogger;
@@ -314,6 +316,7 @@ export class Search {
 
   static #resolveDefaultCondition(
     defaultCondition: TCondition | undefined,
+    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types
     context: {
       readonly issues: TValidationIssue[];
       readonly log?: TLogger;
@@ -337,6 +340,7 @@ export class Search {
   static #parseEntry(
     [key, rawValue]: readonly [string, unknown],
     index: number,
+    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types
     context: SearchParseContext,
   ): TParsedSearchEntry | undefined {
     if (!isNonEmptyString(key)) {
@@ -418,6 +422,7 @@ export class Search {
     key: string,
     rawCondition: object,
     index: number,
+    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types
     context: SearchParseContext,
   ): TParsedSearchEntry | undefined {
     const field = `${QUERY_NAMES.SRC}.${key}`;
@@ -511,6 +516,7 @@ export class Search {
     key: string,
     field: string,
     rawVal: unknown,
+    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types
     context: SearchParseContext,
   ): TParsedSearchEntry | undefined {
     if (!isArray(rawVal)) {
@@ -571,6 +577,7 @@ export class Search {
     field: string,
     rawVal: unknown,
     index: number,
+    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types
     context: SearchParseContext,
   ): TParsedSearchEntry | undefined {
     if (!isArray(rawVal)) {

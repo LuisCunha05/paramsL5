@@ -10,7 +10,7 @@ import type {
 import {
   ParamsL5ValidationError,
   type TValidationIssue,
-} from './errors/ParamsL5ValidationError';
+} from './errors/params-l5-validation-error';
 import {
   msgMustBeString,
   msgNoRemaining,
@@ -109,6 +109,7 @@ export function isConditionKey(val: string): val is TConditionKeys {
   return Boolean(CONDITIONS[kind]);
 }
 
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types
 export function unwrap<TType>(result: TResult<TType>): TType {
   if (!result.success) {
     throw result.error;

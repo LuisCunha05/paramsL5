@@ -1,4 +1,4 @@
-import type { ParamsL5ValidationError } from '#/errors/ParamsL5ValidationError';
+import type { ParamsL5ValidationError } from '#/errors/params-l5-validation-error';
 
 import type { CONDITIONS } from './constants';
 
@@ -16,9 +16,9 @@ export interface TGenerator<TValue, TOptions, TReturn> {
 }
 
 export interface TLogger {
-  info: (...args: readonly unknown[]) => void;
-  warn: (...args: readonly unknown[]) => void;
-  error: (...args: readonly unknown[]) => void;
+  readonly info: (...args: readonly unknown[]) => void;
+  readonly warn: (...args: readonly unknown[]) => void;
+  readonly error: (...args: readonly unknown[]) => void;
 }
 
 export type Keys<TObj> = Extract<keyof TObj, string>;
